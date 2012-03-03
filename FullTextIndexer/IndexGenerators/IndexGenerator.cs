@@ -139,7 +139,7 @@ namespace FullTextIndexer.IndexGenerators
             foreach (var occurence in occurences)
             {
                 if (occurence == null)
-                    throw new ArgumentException("Null entry encountered in occurenceData");
+                    throw new ArgumentException("Null entry encountered in occurences");
                 weightedEntries.Add(
                     new WeightedEntry<TKey>(occurence.Key, _weightDeterminer(token, occurence.Count))
                 );
