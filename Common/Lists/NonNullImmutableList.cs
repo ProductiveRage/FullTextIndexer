@@ -9,8 +9,6 @@ namespace Common.Lists
         public NonNullImmutableList(IEnumerable<T> values, IValueValidator<T> validator) : base(values, new NonNullWrappingValueValidator<T>(validator)) { }
 
         public NonNullImmutableList(IEnumerable<T> values) : this(values, null) { }
-        public NonNullImmutableList(IValueValidator<T> validator, params T[] values) : this((IEnumerable<T>)values, validator) { }
-        public NonNullImmutableList(params T[] values) : this(null, values) { }
         public NonNullImmutableList() : this(new T[0]) { }
 
         public new NonNullImmutableList<T> Add(T value)
