@@ -5,6 +5,7 @@ using System.Text;
 using Common.Lists;
 using FullTextIndexer.TokenBreaking;
 using FullTextIndexer.IndexGenerators;
+using FullTextIndexer;
 
 namespace Tester
 {
@@ -34,13 +35,16 @@ namespace Tester
                     ),
                     5
                 ),
-                (token, occurenceCount) => occurenceCount // TODO: Downplay stopwords
+                (token, occurenceCount) => occurenceCount * (Constants.StopWords.Contains(token, StringComparer.InvariantCultureIgnoreCase) ? 0.01f : 1)
             );
 
             var index = indexGenerator.Generate(data.ToNonNullImmutableList());
 
-            var t1 = index.GetMatches("This is a Test");
-            var t = index.GetMatches("This Test");
+            //var t1 = index.GetMatches("This is a Test");
+            //var t2 = index.GetMatches("This Test");
+            var t3 = index.GetMatches("Test");
+            var t4 = index.GetMatches("a");
+            var t5 = index.GetMatches("is");
         }
 
         public class Product
