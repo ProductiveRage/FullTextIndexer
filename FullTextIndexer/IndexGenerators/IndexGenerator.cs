@@ -8,17 +8,21 @@ namespace FullTextIndexer.IndexGenerators
 {
     public class IndexGenerator<TSource, TKey> : IIndexGenerator<TSource, TKey> where TSource : class
     {
+        /// <summary>
+        /// Note: The sourceStringComparer will be used when GetMatches requests are made against the index data, the other references are used only while the index
+        /// data is initially generated.
+        /// </summary>
         private dataKeyRetriever _dataKeyRetriever;
         private IEqualityComparer<TKey> _dataKeyComparer;
         private SourceRetriever _sourceRetriever;
-        private IEqualityComparer<string> _sourceComparer;
+        private IEqualityComparer<string> _sourceStringComparer;
         private ITokenBreaker _tokenBreaker;
         private WeightDeterminer _weightDeterminer;
         public IndexGenerator(
             dataKeyRetriever dataKeyRetriever,
             IEqualityComparer<TKey> dataKeyComparer,
             SourceRetriever sourceRetriever,
-            IEqualityComparer<string> sourceComparer,
+            IEqualityComparer<string> sourceStringComparer,
             ITokenBreaker tokenBreaker,
             WeightDeterminer weightDeterminer)
         {
@@ -28,8 +32,8 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("dataKeyComparer");
             if (sourceRetriever == null)
                 throw new ArgumentNullException("sourceRetriever");
-            if (sourceComparer == null)
-                throw new ArgumentNullException("sourceComparer");
+            if (sourceStringComparer == null)
+                throw new ArgumentNullException("sourceStringComparer");
             if (tokenBreaker == null)
                 throw new ArgumentNullException("tokenBreaker");
             if (weightDeterminer == null)
@@ -38,7 +42,7 @@ namespace FullTextIndexer.IndexGenerators
             _dataKeyRetriever = dataKeyRetriever;
             _dataKeyComparer = dataKeyComparer;
             _sourceRetriever = sourceRetriever;
-            _sourceComparer = sourceComparer;
+            _sourceStringComparer = sourceStringComparer;
             _tokenBreaker = tokenBreaker;
             _weightDeterminer = weightDeterminer;
         }
@@ -109,7 +113,7 @@ namespace FullTextIndexer.IndexGenerators
                 }
             }
 
-            // Translate this into IndexData by 
+            // Translate this into IndexData by.. - TODO
             return new IndexData<TKey>(
                 indexContent.Select(tokenData =>
                     new KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>(
@@ -117,7 +121,7 @@ namespace FullTextIndexer.IndexGenerators
                         GetWeightedEntries(tokenData.Key, tokenData.Value)
                     )
                 ),
-                _sourceComparer,
+                _sourceStringComparer,
                 _dataKeyComparer
             );
         }
@@ -135,7 +139,7 @@ namespace FullTextIndexer.IndexGenerators
                 if (occurence == null)
                     throw new ArgumentException("Null entry encountered in occurenceData");
                 weightedEntries.Add(
-                    new WeightedEntry<TKey>(occurence.Key, _weightDeterminer(token, occurences.Count))
+                    new WeightedEntry<TKey>(occurence.Key, _weightDeterminer(token, occurence.Count))
                 );
             }
             return weightedEntries;
