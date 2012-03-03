@@ -56,6 +56,11 @@ namespace FullTextIndexer.IndexGenerators
             _data = dataTidied;
         }
 
+        public NonNullOrEmptyStringList GetAllTokens()
+        {
+            return new NonNullOrEmptyStringList(_data.Keys);
+        }
+
         /// <summary>
         /// This will throw an exception for null or blank input. It will never return null. If there are no matches then an empty list will be returned. There will
         /// be no more than a single OccurrenceCount entry for each key.
@@ -65,6 +70,8 @@ namespace FullTextIndexer.IndexGenerators
             if (string.IsNullOrWhiteSpace(source))
                 throw new ArgumentException("Null/blank source specified");
 
+            // Since the data dictionary uses the sourceStringComparer, the lookup here will take that into account (so if a case-insensitive sourceStringComparer
+            // was specified, for example, then the casing of the "source" value here will be irrelevant)
             if (!_data.ContainsKey(source))
                 return new NonNullImmutableList<WeightedEntry<TKey>>();
             return _data[source];

@@ -41,10 +41,10 @@
     <Compile Include="IndexGenerators\IndexData.cs" />
     <Compile Include="IndexGenerators\IndexGenerator.cs" />
     <Compile Include="TokenBreaking\ConsecutiveTokenCombiningTokenBreaker.cs" />
-    <Compile Include="TokenBreaking\PunctuationRemovingTokenBreaker.cs" />
+    <Compile Include="TokenBreaking\CommaAndPeriodReplacingTokenBreaker.cs" />
+    <Compile Include="TokenBreaking\NoActionTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceTokenBreaker.cs" />
     <Compile Include="TokenBreaking\ITokenBreaker.cs" />
-    <Compile Include="TokenBreaking\AccentReplacingTokenBreaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
