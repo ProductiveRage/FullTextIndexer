@@ -9,6 +9,7 @@ namespace FullTextIndexer.IndexGenerators
     public class IndexData<TKey>
     {
         private Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _data;
+        private IEqualityComparer<string> _sourceStringComparer;
         public IndexData(
             IEnumerable<KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>> data,
             IEqualityComparer<string> sourceStringComparer,
@@ -29,7 +30,7 @@ namespace FullTextIndexer.IndexGenerators
                 // Ensure source string is valid (not null, empty or a duplicate)
                 if (string.IsNullOrWhiteSpace(entry.Key))
                     throw new ArgumentException("Null/blank string encountered in data");
-                var sourceString = entry.Key.Trim();
+                var sourceString = entry.Key;
                 if (dataTidied.ContainsKey(sourceString))
                     throw new ArgumentException("Duplicate string encountered in data: " + sourceString);
                 
@@ -54,11 +55,7 @@ namespace FullTextIndexer.IndexGenerators
                 dataTidied.Add(sourceString, occurencesList);
             }
             _data = dataTidied;
-        }
-
-        public NonNullOrEmptyStringList GetAllTokens()
-        {
-            return new NonNullOrEmptyStringList(_data.Keys);
+            _sourceStringComparer = sourceStringComparer;
         }
 
         /// <summary>
@@ -75,6 +72,22 @@ namespace FullTextIndexer.IndexGenerators
             if (!_data.ContainsKey(source))
                 return new NonNullImmutableList<WeightedEntry<TKey>>();
             return _data[source];
+        }
+
+        /// <summary>
+        /// This will never return null
+        /// </summary>
+        public NonNullOrEmptyStringList GetAllTokens()
+        {
+            return new NonNullOrEmptyStringList(_data.Keys);
+        }
+
+        /// <summary>
+        /// This will never return null
+        /// </summary>
+        public IEqualityComparer<string> TokenComparer
+        {
+            get { return _sourceStringComparer; }
         }
     }
 }
