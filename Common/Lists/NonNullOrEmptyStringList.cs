@@ -7,7 +7,6 @@ namespace Common.Lists
     public class NonNullOrEmptyStringList : ImmutableList<string>
     {
         public NonNullOrEmptyStringList(IEnumerable<string> values) : base(values, new NonNullOrEmptyStringValidator()) { }
-		public NonNullOrEmptyStringList(params string[] values) : this((IEnumerable<string>)values) { }
         public NonNullOrEmptyStringList() : this(new string[0]) { }
 
 		public new NonNullOrEmptyStringList Add(string value)

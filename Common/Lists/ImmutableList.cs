@@ -32,7 +32,6 @@ namespace Common.Lists
             this.validator = validator;
         }
         public ImmutableList(IEnumerable<T> values) : this(values, null) { }
-        public ImmutableList(IValueValidator<T> validator, params T[] values) : this((IEnumerable<T>)values, validator) { }
         public ImmutableList() : this(new T[0]) { }
 
         public T this[int index]
@@ -91,11 +90,6 @@ namespace Common.Lists
                 values = valuesNew,
                 validator = this.validator
             };
-        }
-
-        public ImmutableList<T> AddRange(params T[] values)
-        {
-            return AddRange((IEnumerable<T>)values);
         }
 
         public ImmutableList<T> Insert(int index, T value)
