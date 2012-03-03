@@ -72,7 +72,9 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("data");
 
             // Build up data about token occurences in the data
-            var indexContent = new Dictionary<string, List<OccurenceCount>>();
+            var indexContent = new Dictionary<string, List<OccurenceCount>>(
+                _sourceStringComparer
+            );
             foreach (var entry in data)
             {
                 TKey key;

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Common.Lists;
-using FullTextIndexer.TokenBreaking;
-using FullTextIndexer.IndexGenerators;
+using Common.StringComparisons;
 using FullTextIndexer;
+using FullTextIndexer.IndexGenerators;
+using FullTextIndexer.TokenBreaking;
 
 namespace Tester
 {
@@ -26,12 +25,10 @@ namespace Tester
                 p => p.Key,
                 new IntEqualityComparer(),
                 p => p.Name,
-                StringComparer.InvariantCultureIgnoreCase,
+                new CaseInsensitiveAccentReplacingPunctuationRemovingStringComparer(),
                 new ConsecutiveTokenCombiningTokenBreaker(
-                    new AccentReplacingTokenBreaker(
-                        new PunctuationRemovingTokenBreaker(
-                            new WhiteSpaceTokenBreaker()
-                        )
+                    new WhiteSpaceTokenBreaker(
+                        new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
                     ),
                     5
                 ),
