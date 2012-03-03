@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="IndexGenerators\AdditionBasedCombiningIndexGenerator.cs" />
     <Compile Include="IndexGenerators\WeightedEntry.cs" />
     <Compile Include="IndexGenerators\IIndexGenerator.cs" />
     <Compile Include="IndexGenerators\IndexData.cs" />
