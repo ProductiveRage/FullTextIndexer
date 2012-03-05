@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Common.StringComparisons
 {
-    public class CaseInsensitiveAccentReplacingPunctuationRemovingStringComparer : IEqualityComparer<string>
+    /// <summary>
+    /// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
+    /// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
+    /// </summary>
+    public class CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer : IEqualityComparer<string>
     {
         public bool Equals(string x, string y)
         {
@@ -32,8 +35,22 @@ namespace Common.StringComparisons
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            return RemoveDiacritics(RemovePunctuation(value)).ToLower();
+            return RemoveDiacritics(
+                RemovePunctuation(
+                    StandardiseWhitespace(value)
+                )
+            ).ToLower();
         }
+
+        private static Regex WhitespaceMatcher = new System.Text.RegularExpressions.Regex("\\s+", RegexOptions.Compiled);
+        private string StandardiseWhitespace(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+
+            return WhitespaceMatcher.Replace(value, " ").Trim();
+        }
+
 
         private static Regex PunctuationRemover = new Regex("\\p{P}+", RegexOptions.Compiled);
         private string RemovePunctuation(string value)
