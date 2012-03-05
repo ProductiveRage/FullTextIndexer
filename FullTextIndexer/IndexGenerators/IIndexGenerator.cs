@@ -1,4 +1,5 @@
 ﻿using Common.Lists;
+using FullTextIndexer.Indexes;
 
 namespace FullTextIndexer.IndexGenerators
 {

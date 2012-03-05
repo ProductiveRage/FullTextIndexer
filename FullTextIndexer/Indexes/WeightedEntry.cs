@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Indexes
 {
     [Serializable]
     public class WeightedEntry<TKey>
