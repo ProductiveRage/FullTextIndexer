@@ -37,43 +37,14 @@ namespace FullTextIndexer.IndexGenerators
             if (data == null)
                 throw new ArgumentNullException("data");
 
-            var combinedIndexContent = new Dictionary<string, List<WeightedEntry<TKey>>>(
-                _sourceStringComparer
-            );
-            foreach (var index in _indexGenerators.Select(g => g.Generate(data)))
-            {
-                foreach (var token in index.GetAllTokens())
-                {
-                    foreach (var match in index.GetMatches(token))
-                    {
-                        if (!combinedIndexContent.ContainsKey(token))
-                            combinedIndexContent.Add(token, new List<WeightedEntry<TKey>>());
-
-                        var weightEntriesForToken = combinedIndexContent[token];
-                        var weightedEntryForKeyAgainstToken = weightEntriesForToken.FirstOrDefault(e => _dataKeyComparer.Equals(e.Key, match.Key));
-                        if (weightedEntryForKeyAgainstToken == null)
-                        {
-                            // If there is no entry yet for this Token/Key combination then add it to the list and move on
-                            weightEntriesForToken.Add(match);
-                            continue;
-                        }
-
-                        // Otherwise, remove the existing entry and replace it with one that combine it with the current match
-                        weightEntriesForToken.Remove(weightedEntryForKeyAgainstToken);
-                        weightEntriesForToken.Add(new WeightedEntry<TKey>(
-                            weightedEntryForKeyAgainstToken.Key,
-                            weightedEntryForKeyAgainstToken.Weight + match.Weight
-                        ));
-                    }
-                }
-            }
-            return new IndexData<TKey>(
-                combinedIndexContent.Select(
-                    tokenData => new KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>(tokenData.Key, tokenData.Value)
-                ),
+            var combinedIndexContent = new IndexData<TKey>(
+                new Dictionary<string, IEnumerable<WeightedEntry<TKey>>>(),
                 _sourceStringComparer,
                 _dataKeyComparer
             );
+            foreach (var index in _indexGenerators.Select(g => g.Generate(data)))
+                combinedIndexContent = combinedIndexContent.Combine(index, (x, y) => x + y);
+            return combinedIndexContent;
         }
     }
 }
