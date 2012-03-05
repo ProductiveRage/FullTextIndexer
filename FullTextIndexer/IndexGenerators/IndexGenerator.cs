@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Lists;
+using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
 
 namespace FullTextIndexer.IndexGenerators
