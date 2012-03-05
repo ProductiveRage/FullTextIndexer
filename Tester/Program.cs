@@ -21,7 +21,7 @@ namespace Tester
                 new Product(2, "This is also a tést, yes it is", "keywords key2 it")
             };
 
-            var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingStringComparer();
+            var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer();
             var dataKeyComparer = new IntEqualityComparer();
             var indexGenerator = new AdditionBasedCombiningIndexGenerator<Product, int>(
                 new NonNullImmutableList<IIndexGenerator<Product, int>>(new[]
