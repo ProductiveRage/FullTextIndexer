@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Lists;
+using FullTextIndexer.Indexes;
 
 namespace FullTextIndexer.IndexGenerators
 {
@@ -43,7 +44,7 @@ namespace FullTextIndexer.IndexGenerators
                 _dataKeyComparer
             );
             foreach (var index in _indexGenerators.Select(g => g.Generate(data)))
-                combinedIndexContent = combinedIndexContent.Combine(index, (x, y) => x + y);
+                combinedIndexContent = combinedIndexContent.Combine(new[] { index }, (x, y) => x + y);
             return combinedIndexContent;
         }
     }
