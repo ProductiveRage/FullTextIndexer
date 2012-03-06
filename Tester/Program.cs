@@ -50,6 +50,12 @@ namespace Tester
                 tokenMatches => tokenMatches.Sum(m => m.Weight / (5 * m.AllTokens.Count))
             );
 
+            var t9 = t6.CombineResults(
+                t8,
+                new IntEqualityComparer(),
+                matches => matches.Sum(m => m.Weight)
+            );
+
             var indexWithoutProduct1 = index.RemoveEntriesFor((new[] { 1 }).ToImmutableList());
             var indexWithoutProduct2 = index.RemoveEntriesFor((new[] { 2 }).ToImmutableList());
         }

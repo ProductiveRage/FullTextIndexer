@@ -18,6 +18,8 @@ namespace FullTextIndexer.Indexes
             ITokenBreaker tokenBreaker,
             MatchCombiner matchCombiner)
         {
+            if (index == null)
+                throw new ArgumentNullException("index");
             if (source == null)
                 throw new ArgumentNullException("source");
             if (tokenBreaker == null)
