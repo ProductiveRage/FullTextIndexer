@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Common.Lists;
 using Common.StringComparisons;
 using FullTextIndexer;
+using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 
@@ -14,7 +17,6 @@ namespace Tester
         {
             // TODO: Partial match handling (with appropriate weight adjustment)
             // TODO: Plurality handling??
-
             var data = new[]
             {
                 new Product(1, "This is a tést", "keywords key1 it"),
@@ -40,6 +42,16 @@ namespace Tester
             //var t4 = index.GetMatches("a");
             //var t5 = index.GetMatches("is");
             var t6 = index.GetMatches("it");
+            var t7 = index.GetMatches("Test Keywords");
+
+            var t8 = index.GetMatches(
+                "Test Keywords",
+                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                tokenMatches => tokenMatches.Sum(m => m.Weight / (5 * m.AllTokens.Count))
+            );
+
+            var indexWithoutProduct1 = index.RemoveEntriesFor((new[] { 1 }).ToImmutableList());
+            var indexWithoutProduct2 = index.RemoveEntriesFor((new[] { 2 }).ToImmutableList());
         }
 
         private static IIndexGenerator<Product, int> GetIndexGeneratorForProperty(
