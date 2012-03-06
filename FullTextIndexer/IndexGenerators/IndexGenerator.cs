@@ -117,19 +117,21 @@ namespace FullTextIndexer.IndexGenerators
             }
 
             // Translate this into IndexData by.. - TODO
+            var indexData = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+                _sourceStringComparer
+            );
+            foreach (var tokenData in indexContent)
+                indexData.Add(tokenData.Key, GetWeightedEntries(tokenData.Key, tokenData.Value));
             return new IndexData<TKey>(
-                indexContent.Select(tokenData =>
-                    new KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>(
-                        tokenData.Key,
-                        GetWeightedEntries(tokenData.Key, tokenData.Value)
-                    )
+                new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+                    indexData,
+                    _sourceStringComparer
                 ),
-                _sourceStringComparer,
                 _dataKeyComparer
             );
         }
 
-        private IEnumerable<WeightedEntry<TKey>> GetWeightedEntries(string token, List<OccurenceCount> occurences)
+        private NonNullImmutableList<WeightedEntry<TKey>> GetWeightedEntries(string token, List<OccurenceCount> occurences)
         {
             if (string.IsNullOrWhiteSpace(token))
                 throw new ArgumentException("Null/empty token specified");
@@ -145,7 +147,7 @@ namespace FullTextIndexer.IndexGenerators
                     new WeightedEntry<TKey>(occurence.Key, _weightDeterminer(token, occurence.Count))
                 );
             }
-            return weightedEntries;
+            return weightedEntries.ToNonNullImmutableList();
         }
 
         private class OccurenceCount

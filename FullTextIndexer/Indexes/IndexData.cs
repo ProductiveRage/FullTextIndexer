@@ -8,55 +8,27 @@ namespace FullTextIndexer.Indexes
     [Serializable]
     public class IndexData<TKey>
     {
-        private Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _data;
-        private IEqualityComparer<string> _sourceStringComparer;
+        private ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _data;
         private IEqualityComparer<TKey> _dataKeyComparer;
         public IndexData(
-            IEnumerable<KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>> data,
-            IEqualityComparer<string> sourceStringComparer,
+            ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> data,
             IEqualityComparer<TKey> dataKeyComparer)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
-            if (sourceStringComparer == null)
-                throw new ArgumentNullException("sourceStringComparer");
             if (dataKeyComparer == null)
                 throw new ArgumentNullException("dataKeyComparer");
 
-            var dataTidied = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
-                sourceStringComparer
-            );
-            foreach (var entry in data)
+            foreach (var token in data.Keys)
             {
-                // Ensure source string is valid (not null, empty or a duplicate)
-                if (string.IsNullOrWhiteSpace(entry.Key))
-                    throw new ArgumentException("Null/blank string encountered in data");
-                var sourceString = entry.Key;
-                if (dataTidied.ContainsKey(sourceString))
-                    throw new ArgumentException("Duplicate string encountered in data: " + sourceString);
-                
-                // Ensure occurences set is valid (not null, no null entries, no duplicated key values)
-                var occurences = entry.Value;
-                if (occurences == null)
-                    throw new ArgumentException("Null occurences set encountered in data for string: " + sourceString);
-                NonNullImmutableList<WeightedEntry<TKey>> occurencesList;
-                try
-                {
-                    occurencesList = occurences.ToNonNullImmutableList();
-                }
-                catch (ArgumentException e)
-                {
-                    throw new ArgumentException("Null entry encountered in key set for string: " + sourceString, e);
-                }
-                if (occurencesList.Count == 0)
-                    throw new ArgumentException("Empty key set encountered for string: " + sourceString);
-                if (occurencesList.Count != occurencesList.Select(o => o.Key).Distinct(dataKeyComparer).Count())
-                    throw new ArgumentNullException("Multiple entries for the same key encountered in key set for string: " + sourceString);
-
-                dataTidied.Add(sourceString, occurencesList);
+                if (token == "")
+                    throw new ArgumentException("Null/blank token encountered in data");
+                if (data[token].Count == 0)
+                    throw new ArgumentException("Empty key set encountered for token: " + token);
+                if (data[token].Count != data[token].Select(o => o.Key).Distinct(dataKeyComparer).Count())
+                    throw new ArgumentNullException("Multiple entries for the same key encountered in key set for string: " + token);
             }
-            _data = dataTidied;
-            _sourceStringComparer = sourceStringComparer;
+            _data = data;
             _dataKeyComparer = dataKeyComparer;
         }
 
@@ -98,11 +70,11 @@ namespace FullTextIndexer.Indexes
                 throw new ArgumentException("Null entry encountered in indexesToAdd set");
 
             // Start with a copy of the data in this instance
-            var combinedIndexContent = new Dictionary<string, List<WeightedEntry<TKey>>>(
-                _sourceStringComparer
+            var combinedIndexContent = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+                _data.KeyComparer
             );
-            foreach (var entry in _data)
-                combinedIndexContent.Add(entry.Key, entry.Value.ToList());
+            foreach (var token in _data.Keys)
+                combinedIndexContent.Add(token, _data[token]);
 
             // Combine with the new data
             foreach (var index in indexesToAddList)
@@ -112,33 +84,33 @@ namespace FullTextIndexer.Indexes
                     foreach (var match in index.GetMatches(token))
                     {
                         if (!combinedIndexContent.ContainsKey(token))
-                            combinedIndexContent.Add(token, new List<WeightedEntry<TKey>>());
+                            combinedIndexContent.Add(token, new NonNullImmutableList<WeightedEntry<TKey>>());
 
-                        var weightEntriesForToken = combinedIndexContent[token];
-                        var weightedEntryForKeyAgainstToken = weightEntriesForToken.FirstOrDefault(e => _dataKeyComparer.Equals(e.Key, match.Key));
+                        var weightedEntryForKeyAgainstToken = combinedIndexContent[token].FirstOrDefault(e => _dataKeyComparer.Equals(e.Key, match.Key));
                         if (weightedEntryForKeyAgainstToken == null)
                         {
                             // If there is no entry yet for this Token/Key combination then add it to the list and move on
-                            weightEntriesForToken.Add(match);
+                            combinedIndexContent[token] = combinedIndexContent[token].Add(match);
                             continue;
                         }
 
                         // Otherwise, remove the existing entry and replace it with one that combine it with the current match
-                        weightEntriesForToken.Remove(weightedEntryForKeyAgainstToken);
-                        weightEntriesForToken.Add(new WeightedEntry<TKey>(
-                            weightedEntryForKeyAgainstToken.Key,
-                            weightedEntryForKeyAgainstToken.Weight + match.Weight
-                        ));
+                        combinedIndexContent[token] = combinedIndexContent[token]
+                            .Remove(weightedEntryForKeyAgainstToken)
+                            .Add(new WeightedEntry<TKey>(
+                                weightedEntryForKeyAgainstToken.Key,
+                                weightedEntryForKeyAgainstToken.Weight + match.Weight
+                            ));
                     }
                 }
             }
             
             // Return a new instance containing the combined data
             return new IndexData<TKey>(
-                combinedIndexContent.Select(
-                    tokenData => new KeyValuePair<string, IEnumerable<WeightedEntry<TKey>>>(tokenData.Key, tokenData.Value)
+                new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+                    combinedIndexContent,
+                    _data.KeyComparer
                 ),
-                _sourceStringComparer,
                 _dataKeyComparer
             );
         }
@@ -153,18 +125,18 @@ namespace FullTextIndexer.Indexes
                 throw new ArgumentNullException("keysToRemove");
 
             var dataNew = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
-                _sourceStringComparer
+                _data.KeyComparer
             );
-            foreach (var entry in _data)
+            foreach (var token in _data.Keys)
             {
-                var trimmedWeightedEntries = entry.Value.Where(e => !keysToRemove.Any(k => _dataKeyComparer.Equals(e.Key, k)));
+                var matchesForToken = _data[token];
+                var trimmedWeightedEntries = matchesForToken.Where(m => !keysToRemove.Any(k => _dataKeyComparer.Equals(m.Key, k)));
                 if (trimmedWeightedEntries.Any())
-                    dataNew.Add(entry.Key, trimmedWeightedEntries.ToNonNullImmutableList());
+                    dataNew.Add(token, trimmedWeightedEntries.ToNonNullImmutableList());
             }
             return new IndexData<TKey>()
             {
-                _data = dataNew,
-                _sourceStringComparer = _sourceStringComparer,
+                _data = new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(dataNew, _data.KeyComparer),
                 _dataKeyComparer = _dataKeyComparer
             };
         }
@@ -182,7 +154,7 @@ namespace FullTextIndexer.Indexes
         /// </summary>
         public IEqualityComparer<string> TokenComparer
         {
-            get { return _sourceStringComparer; }
+            get { return _data.KeyComparer; }
         }
 
         /// <summary>
