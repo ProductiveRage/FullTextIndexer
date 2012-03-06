@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Common.Lists;
 using Common.StringComparisons;
@@ -21,21 +20,36 @@ namespace Tester
             {
                 new Product(1, "This is a tést", "keywords key1 it"),
                 new Product(2, "This is also a tést, yes it is", "keywords key2 it")
-            };
+            }.ToNonNullImmutableList();
 
             var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer();
-            var dataKeyComparer = new IntEqualityComparer();
-            var indexGenerator = new AdditionBasedCombiningIndexGenerator<Product, int>(
-                new NonNullImmutableList<IIndexGenerator<Product, int>>(new[]
+            var indexGenerator = new IndexGenerator<Product, int>(
+                new NonNullImmutableList<IndexGenerator<Product,int>.ContentRetriever>(new[]
                 {
-                    GetIndexGeneratorForProperty(p => p.Name, sourceStringComparer, dataKeyComparer, 1f),
-                    GetIndexGeneratorForProperty(p => p.Keywords, sourceStringComparer, dataKeyComparer, 1f)
+                    new IndexGenerator<Product,int>.ContentRetriever(
+                        p => new KeyValuePair<int, string>(p.Key, p.Name),
+                        token => 1f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
+                    ),
+                    new IndexGenerator<Product,int>.ContentRetriever(
+                        p => new KeyValuePair<int, string>(p.Key, p.Keywords),
+                        token => 3f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
+                    )
                 }),
+                new IntEqualityComparer(),
                 sourceStringComparer,
-                dataKeyComparer
+                new ConsecutiveTokenCombiningTokenBreaker(
+                    new WhiteSpaceTokenBreaker(
+                        new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
+                    ),
+                    5
+                ),
+                weightedValues => weightedValues.Sum()
             );
-            var index = indexGenerator.Generate(data.ToNonNullImmutableList());
+            var index = indexGenerator.Generate(data);
 
+            var t1 = index.GetMatches("Test");
+            var t2 = index.GetMatches("is");
+            var t3 = index.GetMatches("it");
             //var t1 = index.GetMatches("This is a Test");
             //var t2 = index.GetMatches("This Test");
             //var t3 = index.GetMatches("Tèst");
@@ -58,35 +72,6 @@ namespace Tester
 
             var indexWithoutProduct1 = index.RemoveEntriesFor((new[] { 1 }).ToImmutableList());
             var indexWithoutProduct2 = index.RemoveEntriesFor((new[] { 2 }).ToImmutableList());
-        }
-
-        private static IIndexGenerator<Product, int> GetIndexGeneratorForProperty(
-            IndexGenerator<Product, int>.SourceRetriever propertyRetriever,
-            IEqualityComparer<string> sourceStringComparer,
-            IEqualityComparer<int> dataKeyComparer,
-            float weightMultiplier)
-        {
-            if (propertyRetriever == null)
-                throw new ArgumentNullException("propertyRetriever");
-            if (weightMultiplier <= 0)
-                throw new ArgumentOutOfRangeException("weightMultiplier", "must be > 0");
-
-            return new IndexGenerator<Product, int>(
-                p => p.Key,
-                dataKeyComparer,
-                propertyRetriever,
-                sourceStringComparer,
-                new ConsecutiveTokenCombiningTokenBreaker(
-                    new WhiteSpaceTokenBreaker(
-                        new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
-                    ),
-                    5
-                ),
-                (token, occurenceCount) =>
-                    occurenceCount
-                    * weightMultiplier
-                    * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1)
-            );
         }
 
         public class Product

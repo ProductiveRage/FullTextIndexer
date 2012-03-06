@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Common.Lists;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
@@ -13,56 +12,74 @@ namespace FullTextIndexer.IndexGenerators
         /// Note: The sourceStringComparer will be used when GetMatches requests are made against the index data, the other references are used only while the index
         /// data is initially generated.
         /// </summary>
-        private dataKeyRetriever _dataKeyRetriever;
+        private NonNullImmutableList<ContentRetriever> _contentRetrievers;
         private IEqualityComparer<TKey> _dataKeyComparer;
-        private SourceRetriever _sourceRetriever;
         private IEqualityComparer<string> _sourceStringComparer;
         private ITokenBreaker _tokenBreaker;
-        private WeightDeterminer _weightDeterminer;
+        private WeightedEntryCombiner _weightedEntryCombiner;
         public IndexGenerator(
-            dataKeyRetriever dataKeyRetriever,
+            NonNullImmutableList<ContentRetriever> contentRetrievers,
             IEqualityComparer<TKey> dataKeyComparer,
-            SourceRetriever sourceRetriever,
             IEqualityComparer<string> sourceStringComparer,
             ITokenBreaker tokenBreaker,
-            WeightDeterminer weightDeterminer)
+            WeightedEntryCombiner weightedEntryCombiner)
         {
-            if (dataKeyRetriever == null)
-                throw new ArgumentNullException("dataKeyRetriever");
+            if (contentRetrievers == null)
+                throw new ArgumentNullException("contentRetrievers");
             if (dataKeyComparer == null)
                 throw new ArgumentNullException("dataKeyComparer");
-            if (sourceRetriever == null)
-                throw new ArgumentNullException("sourceRetriever");
             if (sourceStringComparer == null)
                 throw new ArgumentNullException("sourceStringComparer");
             if (tokenBreaker == null)
                 throw new ArgumentNullException("tokenBreaker");
-            if (weightDeterminer == null)
-                throw new ArgumentNullException("weightDeterminer");
+            if (weightedEntryCombiner == null)
+                throw new ArgumentNullException("weightedEntryCombiner");
 
-            _dataKeyRetriever = dataKeyRetriever;
+            _contentRetrievers = contentRetrievers;
             _dataKeyComparer = dataKeyComparer;
-            _sourceRetriever = sourceRetriever;
             _sourceStringComparer = sourceStringComparer;
             _tokenBreaker = tokenBreaker;
-            _weightDeterminer = weightDeterminer;
+            _weightedEntryCombiner = weightedEntryCombiner;
+        }
+
+        public class ContentRetriever
+        {
+            public ContentRetriever(PreBrokenTokenContentRetriever initialContentRetriever, BrokenTokenWeightDeterminer tokenWeightDeterminer)
+            {
+                if (initialContentRetriever == null)
+                    throw new ArgumentNullException("initialContentRetriever");
+                if (tokenWeightDeterminer == null)
+                    throw new ArgumentNullException("tokenWeightDeterminer");
+
+                InitialContentRetriever = initialContentRetriever;
+                TokenWeightDeterminer = tokenWeightDeterminer;
+            }
+            
+            /// <summary>
+            /// This will never be null
+            /// </summary>
+            public PreBrokenTokenContentRetriever InitialContentRetriever { get; private set; }
+
+            /// <summary>
+            /// This will never be null
+            /// </summary>
+            public BrokenTokenWeightDeterminer TokenWeightDeterminer { get; private set; }
         }
 
         /// <summary>
-        /// This must return a key that uniquely identifies that source. It must never return null. It will never be provided a null source value.
+        /// The returned Key that uniquely identifies that source. Neither the return Key nor Value may be null. It will never be provided a null source value.
         /// </summary>
-        public delegate TKey dataKeyRetriever(TSource source);
-
-        /// <summary>
-        /// This must return a string to examine for the specified source. If there is no data on the source, then empty string should be returned, not null.
-        /// It will never be provided a null source value.
-        /// </summary>
-        public delegate string SourceRetriever(TSource source);
+        public delegate KeyValuePair<TKey, string> PreBrokenTokenContentRetriever(TSource source);
 
         /// <summary>
         /// This must always return a value greater than zero, it will never be provided a null or empty token nor an occurenceCount less than one.
         /// </summary>
-        public delegate float WeightDeterminer(string token, int occurenceCount);
+        public delegate float BrokenTokenWeightDeterminer(string token);
+
+        /// <summary>
+        /// This must always return a value greater than zero, it will never be provided a null or empty token, a null weightedValues or a any weightedValues of zero or less.
+        /// </summary>
+        public delegate float WeightedEntryCombiner(ImmutableList<float> weightedValues);
 
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
@@ -73,108 +90,71 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("data");
 
             // Build up data about token occurences in the data
-            var indexContent = new Dictionary<string, List<OccurenceCount>>(
+            var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>(
                 _sourceStringComparer
             );
-            foreach (var entry in data)
+            foreach (var contentRetriever in _contentRetrievers)
             {
-                TKey key;
-                try
+                foreach (var entry in data)
                 {
-                    key = _dataKeyRetriever(entry);
-                }
-                catch(Exception e)
-                {
-                    throw new Exception("dataKeyRetriever threw exception", e);
-                }
-                if (key == null)
-                    throw new Exception("dataKeyRetriever returned null");
+                    KeyValuePair<TKey, string> preBrokenContent;
+                    try
+                    {
+                        preBrokenContent = contentRetriever.InitialContentRetriever(entry);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("contentRetriever.InitialContentRetriever threw exception", e);
+                    }
+                    if (preBrokenContent.Key == null)
+                        throw new Exception("contentRetriever.InitialContentRetriever returned null Key");
+                    if (preBrokenContent.Value == null)
+                        throw new Exception("contentRetriever.InitialContentRetriever returned null Value");
 
-                string sourceString;
-                try
-                {
-                    sourceString = _sourceRetriever(entry);
-                }
-                catch(Exception e)
-                {
-                    throw new Exception("sourceRetriever threw exception", e);
-                }
-                if (sourceString == null)
-                    throw new Exception("sourceRetriever returned null");
+                    foreach (var token in _tokenBreaker.Break(preBrokenContent.Value))
+                    {
+                        if (!indexContent.ContainsKey(token))
+                            indexContent.Add(token, new Dictionary<TKey, List<float>>(_dataKeyComparer));
 
-                foreach (var token in _tokenBreaker.Break(sourceString))
-                {
-                    if (!indexContent.ContainsKey(token))
-                        indexContent.Add(token, new List<OccurenceCount>());
-                    
-                    var occurenceDataForToken = indexContent[token];
-                    var occurenceEntryForToken = occurenceDataForToken.FirstOrDefault(o => _dataKeyComparer.Equals(o.Key, key));
-                    if (occurenceEntryForToken == null)
-                        occurenceDataForToken.Add(new OccurenceCount(key));
-                    else
-                        occurenceEntryForToken.IncreaseCount();
+                        var allDataForToken = indexContent[token];
+                        if (!allDataForToken.ContainsKey(preBrokenContent.Key))
+                            allDataForToken.Add(preBrokenContent.Key, new List<float>());
+
+                        allDataForToken[preBrokenContent.Key].Add(
+                            contentRetriever.TokenWeightDeterminer(token)
+                        );
+                    }
                 }
             }
 
-            // Translate this into an IndexData instance
-            var indexData = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+            // Combine entries where Token and Key values match
+            var combinedContent = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
                 _sourceStringComparer
             );
-            foreach (var tokenData in indexContent)
-                indexData.Add(tokenData.Key, GetWeightedEntries(tokenData.Key, tokenData.Value));
+            foreach (var token in indexContent.Keys)
+            {
+                combinedContent.Add(token, new NonNullImmutableList<WeightedEntry<TKey>>());
+                
+                foreach (var key in indexContent[token].Keys)
+                {
+                    var matches = indexContent[token][key];
+                    combinedContent[token] = combinedContent[token].Add(
+                        new WeightedEntry<TKey>(
+                            key,
+                            _weightedEntryCombiner(matches.ToImmutableList())
+                        )
+                    );
+                }
+            }
+            
+            // Translate this into an IndexData instance
             return new IndexData<TKey>(
                 new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
-                    indexData,
+                    combinedContent,
                     _sourceStringComparer
                 ),
                 _dataKeyComparer
             );
-        }
-
-        private NonNullImmutableList<WeightedEntry<TKey>> GetWeightedEntries(string token, List<OccurenceCount> occurences)
-        {
-            if (string.IsNullOrWhiteSpace(token))
-                throw new ArgumentException("Null/empty token specified");
-            if (occurences == null)
-                throw new ArgumentNullException("occurences");
-
-            var weightedEntries = new List<WeightedEntry<TKey>>();
-            foreach (var occurence in occurences)
-            {
-                if (occurence == null)
-                    throw new ArgumentException("Null entry encountered in occurences");
-                weightedEntries.Add(
-                    new WeightedEntry<TKey>(occurence.Key, _weightDeterminer(token, occurence.Count))
-                );
-            }
-            return weightedEntries.ToNonNullImmutableList();
-        }
-
-        private class OccurenceCount
-        {
-            public OccurenceCount(TKey key)
-            {
-                if (key == null)
-                    throw new ArgumentNullException("key");
-
-                Key = key;
-                Count = 1;
-            }
-
-            /// <summary>
-            /// This will never be null
-            /// </summary>
-            public TKey Key { get; private set; }
-
-            /// <summary>
-            /// This will always be greater than zero
-            /// </summary>
-            public int Count { get; private set; }
-
-            public void IncreaseCount()
-            {
-                Count++;
-            }
         }
     }
 }
