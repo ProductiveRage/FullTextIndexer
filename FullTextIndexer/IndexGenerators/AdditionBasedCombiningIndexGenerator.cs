@@ -45,7 +45,12 @@ namespace FullTextIndexer.IndexGenerators
                 _dataKeyComparer
             );
             foreach (var index in _indexGenerators.Select(g => g.Generate(data)))
-                combinedIndexContent = combinedIndexContent.Combine(new[] { index }, (x, y) => x + y);
+            {
+                combinedIndexContent = combinedIndexContent.Combine(
+                    (new[] { index }).ToNonNullImmutableList(),
+                    (x, y) => x + y
+                );
+            }
             return combinedIndexContent;
         }
     }
