@@ -116,7 +116,7 @@ namespace FullTextIndexer.IndexGenerators
                 }
             }
 
-            // Translate this into IndexData by.. - TODO
+            // Translate this into an IndexData instance
             var indexData = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
                 _sourceStringComparer
             );
