@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common.Lists;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
@@ -14,12 +15,17 @@ namespace UnitTests.IndexGenerators
         public void SingleProductWithSingleWordName()
         {
             var indexGenerator = new IndexGenerator<Product, int>(
-                p => p.Key,
+                new NonNullImmutableList<IndexGenerator<Product,int>.ContentRetriever>(new[]
+                {
+                    new IndexGenerator<Product,int>.ContentRetriever(
+                        p => new KeyValuePair<int, string>(p.Key, p.Name),
+                        token => 1f
+                    )                        
+                }),
                 new IntEqualityComparer(),
-                p => p.Name,
                 StringComparer.InvariantCultureIgnoreCase,
                 new WhiteSpaceTokenBreaker(new NoActionTokenBreaker()),
-                (token, occurenceCount) => occurenceCount
+                weightedValues => weightedValues.Sum()
             );
             var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
             {
