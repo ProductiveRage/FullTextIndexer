@@ -58,16 +58,12 @@ namespace FullTextIndexer.Indexes
         /// In a case where there are different TokenComparer implementations on this instance and on dataToAdd, the comparer from the current instance will be used. It is
         /// recommended that a consistent TokenComparer be used at all times. An exception will be thrown for null dataToAdd or weightCombiner references.
         /// </summary>
-        public IndexData<TKey> Combine(IEnumerable<IndexData<TKey>> indexesToAdd, Func<float, float, float> weightCombiner)
+        public IndexData<TKey> Combine(NonNullImmutableList<IndexData<TKey>> indexesToAdd, Func<float, float, float> weightCombiner)
         {
             if (indexesToAdd == null)
                 throw new ArgumentNullException("indexesToAdd");
             if (weightCombiner == null)
                 throw new ArgumentNullException("weightCombiner");
-
-            var indexesToAddList = indexesToAdd.ToList();
-            if (indexesToAddList.Any(i => i == null))
-                throw new ArgumentException("Null entry encountered in indexesToAdd set");
 
             // Start with a copy of the data in this instance
             var combinedIndexContent = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
@@ -77,7 +73,7 @@ namespace FullTextIndexer.Indexes
                 combinedIndexContent.Add(token, _data[token]);
 
             // Combine with the new data
-            foreach (var index in indexesToAddList)
+            foreach (var index in indexesToAdd)
             {
                 foreach (var token in index.GetAllTokens())
                 {
@@ -119,7 +115,7 @@ namespace FullTextIndexer.Indexes
         /// This will return a new IndexData instance without any data relating to the specified keys. Any keys that are specified to remove that are not present in the
         /// data will be ignored.
         /// </summary>
-        public IndexData<TKey> RemoveEntriesFor(IEnumerable<TKey> keysToRemove)
+        public IndexData<TKey> RemoveEntriesFor(ImmutableList<TKey> keysToRemove)
         {
             if (keysToRemove == null)
                 throw new ArgumentNullException("keysToRemove");
