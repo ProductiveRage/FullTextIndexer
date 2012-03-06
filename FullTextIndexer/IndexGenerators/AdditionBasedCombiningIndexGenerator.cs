@@ -39,8 +39,9 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("data");
 
             var combinedIndexContent = new IndexData<TKey>(
-                new Dictionary<string, IEnumerable<WeightedEntry<TKey>>>(),
-                _sourceStringComparer,
+                new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+                    _sourceStringComparer
+                ),
                 _dataKeyComparer
             );
             foreach (var index in _indexGenerators.Select(g => g.Generate(data)))

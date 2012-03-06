@@ -8,7 +8,7 @@ namespace Common.Lists
     {
 		private Dictionary<TKey, TValue> _data;
 		private IEqualityComparer<TKey> _keyComparer;
-		public ImmutableDictionary(Dictionary<TKey, TValue> data, IEqualityComparer<TKey> keyComparer)
+		public ImmutableDictionary(IDictionary<TKey, TValue> data, IEqualityComparer<TKey> keyComparer)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
@@ -18,7 +18,7 @@ namespace Common.Lists
 			_data = new Dictionary<TKey, TValue>(data, keyComparer);
 			_keyComparer = keyComparer;
 		}
-		public ImmutableDictionary(Dictionary<TKey, TValue> data) : this(data, new StandardEqualityComparer<TKey>()) { }
+        public ImmutableDictionary(IDictionary<TKey, TValue> data) : this(data, new StandardEqualityComparer<TKey>()) { }
 		public ImmutableDictionary(IEqualityComparer<TKey> keyComparer) : this(new Dictionary<TKey, TValue>(), keyComparer) { }
 		public ImmutableDictionary() : this(new Dictionary<TKey, TValue>(), new StandardEqualityComparer<TKey>()) { }
 
@@ -56,6 +56,14 @@ namespace Common.Lists
 		{
 			get { return _data.Keys.ToImmutableList(); }
 		}
+
+        /// <summary>
+        /// This will never return null
+        /// </summary>
+        public IEqualityComparer<TKey> KeyComparer
+        {
+            get { return _keyComparer; }
+        }
 
 		/// <summary>
 		/// This will raise an exception for a null key
