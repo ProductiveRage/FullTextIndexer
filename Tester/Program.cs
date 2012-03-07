@@ -7,6 +7,8 @@ using FullTextIndexer;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
+using Tester.KeyVariants;
+using Tester.SourceData;
 
 namespace Tester
 {
@@ -14,28 +16,64 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            // TODO: Partial match handling (with appropriate weight adjustment)
             // TODO: Plurality handling??
+            var activeLanguageKeys = new[] { 1, 2 };
             var data = new[]
             {
-                new Product(1, "This is a tést", "keywords key1 it"),
-                new Product(2, "This is also a tést, yes it is", "keywords key2 it")
-            }.ToNonNullImmutableList();
+                new Product(
+                    1,
+                    GetTranslatedString(
+                        "This is a test",
+                        2, "Ceci est un test"
+                    ),
+                    GetTranslatedString("keywords key1 it"),
+                    new AddressDetails("1, The Road", null, null, null)
+                ),
+                new Product(
+                    2,
+                    GetTranslatedString("This is also a tést, yes it is"),
+                    GetTranslatedString("keywords key2 it"),
+                    null
+                )
+            };
 
             var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer();
-            var indexGenerator = new IndexGenerator<Product, int>(
-                new NonNullImmutableList<IndexGenerator<Product,int>.ContentRetriever>(new[]
-                {
-                    new IndexGenerator<Product,int>.ContentRetriever(
-                        p => new KeyValuePair<int, string>(p.Key, p.Name),
-                        token => 1f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
-                    ),
-                    new IndexGenerator<Product,int>.ContentRetriever(
-                        p => new KeyValuePair<int, string>(p.Key, p.Keywords),
+            var contentRetrievers = new List<IndexGenerator<Product, IIndexKey>.ContentRetriever>();
+            foreach (var languageKey in activeLanguageKeys)
+            {
+                // Take a copy of languageKey to ensure the correct value is used in the following PreBrokenContentRetriever lambdas
+                var languageKeyForEntry = languageKey;
+                contentRetrievers.Add(
+                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                        p => new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                            new LanguageScopedIndexKey(p.Key, languageKeyForEntry),
+                            p.Name.GetTranslation(languageKeyForEntry)
+                        ),
+                        token => 15f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
+                    )
+                );
+                contentRetrievers.Add(
+                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                        p =>
+                        {
+                            if (p.Keywords == null)
+                                return null;
+                            return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                                new LanguageScopedIndexKey(p.Key, languageKeyForEntry),
+                                p.Keywords.GetTranslation(languageKeyForEntry)
+                            );
+                        },
                         token => 3f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
                     )
-                }),
-                new IntEqualityComparer(),
+                );
+            }
+            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address1, sourceStringComparer));
+            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address2, sourceStringComparer));
+            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address3, sourceStringComparer));
+            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address4, sourceStringComparer));
+            var indexGenerator = new IndexGenerator<Product, IIndexKey>(
+                contentRetrievers.ToNonNullImmutableList(),
+                new IndexKeyEqualityComparer(),
                 sourceStringComparer,
                 new ConsecutiveTokenCombiningTokenBreaker(
                     new WhiteSpaceTokenBreaker(
@@ -45,7 +83,7 @@ namespace Tester
                 ),
                 weightedValues => weightedValues.Sum()
             );
-            var index = indexGenerator.Generate(data);
+            var index = indexGenerator.Generate(data.ToNonNullImmutableList());
 
             var t1 = index.GetMatches("Test");
             var t2 = index.GetMatches("is");
@@ -53,9 +91,10 @@ namespace Tester
             //var t1 = index.GetMatches("This is a Test");
             //var t2 = index.GetMatches("This Test");
             //var t3 = index.GetMatches("Tèst");
-            //var t4 = index.GetMatches("a");
-            //var t5 = index.GetMatches("is");
-            var t6 = index.GetMatches("it");
+            var t4 = index.GetMatches("Road");
+            var t5 = index.GetMatches("is");
+            var t6 = index.GetMatches("ceci");
+            var t62 = FilterIndexKeyResults(t6, 1, 1);
             var t7 = index.GetMatches("Test Keywords");
 
             var t8 = index.GetMatches(
@@ -66,50 +105,59 @@ namespace Tester
 
             var t9 = t6.CombineResults(
                 t8,
-                new IntEqualityComparer(),
+                new IndexKeyEqualityComparer(),
                 matches => matches.Sum(m => m.Weight)
             );
 
-            var indexWithoutProduct1 = index.RemoveEntriesFor((new[] { 1 }).ToImmutableList());
-            var indexWithoutProduct2 = index.RemoveEntriesFor((new[] { 2 }).ToImmutableList());
+            var indexWithoutProduct1 = index.Remove(k => k.ProductKey == 1);
+            var indexWithoutProduct2 = index.Remove(k => k.ProductKey == 2);
         }
 
-        public class Product
+        private static NonNullImmutableList<WeightedEntry<int>> FilterIndexKeyResults(NonNullImmutableList<WeightedEntry<IIndexKey>> matches, int languageKey, int channelKey)
         {
-            public Product(int key, string name, string keywords)
-            {
-                if (string.IsNullOrWhiteSpace(name))
-                    throw new ArgumentException("Null/blank name specified");
+            if (matches == null)
+                throw new ArgumentNullException("matches");
 
-                Key = key;
-                Name = name;
-                Keywords = string.IsNullOrWhiteSpace(keywords) ? "" : keywords.Trim();
-            }
-
-            public int Key { get; private set; }
-
-            /// <summary>
-            /// This will never be null or empty
-            /// </summary>
-            public string Name { get; private set; }
-
-            /// <summary>
-            /// This will never be null but it may be empty
-            /// </summary>
-            public string Keywords { get; private set; }
+            return matches
+                .Where(m => m.Key.IsApplicableFor(languageKey, channelKey))
+                .GroupBy(m => m.Key.ProductKey)
+                .Select(g => new WeightedEntry<int>(g.Key, g.Sum(e => e.Weight)))
+                .ToNonNullImmutableList();
         }
 
-        private class IntEqualityComparer : IEqualityComparer<int>
+        private static IndexGenerator<Product, IIndexKey>.ContentRetriever GetNonScopedContentRetriever(Func<Product, string> valueRetriever, IEqualityComparer<string> sourceStringComparer)
         {
-            public bool Equals(int x, int y)
-            {
-                return (x == y);
-            }
+            if (valueRetriever == null)
+                throw new ArgumentNullException("valueRetriever");
+            if (sourceStringComparer == null)
+                throw new ArgumentNullException("sourceStringComparer");
 
-            public int GetHashCode(int obj)
-            {
-                return obj;
-            }
+            return new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                p =>
+                {
+                    var value = valueRetriever(p);
+                    if (string.IsNullOrWhiteSpace(value))
+                        return null;
+                    return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                        new NonScopedIndexKey(p.Key),
+                        value
+                    );
+                },
+                token => (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
+            );
+        }
+
+        private static TranslatedString GetTranslatedString(string defaultValue)
+        {
+            return new TranslatedString(defaultValue, new Dictionary<int, string>());
+        }
+        private static TranslatedString GetTranslatedString(string defaultValue, int languageKey0, string translation0)
+        {
+            return new TranslatedString(defaultValue, new Dictionary<int, string> { { languageKey0, translation0 } });
+        }
+        private static TranslatedString GetTranslatedString(string defaultValue, int languageKey0, string translation0, int languageKey1, string translation1)
+        {
+            return new TranslatedString(defaultValue, new Dictionary<int, string> { { languageKey0, translation0 }, { languageKey1, translation1 } });
         }
     }
 }

@@ -18,7 +18,7 @@ namespace UnitTests.IndexGenerators
                 new NonNullImmutableList<IndexGenerator<Product,int>.ContentRetriever>(new[]
                 {
                     new IndexGenerator<Product,int>.ContentRetriever(
-                        p => new KeyValuePair<int, string>(p.Key, p.Name),
+                        p => new IndexGenerator<Product, int>.PreBrokenContent(p.Key, p.Name),
                         token => 1f
                     )                        
                 }),
