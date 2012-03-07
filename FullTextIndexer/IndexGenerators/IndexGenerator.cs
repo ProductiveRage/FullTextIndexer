@@ -42,42 +42,18 @@ namespace FullTextIndexer.IndexGenerators
             _weightedEntryCombiner = weightedEntryCombiner;
         }
 
-        public class ContentRetriever
-        {
-            public ContentRetriever(PreBrokenTokenContentRetriever initialContentRetriever, BrokenTokenWeightDeterminer tokenWeightDeterminer)
-            {
-                if (initialContentRetriever == null)
-                    throw new ArgumentNullException("initialContentRetriever");
-                if (tokenWeightDeterminer == null)
-                    throw new ArgumentNullException("tokenWeightDeterminer");
-
-                InitialContentRetriever = initialContentRetriever;
-                TokenWeightDeterminer = tokenWeightDeterminer;
-            }
-            
-            /// <summary>
-            /// This will never be null
-            /// </summary>
-            public PreBrokenTokenContentRetriever InitialContentRetriever { get; private set; }
-
-            /// <summary>
-            /// This will never be null
-            /// </summary>
-            public BrokenTokenWeightDeterminer TokenWeightDeterminer { get; private set; }
-        }
-
         /// <summary>
-        /// The returned Key that uniquely identifies that source. Neither the return Key nor Value may be null. It will never be provided a null source value.
+        /// This will never be provided a null source value. If the content retriever does not identify any content it is valid to return null.
         /// </summary>
-        public delegate KeyValuePair<TKey, string> PreBrokenTokenContentRetriever(TSource source);
+        public delegate PreBrokenContent PreBrokenTokenContentRetriever(TSource source);
 
         /// <summary>
-        /// This must always return a value greater than zero, it will never be provided a null or empty token nor an occurenceCount less than one.
+        /// This must always return a value greater than zero, it will never be provided a null or empty token.
         /// </summary>
         public delegate float BrokenTokenWeightDeterminer(string token);
 
         /// <summary>
-        /// This must always return a value greater than zero, it will never be provided a null or empty token, a null weightedValues or a any weightedValues of zero or less.
+        /// This must always return a value greater than zero, it will never be provided a null or empty list of values and none of the values will be zero of less.
         /// </summary>
         public delegate float WeightedEntryCombiner(ImmutableList<float> weightedValues);
 
@@ -97,21 +73,22 @@ namespace FullTextIndexer.IndexGenerators
             {
                 foreach (var entry in data)
                 {
-                    KeyValuePair<TKey, string> preBrokenContent;
+                    PreBrokenContent preBrokenContent;
                     try
                     {
                         preBrokenContent = contentRetriever.InitialContentRetriever(entry);
+                        if (preBrokenContent == null)
+                        {
+                            // If no content is returned (which is valid, depending upon the input data and the content retriever), then move on
+                            continue;
+                        }
                     }
                     catch (Exception e)
                     {
                         throw new Exception("contentRetriever.InitialContentRetriever threw exception", e);
                     }
-                    if (preBrokenContent.Key == null)
-                        throw new Exception("contentRetriever.InitialContentRetriever returned null Key");
-                    if (preBrokenContent.Value == null)
-                        throw new Exception("contentRetriever.InitialContentRetriever returned null Value");
 
-                    foreach (var token in _tokenBreaker.Break(preBrokenContent.Value))
+                    foreach (var token in _tokenBreaker.Break(preBrokenContent.Content))
                     {
                         if (!indexContent.ContainsKey(token))
                             indexContent.Add(token, new Dictionary<TKey, List<float>>(_dataKeyComparer));
@@ -134,7 +111,6 @@ namespace FullTextIndexer.IndexGenerators
             foreach (var token in indexContent.Keys)
             {
                 combinedContent.Add(token, new NonNullImmutableList<WeightedEntry<TKey>>());
-                
                 foreach (var key in indexContent[token].Keys)
                 {
                     var matches = indexContent[token][key];
@@ -155,6 +131,54 @@ namespace FullTextIndexer.IndexGenerators
                 ),
                 _dataKeyComparer
             );
+        }
+
+        public class PreBrokenContent
+        {
+            public PreBrokenContent(TKey key, string content)
+            {
+                if (key == null)
+                    throw new ArgumentNullException("key");
+                if (string.IsNullOrWhiteSpace(content))
+                    throw new ArgumentException("Null/blank content specified");
+
+                Key = key;
+                Content = content;
+            }
+
+            /// <summary>
+            /// This will never be null
+            /// </summary>
+            public TKey Key { get; private set; }
+
+            /// <summary>
+            /// This will never be null or empty
+            /// </summary>
+            public string Content { get; private set; }
+        }
+
+        public class ContentRetriever
+        {
+            public ContentRetriever(PreBrokenTokenContentRetriever initialContentRetriever, BrokenTokenWeightDeterminer tokenWeightDeterminer)
+            {
+                if (initialContentRetriever == null)
+                    throw new ArgumentNullException("initialContentRetriever");
+                if (tokenWeightDeterminer == null)
+                    throw new ArgumentNullException("tokenWeightDeterminer");
+
+                InitialContentRetriever = initialContentRetriever;
+                TokenWeightDeterminer = tokenWeightDeterminer;
+            }
+
+            /// <summary>
+            /// This will never be null
+            /// </summary>
+            public PreBrokenTokenContentRetriever InitialContentRetriever { get; private set; }
+
+            /// <summary>
+            /// This will never be null
+            /// </summary>
+            public BrokenTokenWeightDeterminer TokenWeightDeterminer { get; private set; }
         }
     }
 }
