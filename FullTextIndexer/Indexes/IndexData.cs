@@ -112,13 +112,12 @@ namespace FullTextIndexer.Indexes
         }
 
         /// <summary>
-        /// This will return a new IndexData instance without any data relating to the specified keys. Any keys that are specified to remove that are not present in the
-        /// data will be ignored.
+        /// This will return a new IndexData instance without any data relating to keys identified by the removeIf filter
         /// </summary>
-        public IndexData<TKey> RemoveEntriesFor(ImmutableList<TKey> keysToRemove)
+        public IndexData<TKey> Remove(Predicate<TKey> removeIf)
         {
-            if (keysToRemove == null)
-                throw new ArgumentNullException("keysToRemove");
+            if (removeIf == null)
+                throw new ArgumentNullException("removeIf");
 
             var dataNew = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
                 _data.KeyComparer
@@ -126,7 +125,7 @@ namespace FullTextIndexer.Indexes
             foreach (var token in _data.Keys)
             {
                 var matchesForToken = _data[token];
-                var trimmedWeightedEntries = matchesForToken.Where(m => !keysToRemove.Any(k => _dataKeyComparer.Equals(m.Key, k)));
+                var trimmedWeightedEntries = matchesForToken.Where(m => !removeIf(m.Key));
                 if (trimmedWeightedEntries.Any())
                     dataNew.Add(token, trimmedWeightedEntries.ToNonNullImmutableList());
             }
