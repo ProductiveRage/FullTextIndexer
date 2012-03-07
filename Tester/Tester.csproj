@@ -38,8 +38,18 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KeyVariants\IndexKeyEqualityComparer.cs" />
+    <Compile Include="KeyVariants\IIndexKey.cs" />
+    <Compile Include="KeyVariants\LanguageAndChannelScopedIndexKey.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="KeyVariants\LanguageScopedIndexKey.cs" />
+    <Compile Include="KeyVariants\NonScopedIndexKey.cs" />
+    <Compile Include="SourceData\AddressDetails.cs" />
+    <Compile Include="SourceData\Product.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TranslatedString.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
