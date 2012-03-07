@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Tester
+namespace Tester.SourceData
 {
     public class TranslatedString
     {
