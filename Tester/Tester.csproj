@@ -46,10 +46,11 @@
     <Compile Include="KeyVariants\LanguageScopedIndexKey.cs" />
     <Compile Include="KeyVariants\NonScopedIndexKey.cs" />
     <Compile Include="SourceData\AddressDetails.cs" />
+    <Compile Include="SourceData\DescriptionDetails.cs" />
     <Compile Include="SourceData\Product.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TranslatedString.cs" />
+    <Compile Include="SourceData\TranslatedString.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">

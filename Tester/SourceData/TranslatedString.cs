@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Tester.SourceData
 {
+    [Serializable]
     public class TranslatedString
     {
         private Dictionary<int, string> _data;
