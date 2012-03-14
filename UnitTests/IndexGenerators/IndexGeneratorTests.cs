@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Common.Lists;
+using Common.Logging;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
@@ -25,7 +26,8 @@ namespace UnitTests.IndexGenerators
                 new IntEqualityComparer(),
                 StringComparer.InvariantCultureIgnoreCase,
                 new WhiteSpaceTokenBreaker(new NoActionTokenBreaker()),
-                weightedValues => weightedValues.Sum()
+                weightedValues => weightedValues.Sum(),
+                new NullLogger()
             );
             var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
             {
