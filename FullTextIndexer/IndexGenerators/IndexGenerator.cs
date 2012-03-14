@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Common.Lists;
+using Common.Logging;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
 
@@ -17,12 +19,14 @@ namespace FullTextIndexer.IndexGenerators
         private IEqualityComparer<string> _sourceStringComparer;
         private ITokenBreaker _tokenBreaker;
         private WeightedEntryCombiner _weightedEntryCombiner;
+        private ILogger _logger;
         public IndexGenerator(
             NonNullImmutableList<ContentRetriever> contentRetrievers,
             IEqualityComparer<TKey> dataKeyComparer,
             IEqualityComparer<string> sourceStringComparer,
             ITokenBreaker tokenBreaker,
-            WeightedEntryCombiner weightedEntryCombiner)
+            WeightedEntryCombiner weightedEntryCombiner,
+            ILogger logger)
         {
             if (contentRetrievers == null)
                 throw new ArgumentNullException("contentRetrievers");
@@ -34,12 +38,15 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("tokenBreaker");
             if (weightedEntryCombiner == null)
                 throw new ArgumentNullException("weightedEntryCombiner");
+            if (logger == null)
+                throw new ArgumentNullException("logger");
 
             _contentRetrievers = contentRetrievers;
             _dataKeyComparer = dataKeyComparer;
             _sourceStringComparer = sourceStringComparer;
             _tokenBreaker = tokenBreaker;
             _weightedEntryCombiner = weightedEntryCombiner;
+            _logger = logger;
         }
 
         /// <summary>
@@ -66,13 +73,15 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("data");
 
             // Build up data about token occurences in the data
+            var timer = new Stopwatch();
+            timer.Start();
             var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>(
                 _sourceStringComparer
             );
+            foreach (var entry in data)
+            {
             foreach (var contentRetriever in _contentRetrievers)
             {
-                foreach (var entry in data)
-                {
                     PreBrokenContent preBrokenContent;
                     try
                     {
@@ -103,6 +112,11 @@ namespace FullTextIndexer.IndexGenerators
                     }
                 }
             }
+            _logger.LogIgnoringAnyError(
+                LogLevel.Debug,
+                () => String.Format("Time taken to generate initial token data: {0}ms ({1:0.00}ms per item)", timer.ElapsedMilliseconds, (float)timer.ElapsedMilliseconds / (float)data.Count)
+            );
+            timer.Restart();
 
             // Combine entries where Token and Key values match
             var combinedContent = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
@@ -122,15 +136,25 @@ namespace FullTextIndexer.IndexGenerators
                     );
                 }
             }
+            _logger.LogIgnoringAnyError(
+                LogLevel.Debug,
+                () => String.Format("Time taken to combine token data sets: {0}ms ({1:0.00}ms per item)", timer.ElapsedMilliseconds, (float)timer.ElapsedMilliseconds / (float)data.Count)
+            );
+            timer.Restart();
             
             // Translate this into an IndexData instance
-            return new IndexData<TKey>(
+            var indexData = new IndexData<TKey>(
                 new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
                     combinedContent,
                     _sourceStringComparer
                 ),
                 _dataKeyComparer
             );
+            _logger.LogIgnoringAnyError(
+                LogLevel.Debug,
+                () => String.Format("Time taken to generate final IndexData: {0}ms ({1:0.00}ms per item)", timer.ElapsedMilliseconds, (float)timer.ElapsedMilliseconds / (float)data.Count)
+            );
+            return indexData;
         }
 
         public class PreBrokenContent
