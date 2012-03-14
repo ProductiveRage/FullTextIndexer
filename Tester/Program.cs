@@ -85,9 +85,21 @@ namespace Tester
             var t7 = index.GetMatches("Test Keywords");
 
             var t8 = index.GetMatches(
-                "Test Keywords",
+                "Test Keywords PretendWordThatWontBeFoundzzcajhjhsa",
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                tokenMatches => tokenMatches.Sum(m => m.Weight / (5 * m.AllTokens.Count))
+                (tokenMatches, allTokens) => tokenMatches.Sum(m => m.Weight / (5 * allTokens.Count))
+            );
+            var t82 = index.Remove(key => !key.IsApplicableFor(1, 1)).GetMatches(
+                "Test Keywords PretendWordThatWontBeFoundzzcajhjhsa",
+                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                (tokenMatches, allTokens) =>
+                {
+                    // Require that all broken-down tokens be found in order for a match to be allowed (return zero to exclude match from results)
+                    var allTokensForKey = tokenMatches.Select(v => v.MatchedToken);
+                    if (allTokens.Any(t => !allTokensForKey.Contains(t, index.TokenComparer)))
+                        return 0;
+                    return tokenMatches.Sum(m => m.Weight / (5 * allTokens.Count));
+                }
             );
 
             var t9 = t6.CombineResults(
