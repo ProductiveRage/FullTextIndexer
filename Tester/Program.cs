@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using Common.Lists;
+using Common.Logging;
 using Common.StringComparisons;
 using FullTextIndexer;
 using FullTextIndexer.Indexes;
@@ -17,25 +20,11 @@ namespace Tester
         static void Main(string[] args)
         {
             // TODO: Plurality handling??
+
+            // Note: This data isn't yet included in the repository as what I'm using at the moment is from some private work set
+            var data = (NonNullImmutableList<Product>)ReadFromDisk(new FileInfo("SampleData.dat"));
+
             var activeLanguageKeys = new[] { 1, 2 };
-            var data = new[]
-            {
-                new Product(
-                    1,
-                    GetTranslatedString(
-                        "This is a test",
-                        2, "Ceci est un test"
-                    ),
-                    GetTranslatedString("keywords key1 it"),
-                    new AddressDetails("1, The Road", null, null, null)
-                ),
-                new Product(
-                    2,
-                    GetTranslatedString("This is also a tést, yes it is"),
-                    GetTranslatedString("keywords key2 it"),
-                    null
-                )
-            };
 
             var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer();
             var contentRetrievers = new List<IndexGenerator<Product, IIndexKey>.ContentRetriever>();
@@ -75,13 +64,11 @@ namespace Tester
                 contentRetrievers.ToNonNullImmutableList(),
                 new IndexKeyEqualityComparer(),
                 sourceStringComparer,
-                new ConsecutiveTokenCombiningTokenBreaker(
-                    new WhiteSpaceTokenBreaker(
-                        new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
-                    ),
-                    5
+                new WhiteSpaceTokenBreaker(
+                    new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
                 ),
-                weightedValues => weightedValues.Sum()
+                weightedValues => weightedValues.Sum(),
+                new ConsoleLogger()
             );
             var index = indexGenerator.Generate(data.ToNonNullImmutableList());
 
@@ -158,6 +145,17 @@ namespace Tester
         private static TranslatedString GetTranslatedString(string defaultValue, int languageKey0, string translation0, int languageKey1, string translation1)
         {
             return new TranslatedString(defaultValue, new Dictionary<int, string> { { languageKey0, translation0 }, { languageKey1, translation1 } });
+        }
+
+        public static object ReadFromDisk(FileInfo file)
+        {
+            if (file == null)
+                throw new ArgumentNullException("file");
+
+            using (var stream = File.Open(file.FullName, FileMode.Open))
+            {
+                return (new BinaryFormatter()).Deserialize(stream);
+            }
         }
     }
 }
