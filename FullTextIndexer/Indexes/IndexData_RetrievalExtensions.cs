@@ -6,7 +6,7 @@ using FullTextIndexer.TokenBreaking;
 
 namespace FullTextIndexer.Indexes
 {
-    public static class IndexData_Extensions
+    public static class IndexData_RetrievalExtensions
     {
         /// <summary>
         /// This GetMatches signature will break a given source string and return results based upon the combination of partial matches - the token breaker and the match combining
@@ -27,6 +27,7 @@ namespace FullTextIndexer.Indexes
             if (matchCombiner == null)
                 throw new ArgumentNullException("matchCombiner");
 
+            // Break down the source string and look for matches in the data, group the results by data key
             var allMatchesByKey = new Dictionary<TKey, List<WeightedTokenMatch>>(
                 index.KeyComparer
             );
@@ -39,46 +40,42 @@ namespace FullTextIndexer.Indexes
                 {
                     if (!allMatchesByKey.ContainsKey(match.Key))
                         allMatchesByKey.Add(match.Key, new List<WeightedTokenMatch>());
-                    allMatchesByKey[match.Key].Add(new WeightedTokenMatch(tokens, token, match.Weight));
+                    allMatchesByKey[match.Key].Add(new WeightedTokenMatch(token, match.Weight));
                 }
             }
 
+            // Combine the data for each key, if AllBrokenTokensMustBeMatched is specified then skip over any keys that don't match all of the tokens
             var combinedData = new List<WeightedEntry<TKey>>();
             foreach (var match in allMatchesByKey)
             {
-                var weight = matchCombiner(match.Value.ToNonNullImmutableList());
-                if (weight <= 0)
-                    throw new Exception("matchCombiner return weight of zero or less - invalid");
-                combinedData.Add(new WeightedEntry<TKey>(match.Key, weight));
+                // If a weight of zero is returned then the match should be ignored
+                var weight = matchCombiner(match.Value.ToNonNullImmutableList(), tokens);
+                if (weight < 0)
+                    throw new Exception("matchCombiner returned negative weight - invalid");
+                else if (weight > 0)
+                    combinedData.Add(new WeightedEntry<TKey>(match.Key, weight));
             }
             return combinedData.ToNonNullImmutableList();
         }
 
         /// <summary>
-        /// This will never be called with a null or empty list. It must always return a value greater than zero.
+        /// This will never be called with either null or empty lists. It must always return a value or zero or greater, if zero is returned then the match will excluded from
+        /// final resultset.
         /// </summary>
-        public delegate float MatchCombiner(NonNullImmutableList<WeightedTokenMatch> tokenMatches);
+        public delegate float MatchCombiner(NonNullImmutableList<WeightedTokenMatch> tokenMatches, NonNullOrEmptyStringList allTokens);
 
         public class WeightedTokenMatch
         {
-            public WeightedTokenMatch(NonNullOrEmptyStringList allTokens, string matchedToken, float weight)
+            public WeightedTokenMatch(string matchedToken, float weight)
             {
-                if (allTokens == null)
-                    throw new ArgumentNullException("allTokens");
                 if (string.IsNullOrWhiteSpace(matchedToken))
                     throw new ArgumentException("Null or empty token specified");
                 if (weight <= 0)
                     throw new ArgumentOutOfRangeException("weight", "must be > 0");
 
-                AllTokens = allTokens;
                 MatchedToken = matchedToken;
                 Weight = weight;
             }
-
-            /// <summary>
-            /// This will never be null or empty
-            /// </summary>
-            public NonNullOrEmptyStringList AllTokens { get; private set; }
 
             /// <summary>
             /// This will never be null or empty
