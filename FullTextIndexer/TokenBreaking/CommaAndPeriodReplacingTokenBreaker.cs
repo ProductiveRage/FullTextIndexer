@@ -27,7 +27,7 @@ namespace FullTextIndexer.TokenBreaking
                 throw new ArgumentNullException("value");
 
             return new NonNullOrEmptyStringList(
-                _tokenBreaker.Break(value).Select(v => v.Replace(".", " ").Replace(",", ""))
+                _tokenBreaker.Break(value).Select(v => v.Replace(".", " ").Replace(",", "").Trim()).Where(v => v != "")
             );
         }
     }
