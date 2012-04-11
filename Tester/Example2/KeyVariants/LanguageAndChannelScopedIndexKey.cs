@@ -1,7 +1,7 @@
 ﻿using System;
-using Tester.SourceData;
+using Tester.Example2.SourceData;
 
-namespace Tester.KeyVariants
+namespace Tester.Example2.KeyVariants
 {
     public sealed class LanguageAndChannelScopedIndexKey : IIndexKey
     {

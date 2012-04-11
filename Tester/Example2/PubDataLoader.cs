@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using Common.Lists;
-using Tester.SourceData;
+using Tester.Example2.SourceData;
 
-namespace Tester
+namespace Tester.Example2
 {
     /// <summary>
     /// This generates Product data from the Microsoft demo "Pub" database

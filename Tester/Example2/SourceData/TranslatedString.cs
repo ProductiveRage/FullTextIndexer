@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Tester.SourceData
+namespace Tester.Example2.SourceData
 {
     [Serializable]
     public class TranslatedString

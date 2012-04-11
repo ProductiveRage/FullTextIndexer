@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Tester.KeyVariants
+namespace Tester.Example2.KeyVariants
 {
     /// <summary>
     /// As IIndexKey implement IEquality for IIndexKey, this class is straight-forward
