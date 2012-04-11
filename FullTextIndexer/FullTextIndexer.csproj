@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Indexes\IndexData_ReducingExtensions.cs" />
     <Compile Include="Indexes\IndexData_RemovalExtensions.cs" />
     <Compile Include="Indexes\IndexData_CombinationExtensions.cs" />
     <Compile Include="Indexes\WeightedEntry_Extensions.cs" />
