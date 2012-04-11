@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.Lists;
 
-namespace Tester.SourceData
+namespace Tester.Example2.SourceData
 {
     [Serializable]
     public class Product

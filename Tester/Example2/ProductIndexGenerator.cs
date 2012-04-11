@@ -7,10 +7,10 @@ using FullTextIndexer;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
-using Tester.KeyVariants;
-using Tester.SourceData;
+using Tester.Example2.KeyVariants;
+using Tester.Example2.SourceData;
 
-namespace Tester
+namespace Tester.Example2
 {
     public class ProductIndexGenerator
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tester.SourceData
+namespace Tester.Example2.SourceData
 {
     [Serializable]
     public sealed class LanguageDetails
