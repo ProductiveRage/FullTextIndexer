@@ -16,10 +16,10 @@ namespace UnitTests.IndexGenerators
         public void SingleProductWithSingleWordName()
         {
             var indexGenerator = new IndexGenerator<Product, int>(
-                new NonNullImmutableList<IndexGenerator<Product,int>.ContentRetriever>(new[]
+                new NonNullImmutableList<ContentRetriever<Product, int>>(new[]
                 {
-                    new IndexGenerator<Product,int>.ContentRetriever(
-                        p => new IndexGenerator<Product, int>.PreBrokenContent(p.Key, p.Name),
+                    new ContentRetriever<Product, int>(
+                        p => new PreBrokenContent<int>(p.Key, p.Name),
                         token => 1f
                     )                        
                 }),

@@ -8,10 +8,9 @@ using Common.StringComparisons;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
 using Tester.Common;
-using Tester.Example2.KeyVariants;
-using Tester.Example2.SourceData;
+using Tester.Example1.SourceData;
 
-namespace Tester.Example2
+namespace Tester.Example1
 {
     public static class Test
     {
@@ -19,7 +18,7 @@ namespace Tester.Example2
         {
             // TODO: Plurality handling??
 
-            var dataFile = new FileInfo("SampleData-Example2.dat");
+            var dataFile = new FileInfo("SampleData-Example1.dat");
             /*
             Serialisation.WriteToDisk(
                 dataFile,
@@ -27,11 +26,8 @@ namespace Tester.Example2
             );
              */
 
-            var english = new LanguageDetails(1, "en");
             var data = Serialisation.ReadFromDisk<NonNullImmutableList<Product>>(dataFile);
             var productIndexGenerator = new ProductIndexGenerator(
-                new NonNullImmutableList<LanguageDetails>(new [] { english }),
-                english,
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
                 new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer(),
                 new ConsoleLogger()
@@ -41,33 +37,27 @@ namespace Tester.Example2
             var matchesOverSingleField = GetMatches(
                 index,
                 "Exercise",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                english,
-                1
+                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
             );
 
             var matchesOverMultipleFields = GetMatches(
                 index,
                 "Fear Moon Exercise, Boston",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                english,
-                1
+                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
             );
         }
 
-        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IndexData<IIndexKey> index, string source, ITokenBreaker tokenBreaker, LanguageDetails language, int channelKey)
+        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IndexData<int> index, string source, ITokenBreaker tokenBreaker)
         {
             if (string.IsNullOrWhiteSpace(source))
                 throw new ArgumentException("Null/empty source");
             if (tokenBreaker == null)
                 throw new ArgumentNullException("tokenBreaker");
-            if (language == null)
-                throw new ArgumentNullException("language");
 
-            // Build up sets of matches for each token, matches are filtered to the specified Language and Channel and indexed by Product Key
+            // Build up sets of matches for each token, matches are indexed by Product Key
             var matchSets = new List<NonNullImmutableList<WeightedEntry<int>>>();
             foreach (var token in tokenBreaker.Break(source).Distinct(index.TokenComparer))
-                matchSets.Add(FilterIndexKeyResults(index.GetMatches(token), language, channelKey));
+                matchSets.Add(index.GetMatches(token));
 
             // Construct a list of Product Keys that exist in all of the match sets
             var keysInAllSets = matchSets.SelectMany(s => s.Select(m => m.Key)).Distinct();
@@ -86,24 +76,6 @@ namespace Tester.Example2
                 }
             }
             return combinedResults.Select(entry => new WeightedEntry<int>(entry.Key, entry.Value.Sum())).ToNonNullImmutableList();
-        }
-
-        /// <summary>
-        /// Given a a set of matches indexed on IIndexKey, filter based upon the specified language and channel and return matches based indexed on the Product Key, combining any
-        /// repeated Product Keys by summing the match weights
-        /// </summary>
-        private static NonNullImmutableList<WeightedEntry<int>> FilterIndexKeyResults(NonNullImmutableList<WeightedEntry<IIndexKey>> matches, LanguageDetails language, int channelKey)
-        {
-            if (matches == null)
-                throw new ArgumentNullException("matches");
-            if (language == null)
-                throw new ArgumentNullException("language");
-
-            return matches
-                .Where(m => m.Key.IsApplicableFor(language, channelKey))
-                .GroupBy(m => m.Key.ProductKey)
-                .Select(g => new WeightedEntry<int>(g.Key, g.Sum(e => e.Weight)))
-                .ToNonNullImmutableList();
         }
     }
 }

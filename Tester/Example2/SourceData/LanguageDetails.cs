@@ -17,7 +17,7 @@ namespace Tester.Example2.SourceData
         public int Key { get; private set; }
 
         /// <summary>
-        /// This will never be null but it may be empty
+        /// This will never be null nor empty
         /// </summary>
         public string Code { get; private set; }
 
