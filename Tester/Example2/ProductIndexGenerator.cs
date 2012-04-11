@@ -52,7 +52,7 @@ namespace Tester.Example2
                 throw new ArgumentNullException("data");
 
             var activeChannelKeys = data.SelectMany(p => p.Channels).Distinct().ToArray();
-            var contentRetrievers = new List<IndexGenerator<Product, IIndexKey>.ContentRetriever>();
+            var contentRetrievers = new List<ContentRetriever<Product, IIndexKey>>();
             foreach (var language in _activeLanguages)
             {
                 // Take a copy of languageKey to ensure the correct value is used in the following lambdas
@@ -61,8 +61,8 @@ namespace Tester.Example2
 
                 // Instantiate content retrievers for the Product Name and Keywords in the current language
                 contentRetrievers.Add(
-                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
-                        p => new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                    new ContentRetriever<Product, IIndexKey>(
+                        p => new PreBrokenContent<IIndexKey>(
                             new LanguageScopedIndexKey(p.Key, languageForEntry),
                             p.Name.GetTranslation(languageForEntry)
                         ),
@@ -70,12 +70,12 @@ namespace Tester.Example2
                     )
                 );
                 contentRetrievers.Add(
-                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                    new ContentRetriever<Product, IIndexKey>(
                         p =>
                         {
                             if (p.Keywords == null)
                                 return null;
-                            return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                            return new PreBrokenContent<IIndexKey>(
                                 new LanguageScopedIndexKey(p.Key, languageForEntry),
                                 p.Keywords.GetTranslation(languageForEntry)
                             );
@@ -90,13 +90,13 @@ namespace Tester.Example2
                     // Take a copy of channelKey to ensure the correct value is used in the following lambdas
                     var channelKeyForEntry = channelKey;
                     contentRetrievers.Add(
-                        new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                        new ContentRetriever<Product, IIndexKey>(
                             p =>
                             {
                                 var description = GetDescription(p, languageForEntry, channelKeyForEntry);
                                 if ((description == null) || (description.LongDescription == ""))
                                     return null;
-                                return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                                return new PreBrokenContent<IIndexKey>(
                                     new LanguageScopedIndexKey(p.Key, languageForEntry),
                                     description.LongDescription
                                 );
@@ -105,13 +105,13 @@ namespace Tester.Example2
                         )
                     );
                     contentRetrievers.Add(
-                        new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+                        new ContentRetriever<Product, IIndexKey>(
                             p =>
                             {
                                 var description = GetDescription(p, languageForEntry, channelKeyForEntry);
                                 if ((description == null) || (description.ShortDescription == ""))
                                     return null;
-                                return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                                return new PreBrokenContent<IIndexKey>(
                                     new LanguageScopedIndexKey(p.Key, languageForEntry),
                                     description.ShortDescription
                                 );
@@ -141,20 +141,20 @@ namespace Tester.Example2
             ).Generate(data.ToNonNullImmutableList());
         }
 
-        private IndexGenerator<Product, IIndexKey>.ContentRetriever GetNonScopedContentRetriever(Func<Product, string> valueRetriever, NonNullOrEmptyStringList stopWords)
+        private ContentRetriever<Product, IIndexKey> GetNonScopedContentRetriever(Func<Product, string> valueRetriever, NonNullOrEmptyStringList stopWords)
         {
             if (valueRetriever == null)
                 throw new ArgumentNullException("valueRetriever");
             if (stopWords == null)
                 throw new ArgumentNullException("stopWords");
 
-            return new IndexGenerator<Product, IIndexKey>.ContentRetriever(
+            return new ContentRetriever<Product, IIndexKey>(
                 p =>
                 {
                     var value = valueRetriever(p);
                     if (string.IsNullOrWhiteSpace(value))
                         return null;
-                    return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
+                    return new PreBrokenContent<IIndexKey>(
                         new NonScopedIndexKey(p.Key),
                         value
                     );

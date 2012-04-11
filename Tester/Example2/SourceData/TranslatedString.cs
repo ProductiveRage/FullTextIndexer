@@ -27,8 +27,14 @@ namespace Tester.Example2.SourceData
             DefaultValue = defaultValue;
         }
 
+        /// <summary>
+        /// This will never be null or empty
+        /// </summary>
         public string DefaultValue { get; private set; }
 
+        /// <summary>
+        /// This will return null if there is no content for the specified language, it will never return an empty string
+        /// </summary>
         public string GetTranslation(LanguageDetails language)
         {
             if (language == null)

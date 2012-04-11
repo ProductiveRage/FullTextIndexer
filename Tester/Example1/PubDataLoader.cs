@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using Common.Lists;
 using Tester.Common;
-using Tester.Example2.SourceData;
+using Tester.Example1.SourceData;
 
-namespace Tester.Example2
+namespace Tester.Example1
 {
     /// <summary>
     /// This generates Product data from the Microsoft demo "Pub" database
@@ -35,7 +35,6 @@ namespace Tester.Example2
                     conn.Open();
                     using (var rdr = cmd.ExecuteReader())
                     {
-                        var english = new LanguageDetails(1, "en");
                         var products = new List<Product>();
                         while (rdr.Read())
                         {
@@ -46,7 +45,6 @@ namespace Tester.Example2
                             else
                             {
                                 address = new AddressDetails(
-                                    english,
                                     address1,
                                     null,
                                     null,
@@ -55,21 +53,12 @@ namespace Tester.Example2
                                     rdr.GetString("Country")
                                 );
                             }
-                            var keywords = rdr.GetString("Keywords");
-                            var description = rdr.GetString("Description");
-                            DescriptionDetails[] descriptions;
-                            if (string.IsNullOrWhiteSpace(description))
-                                descriptions = null;
-                            else
-                                descriptions = new[] { new DescriptionDetails(english, true, new int[0], description, description) };
-                            
                             products.Add(new Product(
                                 products.Count,
-                                new[] { 1 },
-                                new TranslatedString(rdr.GetString("Name"), new Dictionary<LanguageDetails, string>()),
-                                keywords == null ? null : new TranslatedString(keywords, new Dictionary<LanguageDetails, string>()),
+                                rdr.GetString("Name"),
+                                rdr.GetString("Keywords"),
                                 address,
-                                descriptions
+                                rdr.GetString("Description")
                             ));
                         }
                         return products.ToNonNullImmutableList();
