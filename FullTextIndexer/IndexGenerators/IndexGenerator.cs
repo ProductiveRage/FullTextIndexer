@@ -80,8 +80,8 @@ namespace FullTextIndexer.IndexGenerators
             );
             foreach (var entry in data)
             {
-            foreach (var contentRetriever in _contentRetrievers)
-            {
+                foreach (var contentRetriever in _contentRetrievers)
+                {
                     PreBrokenContent preBrokenContent;
                     try
                     {
@@ -141,7 +141,7 @@ namespace FullTextIndexer.IndexGenerators
                 () => String.Format("Time taken to combine token data sets: {0}ms ({1:0.00}ms per item)", timer.ElapsedMilliseconds, (float)timer.ElapsedMilliseconds / (float)data.Count)
             );
             timer.Restart();
-            
+
             // Translate this into an IndexData instance
             var indexData = new IndexData<TKey>(
                 new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
