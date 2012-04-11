@@ -6,9 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using Common.Lists;
 using Common.Logging;
 using Common.StringComparisons;
-using FullTextIndexer;
 using FullTextIndexer.Indexes;
-using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 using Tester.KeyVariants;
 using Tester.SourceData;
@@ -22,151 +20,113 @@ namespace Tester
             // TODO: Plurality handling??
 
             // Note: This data isn't yet included in the repository as what I'm using at the moment is from some private work set
+            /*
+            WriteToDisk(
+                new FileInfo("SampleData.dat"),
+                new PubDataLoader("server=.\\SQLExpress;database=Pub;Trusted_Connection=True;").GetProducts()
+            );
+             */
+
+            var english = new LanguageDetails(1, "en");
             var data = (NonNullImmutableList<Product>)ReadFromDisk(new FileInfo("SampleData.dat"));
-
-            var activeLanguageKeys = new[] { 1, 2 };
-
-            var sourceStringComparer = new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer();
-            var contentRetrievers = new List<IndexGenerator<Product, IIndexKey>.ContentRetriever>();
-            foreach (var languageKey in activeLanguageKeys)
-            {
-                // Take a copy of languageKey to ensure the correct value is used in the following PreBrokenContentRetriever lambdas
-                var languageKeyForEntry = languageKey;
-                contentRetrievers.Add(
-                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
-                        p => new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
-                            new LanguageScopedIndexKey(p.Key, languageKeyForEntry),
-                            p.Name.GetTranslation(languageKeyForEntry)
-                        ),
-                        token => 15f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
-                    )
-                );
-                contentRetrievers.Add(
-                    new IndexGenerator<Product, IIndexKey>.ContentRetriever(
-                        p =>
-                        {
-                            if (p.Keywords == null)
-                                return null;
-                            return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
-                                new LanguageScopedIndexKey(p.Key, languageKeyForEntry),
-                                p.Keywords.GetTranslation(languageKeyForEntry)
-                            );
-                        },
-                        token => 3f * (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
-                    )
-                );
-            }
-            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address1, sourceStringComparer));
-            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address2, sourceStringComparer));
-            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address3, sourceStringComparer));
-            contentRetrievers.Add(GetNonScopedContentRetriever(p => p.Address == null ? null : p.Address.Address4, sourceStringComparer));
-            var indexGenerator = new IndexGenerator<Product, IIndexKey>(
-                contentRetrievers.ToNonNullImmutableList(),
-                new IndexKeyEqualityComparer(),
-                sourceStringComparer,
-                new WhiteSpaceTokenBreaker(
-                    new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())
-                ),
-                weightedValues => weightedValues.Sum(),
+            var productIndexGenerator = new ProductIndexGenerator(
+                new NonNullImmutableList<LanguageDetails>(new [] { english }),
+                english,
+                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer(),
                 new ConsoleLogger()
             );
-            var index = indexGenerator.Generate(data.ToNonNullImmutableList());
+            var index = productIndexGenerator.Generate(data);
 
-            var t1 = index.GetMatches("Test");
-            var t2 = index.GetMatches("is");
-            var t3 = index.GetMatches("it");
-            //var t1 = index.GetMatches("This is a Test");
-            //var t2 = index.GetMatches("This Test");
-            //var t3 = index.GetMatches("Tèst");
-            var t4 = index.GetMatches("Road");
-            var t5 = index.GetMatches("is");
-            var t6 = index.GetMatches("ceci");
-            var t62 = FilterIndexKeyResults(t6, 1, 1);
-            var t7 = index.GetMatches("Test Keywords");
-
-            var t8 = index.GetMatches(
-                "Test Keywords PretendWordThatWontBeFoundzzcajhjhsa",
+            var matchesOverSingleField = GetMatches(
+                index,
+                "Exercise",
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                (tokenMatches, allTokens) => tokenMatches.Sum(m => m.Weight / (5 * allTokens.Count))
+                english,
+                1
             );
-            var t82 = index.Remove(key => !key.IsApplicableFor(1, 1)).GetMatches(
-                "Test Keywords PretendWordThatWontBeFoundzzcajhjhsa",
+
+            var matchesOverMultipleFields = GetMatches(
+                index,
+                "Fear Moon Exercise, Boston",
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                (tokenMatches, allTokens) =>
-                {
-                    // Require that all broken-down tokens be found in order for a match to be allowed (return zero to exclude match from results)
-                    var allTokensForKey = tokenMatches.Select(v => v.MatchedToken);
-                    if (allTokens.Any(t => !allTokensForKey.Contains(t, index.TokenComparer)))
-                        return 0;
-                    return tokenMatches.Sum(m => m.Weight / (5 * allTokens.Count));
-                }
+                english,
+                1
             );
-
-            var t9 = t6.CombineResults(
-                t8,
-                new IndexKeyEqualityComparer(),
-                matches => matches.Sum(m => m.Weight)
-            );
-
-            var indexWithoutProduct1 = index.Remove(k => k.ProductKey == 1);
-            var indexWithoutProduct2 = index.Remove(k => k.ProductKey == 2);
         }
 
-        private static NonNullImmutableList<WeightedEntry<int>> FilterIndexKeyResults(NonNullImmutableList<WeightedEntry<IIndexKey>> matches, int languageKey, int channelKey)
+        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IndexData<IIndexKey> index, string source, ITokenBreaker tokenBreaker, LanguageDetails language, int channelKey)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                throw new ArgumentException("Null/empty source");
+            if (tokenBreaker == null)
+                throw new ArgumentNullException("tokenBreaker");
+            if (language == null)
+                throw new ArgumentNullException("language");
+
+            // Build up sets of matches for each token, matches are filtered to the specified Language and Channel and indexed by Product Key
+            var matchSets = new List<NonNullImmutableList<WeightedEntry<int>>>();
+            foreach (var token in tokenBreaker.Break(source).Distinct(index.TokenComparer))
+                matchSets.Add(FilterIndexKeyResults(index.GetMatches(token), language, channelKey));
+
+            // Construct a list of Product Keys that exist in all of the match sets
+            var keysInAllSets = matchSets.SelectMany(s => s.Select(m => m.Key)).Distinct();
+            foreach (var matchSet in matchSets)
+                keysInAllSets = keysInAllSets.Intersect(matchSet.Select(m => m.Key));
+
+            // Map this back to the matches for keys where the keys exist in all of the match sets
+            var combinedResults = new Dictionary<int, List<float>>();
+            foreach (var matchSet in matchSets)
+            {
+                foreach (var match in matchSet.Where(m => keysInAllSets.Contains(m.Key)))
+                {
+                    if (!combinedResults.ContainsKey(match.Key))
+                        combinedResults.Add(match.Key, new List<float>());
+                    combinedResults[match.Key].Add(match.Weight);
+                }
+            }
+            return combinedResults.Select(entry => new WeightedEntry<int>(entry.Key, entry.Value.Sum())).ToNonNullImmutableList();
+        }
+
+        /// <summary>
+        /// Given a a set of matches indexed on IIndexKey, filter based upon the specified language and channel and return matches based indexed on the Product Key, combining any
+        /// repeated Product Keys by summing the match weights
+        /// </summary>
+        private static NonNullImmutableList<WeightedEntry<int>> FilterIndexKeyResults(NonNullImmutableList<WeightedEntry<IIndexKey>> matches, LanguageDetails language, int channelKey)
         {
             if (matches == null)
                 throw new ArgumentNullException("matches");
+            if (language == null)
+                throw new ArgumentNullException("language");
 
             return matches
-                .Where(m => m.Key.IsApplicableFor(languageKey, channelKey))
+                .Where(m => m.Key.IsApplicableFor(language, channelKey))
                 .GroupBy(m => m.Key.ProductKey)
                 .Select(g => new WeightedEntry<int>(g.Key, g.Sum(e => e.Weight)))
                 .ToNonNullImmutableList();
         }
 
-        private static IndexGenerator<Product, IIndexKey>.ContentRetriever GetNonScopedContentRetriever(Func<Product, string> valueRetriever, IEqualityComparer<string> sourceStringComparer)
-        {
-            if (valueRetriever == null)
-                throw new ArgumentNullException("valueRetriever");
-            if (sourceStringComparer == null)
-                throw new ArgumentNullException("sourceStringComparer");
-
-            return new IndexGenerator<Product, IIndexKey>.ContentRetriever(
-                p =>
-                {
-                    var value = valueRetriever(p);
-                    if (string.IsNullOrWhiteSpace(value))
-                        return null;
-                    return new IndexGenerator<Product, IIndexKey>.PreBrokenContent(
-                        new NonScopedIndexKey(p.Key),
-                        value
-                    );
-                },
-                token => (Constants.StopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f)
-            );
-        }
-
-        private static TranslatedString GetTranslatedString(string defaultValue)
-        {
-            return new TranslatedString(defaultValue, new Dictionary<int, string>());
-        }
-        private static TranslatedString GetTranslatedString(string defaultValue, int languageKey0, string translation0)
-        {
-            return new TranslatedString(defaultValue, new Dictionary<int, string> { { languageKey0, translation0 } });
-        }
-        private static TranslatedString GetTranslatedString(string defaultValue, int languageKey0, string translation0, int languageKey1, string translation1)
-        {
-            return new TranslatedString(defaultValue, new Dictionary<int, string> { { languageKey0, translation0 }, { languageKey1, translation1 } });
-        }
-
-        public static object ReadFromDisk(FileInfo file)
+        private static object ReadFromDisk(FileInfo file)
         {
             if (file == null)
                 throw new ArgumentNullException("file");
 
             using (var stream = File.Open(file.FullName, FileMode.Open))
             {
-                return (new BinaryFormatter()).Deserialize(stream);
+                return new BinaryFormatter().Deserialize(stream);
+            }
+        }
+
+        private static void WriteToDisk(FileInfo file, object data)
+        {
+            if (file == null)
+                throw new ArgumentNullException("file");
+            if (data == null)
+                throw new ArgumentNullException("data");
+
+            using (var stream = File.Open(file.FullName, FileMode.OpenOrCreate))
+            {
+                new BinaryFormatter().Serialize(stream, data);
             }
         }
     }

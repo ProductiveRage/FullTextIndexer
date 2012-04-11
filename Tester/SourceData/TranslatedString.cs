@@ -6,15 +6,15 @@ namespace Tester.SourceData
     [Serializable]
     public class TranslatedString
     {
-        private Dictionary<int, string> _data;
-        public TranslatedString(string defaultValue, IDictionary<int, string> data)
+        private Dictionary<LanguageDetails, string> _data;
+        public TranslatedString(string defaultValue, IDictionary<LanguageDetails, string> data)
         {
             if (string.IsNullOrWhiteSpace(defaultValue))
                 throw new ArgumentException("Null/blank defaultValue specified");
             if (data == null)
                 throw new ArgumentNullException("data");
 
-            var dataTidied = new Dictionary<int, string>();
+            var dataTidied = new Dictionary<LanguageDetails, string>();
             foreach (var key in data.Keys)
             {
                 var value = data[key];
@@ -26,11 +26,17 @@ namespace Tester.SourceData
             _data = dataTidied;
             DefaultValue = defaultValue;
         }
+
         public string DefaultValue { get; private set; }
-        public string GetTranslation(int languageKey)
+
+        public string GetTranslation(LanguageDetails language)
         {
-            if (_data.ContainsKey(languageKey))
-                return _data[languageKey];
+            if (language == null)
+                throw new ArgumentNullException("language");
+
+            if (_data.ContainsKey(language))
+                return _data[language];
+            
             return DefaultValue;
         }
     }

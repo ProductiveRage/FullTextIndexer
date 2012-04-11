@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Tester.SourceData;
-using Common.Lists;
 using System.Data.SqlClient;
+using Common.Lists;
+using Tester.SourceData;
 
 namespace Tester
 {
+    /// <summary>
+    /// This generates Product data from the Microsoft demo "Pub" database
+    /// </summary>
     public class PubDataLoader
     {
         private string _connectionString;
@@ -33,6 +34,7 @@ namespace Tester
                     conn.Open();
                     using (var rdr = cmd.ExecuteReader())
                     {
+                        var english = new LanguageDetails(1, "en");
                         var products = new List<Product>();
                         while (rdr.Read())
                         {
@@ -43,6 +45,7 @@ namespace Tester
                             else
                             {
                                 address = new AddressDetails(
+                                    english,
                                     address1,
                                     null,
                                     null,
@@ -52,18 +55,18 @@ namespace Tester
                                 );
                             }
                             var keywords = GetString(rdr, "Keywords");
-                            var description = GetString(rdr, "Keywords");
+                            var description = GetString(rdr, "Description");
                             DescriptionDetails[] descriptions;
                             if (string.IsNullOrWhiteSpace(description))
                                 descriptions = null;
                             else
-                                descriptions = new[] { new DescriptionDetails(1, true, new int[0], description, description) };
+                                descriptions = new[] { new DescriptionDetails(english, true, new int[0], description, description) };
                             
                             products.Add(new Product(
                                 products.Count,
                                 new[] { 1 },
-                                new TranslatedString(GetString(rdr, "Name"), new Dictionary<int, string>()),
-                                keywords == null ? null : new TranslatedString(keywords, new Dictionary<int, string>()),
+                                new TranslatedString(GetString(rdr, "Name"), new Dictionary<LanguageDetails, string>()),
+                                keywords == null ? null : new TranslatedString(keywords, new Dictionary<LanguageDetails, string>()),
                                 address,
                                 descriptions
                             ));

@@ -1,11 +1,17 @@
 ﻿using System;
+using Tester.SourceData;
 
 namespace Tester.KeyVariants
 {
     public interface IIndexKey : IEquatable<IIndexKey>
     {
         int ProductKey { get; }
-        bool IsApplicableFor(int languageKey, int channelKey);
+        
+        /// <summary>
+        /// This will throw an exception for a null language reference
+        /// </summary>
+        bool IsApplicableFor(LanguageDetails language, int channelKey);
+        
         new bool Equals(IIndexKey obj);
     }
 }

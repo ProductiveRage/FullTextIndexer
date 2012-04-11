@@ -1,44 +1,63 @@
 ﻿using System;
+using Tester.SourceData;
 
 namespace Tester.KeyVariants
 {
-    public class LanguageAndChannelScopedIndexKey : IIndexKey
+    public sealed class LanguageAndChannelScopedIndexKey : IIndexKey
     {
-        public LanguageAndChannelScopedIndexKey(int productKey, int languageKey, int channelKey)
+        public LanguageAndChannelScopedIndexKey(int productKey, LanguageDetails language, int channelKey)
         {
+            if (language == null)
+                throw new ArgumentNullException("language");
+
             ProductKey = productKey;
-            LanguageKey = languageKey;
+            Language = language;
             ChannelKey = channelKey;
         }
+
         public int ProductKey { get; private set; }
-        public int LanguageKey { get; private set; }
+
+        public LanguageDetails Language { get; private set; }
+
         public int ChannelKey { get; private set; }
-        public bool IsApplicableFor(int languageKey, int channelKey)
+
+        /// <summary>
+        /// This will throw an exception for a null language reference
+        /// </summary>
+        public bool IsApplicableFor(LanguageDetails language, int channelKey)
         {
-            return ((languageKey == LanguageKey) && (channelKey == ChannelKey));
+            if (language == null)
+                throw new ArgumentNullException("language");
+
+            return (language.Equals(Language) && (channelKey == ChannelKey));
         }
+
         public bool Equals(IIndexKey obj)
         {
-            if (obj == null || (obj.GetType() != GetType()))
+            var objLanguageAndChannelScopedIndexKey = obj as LanguageAndChannelScopedIndexKey;
+            if (objLanguageAndChannelScopedIndexKey == null)
                 return false;
-            var languageAndChannelScopedIndexKeyObj = (LanguageAndChannelScopedIndexKey)obj;
+
             return (
-                (obj.ProductKey == ProductKey) &&
-                (languageAndChannelScopedIndexKeyObj.LanguageKey == LanguageKey) &&
-                (languageAndChannelScopedIndexKeyObj.ChannelKey == ChannelKey)
+                (objLanguageAndChannelScopedIndexKey.ProductKey == ProductKey) &&
+                (objLanguageAndChannelScopedIndexKey.Language.Equals(Language.Key)) &&
+                (objLanguageAndChannelScopedIndexKey.ChannelKey == ChannelKey)
             );
         }
+
         public override bool Equals(object obj)
         {
             return Equals(obj as IIndexKey);
         }
+
         public override int GetHashCode()
         {
-            return String.Format("LanguageAndChannelScopedIndexKey-{0}-{1}-{2}", ProductKey, LanguageKey, ChannelKey).GetHashCode();
+            return String.Format("LanguageAndChannelScopedIndexKey-{0}-{1}-{2}", ProductKey, Language.Key, ChannelKey).GetHashCode();
         }
+
         public override string ToString()
         {
-            return String.Format("{0}:{1}-{2}-{3}", base.ToString(), ProductKey, LanguageKey, ChannelKey);
+            return String.Format("{0}:{1}-{2}-{3}", base.ToString(), ProductKey, Language.Key, ChannelKey);
         }
     }
 }
