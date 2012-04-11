@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="KeyVariants\IndexKeyEqualityComparer.cs" />
@@ -45,7 +46,10 @@
     </Compile>
     <Compile Include="KeyVariants\LanguageScopedIndexKey.cs" />
     <Compile Include="KeyVariants\NonScopedIndexKey.cs" />
+    <Compile Include="ProductIndexGenerator.cs" />
+    <Compile Include="PubDataLoader.cs" />
     <Compile Include="SourceData\AddressDetails.cs" />
+    <Compile Include="SourceData\LanguageDetails.cs" />
     <Compile Include="SourceData\DescriptionDetails.cs" />
     <Compile Include="SourceData\Product.cs" />
     <Compile Include="Program.cs" />

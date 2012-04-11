@@ -6,7 +6,7 @@ namespace Tester.KeyVariants
     /// <summary>
     /// As IIndexKey implement IEquality for IIndexKey, this class is straight-forward
     /// </summary>
-    public class IndexKeyEqualityComparer : IEqualityComparer<IIndexKey>
+    public sealed class IndexKeyEqualityComparer : IEqualityComparer<IIndexKey>
     {
         public bool Equals(IIndexKey x, IIndexKey y)
         {

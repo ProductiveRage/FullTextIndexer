@@ -1,37 +1,59 @@
 ﻿using System;
+using Tester.SourceData;
 
 namespace Tester.KeyVariants
 {
-    public class LanguageScopedIndexKey : IIndexKey
+    public sealed class LanguageScopedIndexKey : IIndexKey
     {
-        public LanguageScopedIndexKey(int productKey, int languageKey)
+        public LanguageScopedIndexKey(int productKey, LanguageDetails language)
         {
+            if (language == null)
+                throw new ArgumentNullException("language");
+
             ProductKey = productKey;
-            LanguageKey = languageKey;
+            Language = language;
         }
+
         public int ProductKey { get; private set; }
-        public int LanguageKey { get; private set; }
-        public bool IsApplicableFor(int languageKey, int channelKey)
+
+        /// <summary>
+        /// This will never be null
+        /// </summary>
+        public LanguageDetails Language { get; private set; }
+
+        /// <summary>
+        /// This will throw an exception for a null language reference
+        /// </summary>
+        public bool IsApplicableFor(LanguageDetails language, int channelKey)
         {
-            return (languageKey == LanguageKey); // This isn't scoped to any channel so it's a match if the language is a match
+            if (language == null)
+                throw new ArgumentNullException("language");
+
+            return language.Equals(Language); // This isn't scoped to any channel so it's a match if the language is a match
         }
+
         public bool Equals(IIndexKey obj)
         {
-            if (obj == null || (obj.GetType() != GetType()))
+            var objLanguageScopedIndexKey = obj as LanguageScopedIndexKey;
+            if (objLanguageScopedIndexKey == null)
                 return false;
-            return ((obj.ProductKey == ProductKey) && (((LanguageScopedIndexKey)obj).LanguageKey == LanguageKey));
+
+            return ((objLanguageScopedIndexKey.ProductKey == ProductKey) && objLanguageScopedIndexKey.Language.Equals(Language));
         }
+
         public override bool Equals(object obj)
         {
             return Equals(obj as IIndexKey);
         }
+
         public override int GetHashCode()
         {
-            return String.Format("LanguageScopedIndexKey-{0}-{1}", ProductKey, LanguageKey).GetHashCode();
+            return String.Format("LanguageScopedIndexKey-{0}-{1}", ProductKey, Language.Key).GetHashCode();
         }
+
         public override string ToString()
         {
-            return String.Format("{0}:{1}-{2}", base.ToString(), ProductKey, LanguageKey);
+            return String.Format("{0}:{1}-{2}", base.ToString(), ProductKey, Language.Key);
         }
     }
 }

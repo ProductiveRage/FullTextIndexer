@@ -8,8 +8,10 @@ namespace Tester.SourceData
     [Serializable]
     public class DescriptionDetails
     {
-        public DescriptionDetails(int languageKey, bool isDefault, IEnumerable<int> channels, string longDescription, string shortDescription)
+        public DescriptionDetails(LanguageDetails language, bool isDefault, IEnumerable<int> channels, string longDescription, string shortDescription)
         {
+            if (language == null)
+                throw new ArgumentNullException("language");
             if (isDefault && ((channels != null) && channels.Any()))
                 throw new ArgumentException("If isDefault is set then channels must be null or empty");
             if (!isDefault && ((channels == null) || !channels.Any()))
@@ -17,14 +19,17 @@ namespace Tester.SourceData
             if (string.IsNullOrWhiteSpace(longDescription) && string.IsNullOrWhiteSpace(shortDescription))
                 throw new ArgumentException("At least one of longDescription and shortDescription must be non-null/empty");
 
-            LanguageKey = languageKey;
+            Language = language;
             IsDefault = isDefault;
             Channels = channels.Distinct().ToImmutableList();
             LongDescription = string.IsNullOrWhiteSpace(longDescription) ? "" : longDescription.Trim();
             ShortDescription = string.IsNullOrWhiteSpace(shortDescription) ? "" : shortDescription.Trim();
         }
 
-        public int LanguageKey { get; private set; }
+        /// <summary>
+        /// This will never be null
+        /// </summary>
+        public LanguageDetails Language { get; private set; }
         
         public bool IsDefault { get; private set; }
         
