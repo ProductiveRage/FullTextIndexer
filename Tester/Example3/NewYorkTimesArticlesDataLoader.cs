@@ -31,6 +31,8 @@ namespace Tester.Example3
             if (maxResults <= 0)
                 throw new ArgumentOutOfRangeException("maxResults", "must be greater than zero");
 
+            var overallTimer = new Stopwatch();
+            overallTimer.Start();
             var articles = new List<Article>();
             var pageIndex = 0;
             do
@@ -65,6 +67,16 @@ namespace Tester.Example3
                     break;
                 pageIndex++;
 
+                if (articles.Count > 0)
+                {
+                    var timePerResultInMillisconds = overallTimer.ElapsedMilliseconds / articles.Count;
+                    var remainingArticleCount = Math.Min(articleSet.TotalResultCount, maxResults) - timePerResultInMillisconds;
+                    _logger.LogIgnoringAnyError(
+                        LogLevel.Info,
+                        () => "- Estimated completion: " + GetAsFriendlyTime(TimeSpan.FromMilliseconds(timePerResultInMillisconds * remainingArticleCount))
+                    );
+                }
+
                 requestTimer.Stop();
                 if (requestTimer.ElapsedMilliseconds < 125)
                 {
@@ -73,6 +85,19 @@ namespace Tester.Example3
                 }
             } while (true);
             return new NonNullImmutableList<Article>((articles.Count > maxResults) ? articles.Take(maxResults) : articles);
+        }
+
+        private string GetAsFriendlyTime(TimeSpan duration)
+        {
+            if (duration.Ticks < 0)
+                throw new ArgumentOutOfRangeException("duration", "must be zero or greater");
+
+            var now = DateTime.Now;
+            var completionDate = now.Add(duration);
+            var display = completionDate.ToString("HH:mm:ss");
+            if (completionDate.Date != now)
+                display = completionDate.ToString("yyyy-MM-dd ") + display;
+            return display;
         }
     }
 }
