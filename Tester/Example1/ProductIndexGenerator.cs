@@ -127,6 +127,8 @@ namespace Tester.Example1
 
         private ContentRetriever<Product, int>.BrokenTokenWeightDeterminer GetTokenWeightDeterminer(float multiplier)
         {
+            if (multiplier <= 0)
+                throw new ArgumentOutOfRangeException("multiplier", "must be greater than zero");
             return token => multiplier * (Constants.GetStopWords("en").Contains(token, _sourceStringComparer) ? 0.01f : 1f);
         }
         

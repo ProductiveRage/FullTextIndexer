@@ -8,21 +8,19 @@ using Common.StringComparisons;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
 using Tester.Common;
-using Tester.Example1.SourceData;
+using Tester.Example3.SourceData;
 
-namespace Tester.Example1
+namespace Tester.Example3
 {
     public static class Test
     {
         public static void Go()
         {
-            // TODO: Plurality handling??
-
-            var dataFile = new FileInfo("SampleData-Example1.dat");
+            var dataFile = new FileInfo("SampleData-Example3.dat");
             if (!dataFile.Exists)
-                GenerateDataFile(dataFile, "server=.\\SQLExpress;database=Pub;Trusted_Connection=True;");
+                GenerateDataFile(dataFile, new FileInfo("NewYorkTimesAPIKey.txt"));
 
-            var data = Serialisation.ReadFromDisk<NonNullImmutableList<Product>>(dataFile);
+            var data = Serialisation.ReadFromDisk<NonNullImmutableList<Article>>(dataFile);
             var productIndexGenerator = new ProductIndexGenerator(
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
                 new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer(),
@@ -38,7 +36,7 @@ namespace Tester.Example1
 
             var matchesOverMultipleFields = GetMatches(
                 index,
-                "Fear Moon Exercise, Boston",
+                "Penguins Steamrolling Christopher",
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
             );
         }
@@ -74,16 +72,23 @@ namespace Tester.Example1
             return combinedResults.Select(entry => new WeightedEntry<int>(entry.Key, entry.Value.Sum())).ToNonNullImmutableList();
         }
 
-        private static void GenerateDataFile(FileInfo dataFile, string connectionString)
+        private static void GenerateDataFile(FileInfo dataFile, FileInfo apiDataFile)
         {
             if (dataFile == null)
                 throw new ArgumentNullException("dataFile");
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentException("Null/empty connectionString specified");
+            if (apiDataFile == null)
+                throw new ArgumentNullException("apiDataFile");
+            if (!apiDataFile.Exists)
+                throw new ArgumentException("The apiDataFile does not exist (you'll have to register with NYT to get a key and then store it in " + apiDataFile.FullName);
 
+            // Note: I haven't added in the API Key file - you'll have to register with NYT and generate one yourself (see http://developer.nytimes.com/)
+            var apiKey = File.ReadAllText(apiDataFile.FullName);
             Serialisation.WriteToDisk(
                 dataFile,
-                new PubDataLoader(connectionString).GetProducts()
+                new ArticlesDataLoader(
+                    new NewYorkTimesArticleRetriever(apiKey),
+                    new ConsoleLogger()
+                ).GetArticles("penguins", int.MaxValue)
             );
         }
     }
