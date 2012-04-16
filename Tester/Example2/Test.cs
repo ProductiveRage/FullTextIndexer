@@ -20,12 +20,8 @@ namespace Tester.Example2
             // TODO: Plurality handling??
 
             var dataFile = new FileInfo("SampleData-Example2.dat");
-            /*
-            Serialisation.WriteToDisk(
-                dataFile,
-                new PubDataLoader("server=.\\SQLExpress;database=Pub;Trusted_Connection=True;").GetProducts()
-            );
-             */
+            if (!dataFile.Exists)
+                GenerateDataFile(dataFile, "server=.\\SQLExpress;database=Pub;Trusted_Connection=True;");
 
             var english = new LanguageDetails(1, "en");
             var data = Serialisation.ReadFromDisk<NonNullImmutableList<Product>>(dataFile);
@@ -104,6 +100,19 @@ namespace Tester.Example2
                 .GroupBy(m => m.Key.ProductKey)
                 .Select(g => new WeightedEntry<int>(g.Key, g.Sum(e => e.Weight)))
                 .ToNonNullImmutableList();
+        }
+
+        private static void GenerateDataFile(FileInfo dataFile, string connectionString)
+        {
+            if (dataFile == null)
+                throw new ArgumentNullException("dataFile");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException("Null/empty connectionString specified");
+
+            Serialisation.WriteToDisk(
+                dataFile,
+                new PubDataLoader(connectionString).GetProducts()
+            );
         }
     }
 }

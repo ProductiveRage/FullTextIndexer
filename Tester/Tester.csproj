@@ -11,7 +11,8 @@
     <RootNamespace>Tester</RootNamespace>
     <AssemblyName>Tester</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -37,6 +38,8 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\DataReader_Extensions.cs" />
@@ -60,6 +63,13 @@
     <Compile Include="Example2\SourceData\LanguageDetails.cs" />
     <Compile Include="Example2\SourceData\DescriptionDetails.cs" />
     <Compile Include="Example2\SourceData\Product.cs" />
+    <Compile Include="Example3\ArticleSet.cs" />
+    <Compile Include="Example3\IArticleRetriever.cs" />
+    <Compile Include="Example3\NewYorkTimesArticleRetriever.cs" />
+    <Compile Include="Example3\NewYorkTimesArticlesDataLoader.cs" />
+    <Compile Include="Example3\ProductIndexGenerator.cs" />
+    <Compile Include="Example3\SourceData\Article.cs" />
+    <Compile Include="Example3\Test.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Example2\SourceData\TranslatedString.cs" />
@@ -77,6 +87,9 @@
       <Project>{D71327C9-6886-4876-8199-9BC6F1055A61}</Project>
       <Name>UnitTests</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
