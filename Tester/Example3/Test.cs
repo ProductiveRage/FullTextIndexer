@@ -87,6 +87,7 @@ namespace Tester.Example3
                 dataFile,
                 new ArticlesDataLoader(
                     new NewYorkTimesArticleRetriever(apiKey),
+                    5, // maxConsecutiveFailCount
                     new ConsoleLogger()
                 ).GetArticles("penguins", int.MaxValue)
             );
