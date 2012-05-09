@@ -7,6 +7,7 @@ namespace FullTextIndexer.TokenBreaking
     /// <summary>
     /// This will break tokens on any whitespace character, any resulting empty entries will be ignored
     /// </summary>
+    [Serializable]
     public class CommaAndPeriodReplacingTokenBreaker : ITokenBreaker
     {
         private ITokenBreaker _tokenBreaker;

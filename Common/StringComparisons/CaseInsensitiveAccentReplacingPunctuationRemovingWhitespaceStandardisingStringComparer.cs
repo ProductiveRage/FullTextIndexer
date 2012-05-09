@@ -10,6 +10,7 @@ namespace Common.StringComparisons
     /// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
     /// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
     /// </summary>
+    [Serializable]
     public class CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer : IEqualityComparer<string>
     {
         public bool Equals(string x, string y)
@@ -19,7 +20,7 @@ namespace Common.StringComparisons
             if (y == null)
                 throw new ArgumentNullException("y");
 
-            return ReduceString(x) == ReduceString(y);
+            return NormaliseString(x) == NormaliseString(y);
         }
 
         public int GetHashCode(string obj)
@@ -27,10 +28,10 @@ namespace Common.StringComparisons
             if (obj == null)
                 throw new ArgumentNullException("obj");
 
-            return ReduceString(obj).GetHashCode();
+            return NormaliseString(obj).GetHashCode();
         }
 
-        private string ReduceString(string value)
+        public static string NormaliseString(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");
@@ -43,7 +44,7 @@ namespace Common.StringComparisons
         }
 
         private static Regex WhitespaceMatcher = new System.Text.RegularExpressions.Regex("\\s+", RegexOptions.Compiled);
-        private string StandardiseWhitespace(string value)
+        private static string StandardiseWhitespace(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");
@@ -53,7 +54,7 @@ namespace Common.StringComparisons
 
 
         private static Regex PunctuationRemover = new Regex("\\p{P}+", RegexOptions.Compiled);
-        private string RemovePunctuation(string value)
+        private static string RemovePunctuation(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");
@@ -61,7 +62,7 @@ namespace Common.StringComparisons
             return PunctuationRemover.Replace(value, "");
         }
 
-        private string RemoveDiacritics(string value)
+        private static string RemoveDiacritics(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");
