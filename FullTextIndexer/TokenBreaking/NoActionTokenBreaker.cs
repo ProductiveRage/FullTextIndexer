@@ -3,6 +3,7 @@ using Common.Lists;
 
 namespace FullTextIndexer.TokenBreaking
 {
+    [Serializable]
     public class NoActionTokenBreaker : ITokenBreaker
     {
         /// <summary>

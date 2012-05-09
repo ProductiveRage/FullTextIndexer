@@ -132,6 +132,7 @@ namespace Tester.Example1
             return token => multiplier * (Constants.GetStopWords("en").Contains(token, _sourceStringComparer) ? 0.01f : 1f);
         }
         
+        [Serializable]
         private class IntEqualityComparer : IEqualityComparer<int>
         {
             public bool Equals(int x, int y)

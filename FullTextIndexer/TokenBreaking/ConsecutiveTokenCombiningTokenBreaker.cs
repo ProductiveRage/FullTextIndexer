@@ -9,6 +9,7 @@ namespace FullTextIndexer.TokenBreaking
     /// This will extend a token set by combinining strings of consecutive tokens (eg. maxNumberOfTokens is 3 and the tokens returned by the internal break are "this", "is",
     /// "a", "test" then "this", "is", "a", "test", "this is", "is a", "a test", "this is a", "is a test" will be returned)
     /// </summary>
+    [Serializable]
     public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
     {
         private ITokenBreaker _tokenBreaker;
