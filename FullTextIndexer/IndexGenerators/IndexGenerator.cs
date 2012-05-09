@@ -68,8 +68,10 @@ namespace FullTextIndexer.IndexGenerators
             var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>(
                 _sourceStringComparer
             );
-            foreach (var entry in data)
+            var timeElapsedForNextUpdateMessage = TimeSpan.FromSeconds(5);
+            for (var index = 0; index < data.Count; index++)
             {
+                var entry = data[index];
                 foreach (var contentRetriever in _contentRetrievers)
                 {
                     PreBrokenContent<TKey> preBrokenContent;
@@ -85,6 +87,12 @@ namespace FullTextIndexer.IndexGenerators
                     catch (Exception e)
                     {
                         throw new Exception("contentRetriever.InitialContentRetriever threw exception", e);
+                    }
+
+                    if (timer.Elapsed >= timeElapsedForNextUpdateMessage)
+                    {
+                        _logger.LogIgnoringAnyError(LogLevel.Debug, () => String.Format("Work completed: {0}%", ((index * 100f)/ (float)data.Count).ToString("0.000")));
+                        timeElapsedForNextUpdateMessage = timer.Elapsed.Add(TimeSpan.FromSeconds(5));
                     }
 
                     foreach (var token in _tokenBreaker.Break(preBrokenContent.Content))
