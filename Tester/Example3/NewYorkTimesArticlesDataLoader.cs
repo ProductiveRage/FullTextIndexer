@@ -12,15 +12,19 @@ namespace Tester.Example3
     public class ArticlesDataLoader
     {
         private IArticleRetriever _articleRetriever;
+        private int _maxConsecutiveFailCount;
         private ILogger _logger;
-        public ArticlesDataLoader(IArticleRetriever articleRetriever, ILogger logger)
+        public ArticlesDataLoader(IArticleRetriever articleRetriever, int maxConsecutiveFailCount, ILogger logger)
         {
             if (articleRetriever == null)
                 throw new ArgumentNullException("articleRetriever");
+            if (maxConsecutiveFailCount <= 0)
+                throw new ArgumentOutOfRangeException("maxConsecutiveFailCount", "must be greater than zero");
             if (logger == null)
                 throw new ArgumentNullException("logger");
 
             _articleRetriever = articleRetriever;
+            _maxConsecutiveFailCount = maxConsecutiveFailCount;
             _logger = logger;
         }
 
@@ -35,6 +39,7 @@ namespace Tester.Example3
             overallTimer.Start();
             var articles = new List<Article>();
             var pageIndex = 0;
+            var consecutiveFailCount = 0;
             do
             {
                 var requestTimer = new Stopwatch();
@@ -50,8 +55,12 @@ namespace Tester.Example3
                 catch
                 {
                     _logger.LogIgnoringAnyError(LogLevel.Warning, () => "A page request failed, continuing to next page..");
+                    consecutiveFailCount++;
+                    if (consecutiveFailCount >= _maxConsecutiveFailCount)
+                        break;
                     continue;
                 }
+                consecutiveFailCount = 0;
 
                 _logger.LogIgnoringAnyError(
                     LogLevel.Info,
@@ -63,8 +72,11 @@ namespace Tester.Example3
                     )
                 );
                 articles.AddRange(articleSet.Articles);
-                if (articles.Count >= maxResults)
+                if ((articles.Count >= maxResults) || ((_articleRetriever.PageSize * (pageIndex + 1)) >= articleSet.TotalResultCount))
+                {
+                    // If we've hit the maxResults limit or if there are no more articles available to retrieve, exit
                     break;
+                }
                 pageIndex++;
 
                 if (articles.Count > 0)
