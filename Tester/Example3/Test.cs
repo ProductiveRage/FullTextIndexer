@@ -86,7 +86,7 @@ namespace Tester.Example3
             Serialisation.WriteToDisk(
                 dataFile,
                 new ArticlesDataLoader(
-                    new NewYorkTimesArticleRetriever(apiKey),
+                    new NewYorkTimesArticleRetriever(new Uri("http://api.nytimes.com/svc/search/v1/article"), apiKey),
                     5, // maxConsecutiveFailCount
                     new ConsoleLogger()
                 ).GetArticles("penguins", int.MaxValue)

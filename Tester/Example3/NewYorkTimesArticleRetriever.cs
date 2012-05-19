@@ -10,12 +10,20 @@ namespace Tester.Example3
 {
     public class NewYorkTimesArticleRetriever : IArticleRetriever
     {
+        private Uri _serviceUrl;
         private string _apiKey;
-        public NewYorkTimesArticleRetriever(string apiKey)
+        public NewYorkTimesArticleRetriever(Uri serviceUrl, string apiKey)
         {
+            if (serviceUrl == null)
+                throw new ArgumentNullException("serviceUrl");
+            if (!serviceUrl.IsAbsoluteUri)
+                throw new ArgumentException("serviceUrl must be an absolute Uri");
+            if (!string.IsNullOrWhiteSpace(serviceUrl.Query))
+                throw new ArgumentException("serviceUrl may not have any query content");
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new ArgumentException("Null/empty apiKey specified");
 
+            _serviceUrl = serviceUrl;
             _apiKey = apiKey.Trim();
         }
 
@@ -31,7 +39,8 @@ namespace Tester.Example3
                 throw new ArgumentOutOfRangeException("pageIndex", "must be zero or greater");
 
             var request = WebRequest.Create(string.Format(
-                "http://api.nytimes.com/svc/search/v1/article?query={0}&api-key={1}&fields=column_facet,body,title,byline&offset={2}",
+                "{0}?query={1}&api-key={2}&fields=column_facet,body,title,byline&offset={3}",
+                _serviceUrl.ToString(),
                 HttpUtility.UrlEncode(searchTerm.Trim()),
                 HttpUtility.UrlEncode(_apiKey.Trim()),
                 pageIndex
