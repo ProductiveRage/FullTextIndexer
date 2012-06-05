@@ -5,6 +5,7 @@ using Common.Lists;
 using Common.Logging;
 using FullTextIndexer;
 using FullTextIndexer.Indexes;
+using FullTextIndexer.Indexes.TernarySearchTree;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 using Tester.Example2.KeyVariants;
@@ -17,13 +18,13 @@ namespace Tester.Example2
         private NonNullImmutableList<LanguageDetails> _activeLanguages;
         private LanguageDetails _defaultLanguage;
         private ITokenBreaker _tokenBreaker;
-        private IEqualityComparer<string> _sourceStringComparer;
+        private IStringNormaliser _sourceStringComparer;
         private ILogger _logger;
         public ProductIndexGenerator(
             NonNullImmutableList<LanguageDetails> activeLanguages,
             LanguageDetails defaultLanguage,
             ITokenBreaker tokenBreaker,
-            IEqualityComparer<string> sourceStringComparer,
+            IStringNormaliser sourceStringComparer,
             ILogger logger)
         {
             if (activeLanguages == null)
@@ -46,7 +47,7 @@ namespace Tester.Example2
             _logger = logger;
         }
 
-        public IndexData<IIndexKey> Generate(NonNullImmutableList<Product> data)
+        public IIndexData<IIndexKey> Generate(NonNullImmutableList<Product> data)
         {
             if (data == null)
                 throw new ArgumentNullException("data");

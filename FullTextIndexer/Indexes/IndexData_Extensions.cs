@@ -6,14 +6,14 @@ using FullTextIndexer.TokenBreaking;
 
 namespace FullTextIndexer.Indexes
 {
-    public static class IndexData_RetrievalExtensions
+    public static class IndexData_Extensions
     {
         /// <summary>
         /// This GetMatches signature will break a given source string and return results based upon the combination of partial matches - the token breaker and the match combining
         /// are specified by the caller
         /// </summary>
         public static NonNullImmutableList<WeightedEntry<TKey>> GetMatches<TKey>(
-            this IndexData<TKey> index,
+            this IIndexData<TKey> index,
             string source,
             ITokenBreaker tokenBreaker,
             MatchCombiner matchCombiner)

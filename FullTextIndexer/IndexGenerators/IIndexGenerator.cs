@@ -8,6 +8,6 @@ namespace FullTextIndexer.IndexGenerators
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
         /// </summary>
-        IndexData<TKey> Generate(NonNullImmutableList<TSource> data);
+        IIndexData<TKey> Generate(NonNullImmutableList<TSource> data);
     }
 }

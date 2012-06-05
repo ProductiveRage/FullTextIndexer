@@ -5,6 +5,7 @@ using Common.Lists;
 using Common.Logging;
 using FullTextIndexer.Indexes;
 using FullTextIndexer.TokenBreaking;
+using FullTextIndexer.Indexes.TernarySearchTree;
 
 namespace FullTextIndexer.IndexGenerators
 {
@@ -16,14 +17,14 @@ namespace FullTextIndexer.IndexGenerators
         /// </summary>
         private NonNullImmutableList<ContentRetriever<TSource, TKey>> _contentRetrievers;
         private IEqualityComparer<TKey> _dataKeyComparer;
-        private IEqualityComparer<string> _sourceStringComparer;
+        private IStringNormaliser _sourceStringComparer;
         private ITokenBreaker _tokenBreaker;
         private WeightedEntryCombiner _weightedEntryCombiner;
         private ILogger _logger;
         public IndexGenerator(
             NonNullImmutableList<ContentRetriever<TSource, TKey>> contentRetrievers,
             IEqualityComparer<TKey> dataKeyComparer,
-            IEqualityComparer<string> sourceStringComparer,
+            IStringNormaliser sourceStringComparer,
             ITokenBreaker tokenBreaker,
             WeightedEntryCombiner weightedEntryCombiner,
             ILogger logger)
@@ -57,7 +58,7 @@ namespace FullTextIndexer.IndexGenerators
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
         /// </summary>
-        public IndexData<TKey> Generate(NonNullImmutableList<TSource> data)
+        public IIndexData<TKey> Generate(NonNullImmutableList<TSource> data)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
@@ -97,6 +98,10 @@ namespace FullTextIndexer.IndexGenerators
 
                     foreach (var token in _tokenBreaker.Break(preBrokenContent.Content))
                     {
+                        // Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
+                        if (_sourceStringComparer.GetNormalisedString(token) == "")
+                            continue;
+
                         if (!indexContent.ContainsKey(token))
                             indexContent.Add(token, new Dictionary<TKey, List<float>>(_dataKeyComparer));
 
@@ -141,8 +146,8 @@ namespace FullTextIndexer.IndexGenerators
             timer.Restart();
 
             // Translate this into an IndexData instance
-            var indexData = new IndexData<TKey>(
-                new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+            var indexData = new IndexDataTST<TKey>(
+                new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(
                     combinedContent,
                     _sourceStringComparer
                 ),

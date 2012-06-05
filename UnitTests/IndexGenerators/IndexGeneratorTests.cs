@@ -7,6 +7,7 @@ using FullTextIndexer.Indexes;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 using Xunit;
+using FullTextIndexer.Indexes.TernarySearchTree;
 
 namespace UnitTests.IndexGenerators
 {
@@ -24,7 +25,7 @@ namespace UnitTests.IndexGenerators
                     )                        
                 }),
                 new IntEqualityComparer(),
-                StringComparer.InvariantCultureIgnoreCase,
+                new CaseInsensitiveStringNormaliser(),
                 new WhiteSpaceTokenBreaker(new NoActionTokenBreaker()),
                 weightedValues => weightedValues.Sum(),
                 new NullLogger()
@@ -89,6 +90,24 @@ namespace UnitTests.IndexGenerators
             public int GetHashCode(int obj)
             {
                 return obj;
+            }
+        }
+
+        private class CaseInsensitiveStringNormaliser : IStringNormaliser
+        {
+            public string GetNormalisedString(string value)
+            {
+                return value.ToLower();
+            }
+
+            public bool Equals(string x, string y)
+            {
+                return GetNormalisedString(x) == GetNormalisedString(y);
+            }
+
+            public int GetHashCode(string obj)
+            {
+                return GetNormalisedString(obj).GetHashCode();
             }
         }
     }

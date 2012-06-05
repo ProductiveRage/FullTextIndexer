@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using Common.Lists;
 using Common.Logging;
-using Common.StringComparisons;
 using FullTextIndexer.Indexes;
+using FullTextIndexer.Indexes.TernarySearchTree;
 using FullTextIndexer.TokenBreaking;
 using Tester.Common;
 using Tester.Example2.KeyVariants;
@@ -29,7 +29,7 @@ namespace Tester.Example2
                 new NonNullImmutableList<LanguageDetails>(new [] { english }),
                 english,
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer(),
+                new DefaultStringNormaliser(),
                 new ConsoleLogger()
             );
             var index = productIndexGenerator.Generate(data);
@@ -51,7 +51,7 @@ namespace Tester.Example2
             );
         }
 
-        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IndexData<IIndexKey> index, string source, ITokenBreaker tokenBreaker, LanguageDetails language, int channelKey)
+        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IIndexData<IIndexKey> index, string source, ITokenBreaker tokenBreaker, LanguageDetails language, int channelKey)
         {
             if (string.IsNullOrWhiteSpace(source))
                 throw new ArgumentException("Null/empty source");
