@@ -61,6 +61,10 @@ namespace Tester.Example2
                 throw new ArgumentNullException("language");
 
             // Build up sets of matches for each token, matches are filtered to the specified Language and Channel and indexed by Product Key
+            // - We can't use the IIndexData GetPartialMatches extension method here as we require that each Product Key have all of the tokens in the source
+            //   string but these Product Keys may be dstributed over multiple IIndexKey values as these keys may be scoped to a particular Language or a
+            //   Channel (so we'll need to get all IIndexKey values that partially match, then reduce down to Product Key matches, then only accept
+            //   Product Keys that match all of the tokens one way or another)
             var matchSets = new List<NonNullImmutableList<WeightedEntry<int>>>();
             foreach (var token in tokenBreaker.Break(source).Distinct(index.TokenComparer))
                 matchSets.Add(FilterIndexKeyResults(index.GetMatches(token), language, channelKey));

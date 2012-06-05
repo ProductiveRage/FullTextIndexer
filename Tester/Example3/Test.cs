@@ -41,6 +41,9 @@ namespace Tester.Example3
             );
         }
 
+        /// <summary>
+        /// Find results that have all of the tokens in the specified source string somewhere in their data (not necessarily in the same fields)
+        /// </summary>
         private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IIndexData<int> index, string source, ITokenBreaker tokenBreaker)
         {
             if (string.IsNullOrWhiteSpace(source))
@@ -48,28 +51,11 @@ namespace Tester.Example3
             if (tokenBreaker == null)
                 throw new ArgumentNullException("tokenBreaker");
 
-            // Build up sets of matches for each token, matches are indexed by Product Key
-            var matchSets = new List<NonNullImmutableList<WeightedEntry<int>>>();
-            foreach (var token in tokenBreaker.Break(source).Distinct(index.TokenComparer))
-                matchSets.Add(index.GetMatches(token));
-
-            // Construct a list of Product Keys that exist in all of the match sets
-            var keysInAllSets = matchSets.SelectMany(s => s.Select(m => m.Key)).Distinct();
-            foreach (var matchSet in matchSets)
-                keysInAllSets = keysInAllSets.Intersect(matchSet.Select(m => m.Key));
-
-            // Map this back to the matches for keys where the keys exist in all of the match sets
-            var combinedResults = new Dictionary<int, List<float>>();
-            foreach (var matchSet in matchSets)
-            {
-                foreach (var match in matchSet.Where(m => keysInAllSets.Contains(m.Key)))
-                {
-                    if (!combinedResults.ContainsKey(match.Key))
-                        combinedResults.Add(match.Key, new List<float>());
-                    combinedResults[match.Key].Add(match.Weight);
-                }
-            }
-            return combinedResults.Select(entry => new WeightedEntry<int>(entry.Key, entry.Value.Sum())).ToNonNullImmutableList();
+            return index.GetPartialMatches(
+                source,
+                tokenBreaker,
+                (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.Sum(m => m.Weight)
+            );
         }
 
         private static void GenerateDataFile(FileInfo dataFile, FileInfo apiDataFile)
