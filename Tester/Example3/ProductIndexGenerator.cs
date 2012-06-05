@@ -15,9 +15,9 @@ namespace Tester.Example3
     public class ProductIndexGenerator
     {
         private ITokenBreaker _tokenBreaker;
-        private StringNormaliser _sourceStringComparer;
+        private IStringNormaliser _sourceStringComparer;
         private ILogger _logger;
-        public ProductIndexGenerator(ITokenBreaker tokenBreaker, StringNormaliser sourceStringComparer, ILogger logger)
+        public ProductIndexGenerator(ITokenBreaker tokenBreaker, IStringNormaliser sourceStringComparer, ILogger logger)
         {
             if (tokenBreaker == null)
                 throw new ArgumentNullException("tokenBreaker");
@@ -36,9 +36,7 @@ namespace Tester.Example3
             if (data == null)
                 throw new ArgumentNullException("data");
 
-            var stopwords = Constants.GetStopWords("en");
             var contentRetrievers = new List<ContentRetriever<Article, int>>();
-
             contentRetrievers.Add(new ContentRetriever<Article, int>(
                 a => new PreBrokenContent<int>(a.Key, a.Title),
                 GetTokenWeightDeterminer(15f)
