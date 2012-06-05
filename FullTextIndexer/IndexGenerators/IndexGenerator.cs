@@ -146,7 +146,7 @@ namespace FullTextIndexer.IndexGenerators
             timer.Restart();
 
             // Translate this into an IndexData instance
-            var indexData = new IndexDataTST<TKey>(
+            var indexData = new IndexData<TKey>(
                 new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(
                     combinedContent,
                     _sourceStringComparer

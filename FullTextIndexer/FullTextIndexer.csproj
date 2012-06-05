@@ -37,7 +37,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Indexes\IIndexData.cs" />
-    <Compile Include="Indexes\IndexDataTST.cs" />
+    <Compile Include="Indexes\IndexData.cs" />
     <Compile Include="Indexes\TernarySearchTree\EnglishPluarityStringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\ILookup.cs" />
     <Compile Include="Indexes\TernarySearchTree\StringNormaliser.cs" />

@@ -7,11 +7,11 @@ using FullTextIndexer.Indexes.TernarySearchTree;
 namespace FullTextIndexer.Indexes
 {
     [Serializable]
-    public class IndexDataTST<TKey> : IIndexData<TKey>
+    public class IndexData<TKey> : IIndexData<TKey>
     {
         private TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> _data;
         private IEqualityComparer<TKey> _dataKeyComparer;
-        public IndexDataTST(
+        public IndexData(
             TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data,
             IEqualityComparer<TKey> dataKeyComparer)
         {
@@ -83,7 +83,7 @@ namespace FullTextIndexer.Indexes
             }
 
             // Return a new instance with this combined data
-            return new IndexDataTST<TKey>(
+            return new IndexData<TKey>(
                 new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(combinedContent, _data.KeyNormaliser),
                 _dataKeyComparer
             );
@@ -119,7 +119,7 @@ namespace FullTextIndexer.Indexes
         /// This will return a new IndexData instance without any WeightedEntry values whose Keys match the removeIf predicate. If tokens are left without any WeightedEntry
         /// values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
         /// </summary>
-        public IndexDataTST<TKey> Remove(Predicate<TKey> removeIf)
+        public IndexData<TKey> Remove(Predicate<TKey> removeIf)
         {
             if (removeIf == null)
                 throw new ArgumentNullException("removeIf");
@@ -133,7 +133,7 @@ namespace FullTextIndexer.Indexes
                 else
                     content.Remove(token);
             }
-            return new IndexDataTST<TKey>(
+            return new IndexData<TKey>(
                 new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(content, _data.KeyNormaliser),
                 _dataKeyComparer
             );
