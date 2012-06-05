@@ -46,11 +46,9 @@
     <Compile Include="Indexes\TernarySearchTree\TernarySearchTreeDictionary.cs" />
     <Compile Include="Indexes\WeightedEntry_Extensions.cs" />
     <Compile Include="Indexes\IndexData_Extensions.cs" />
-    <Compile Include="IndexGenerators\AdditionBasedCombiningIndexGenerator.cs" />
     <Compile Include="Indexes\WeightedEntry.cs" />
     <Compile Include="IndexGenerators\ContentRetriever.cs" />
     <Compile Include="IndexGenerators\IIndexGenerator.cs" />
-    <Compile Include="Indexes\IndexData.cs" />
     <Compile Include="IndexGenerators\IndexGenerator.cs" />
     <Compile Include="IndexGenerators\PreBrokenContent.cs" />
     <Compile Include="TokenBreaking\ConsecutiveTokenCombiningTokenBreaker.cs" />
