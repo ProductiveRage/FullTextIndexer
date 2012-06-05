@@ -65,11 +65,12 @@ namespace FullTextIndexer.IndexGenerators
                 throw new ArgumentNullException("data");
 
             // Build up data about token occurences in the data
+            // - We'll be using the token values in the indexContent dictionary after they have been normalised by the sourceStringComparer, this means that we
+            //   don't need to specify the sourceStringComparer as the comparer for indexContent which may save some work depending upon the implementation of
+            //   the sourceStringComparer
             var timer = new Stopwatch();
             timer.Start();
-            var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>(
-                _sourceStringComparer
-            );
+            var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>();
             var timeElapsedForNextUpdateMessage = TimeSpan.FromSeconds(5);
             for (var index = 0; index < data.Count; index++)
             {
@@ -97,21 +98,24 @@ namespace FullTextIndexer.IndexGenerators
                         timeElapsedForNextUpdateMessage = timer.Elapsed.Add(TimeSpan.FromSeconds(5));
                     }
 
-                    foreach (var token in _tokenBreaker.Break(preBrokenContent.Content))
+                    foreach (var normalisedToken in _tokenBreaker.Break(preBrokenContent.Content).Select(token => _sourceStringComparer.GetNormalisedString(token)))
                     {
                         // Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
-                        if (_sourceStringComparer.GetNormalisedString(token) == "")
+                        if (normalisedToken == "")
                             continue;
 
-                        if (!indexContent.ContainsKey(token))
-                            indexContent.Add(token, new Dictionary<TKey, List<float>>(_dataKeyComparer));
+                        Dictionary<TKey, List<float>> allDataForToken;
+                        if (!indexContent.TryGetValue(normalisedToken, out allDataForToken))
+                        {
+                            allDataForToken = new Dictionary<TKey, List<float>>(_dataKeyComparer);
+                            indexContent.Add(normalisedToken, allDataForToken);
+                        }
 
-                        var allDataForToken = indexContent[token];
                         if (!allDataForToken.ContainsKey(preBrokenContent.Key))
                             allDataForToken.Add(preBrokenContent.Key, new List<float>());
 
                         allDataForToken[preBrokenContent.Key].Add(
-                            contentRetriever.TokenWeightDeterminer(token)
+                            contentRetriever.TokenWeightDeterminer(normalisedToken)
                         );
                     }
                 }
@@ -122,10 +126,10 @@ namespace FullTextIndexer.IndexGenerators
             );
             timer.Restart();
 
-            // Combine entries where Token and Key values match
-            var combinedContent = new Dictionary<string, List<WeightedEntry<TKey>>>(
-                _sourceStringComparer
-            );
+            // Combine entries where Token and Key values match (as with the indexContent dictionary, we don't need to specify the sourceStringComparer as the
+            // combinedContent dictionary comparer as all values were stored in indexContent after being normalised - this may save some work depending upon
+            // the sourceStringComparer implementation)
+            var combinedContent = new Dictionary<string, List<WeightedEntry<TKey>>>();
             foreach (var token in indexContent.Keys)
             {
                 combinedContent.Add(token, new List<WeightedEntry<TKey>>());
