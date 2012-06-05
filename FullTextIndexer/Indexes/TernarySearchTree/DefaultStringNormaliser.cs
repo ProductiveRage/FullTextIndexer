@@ -1,37 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Common.StringComparisons
+namespace FullTextIndexer.Indexes.TernarySearchTree
 {
     /// <summary>
     /// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
     /// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
     /// </summary>
     [Serializable]
-    public class CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer : IEqualityComparer<string>
+    public class DefaultStringNormaliser : StringNormaliser
     {
-        public bool Equals(string x, string y)
-        {
-            if (x == null)
-                throw new ArgumentNullException("x");
-            if (y == null)
-                throw new ArgumentNullException("y");
-
-            return NormaliseString(x) == NormaliseString(y);
-        }
-
-        public int GetHashCode(string obj)
-        {
-            if (obj == null)
-                throw new ArgumentNullException("obj");
-
-            return NormaliseString(obj).GetHashCode();
-        }
-
-        public static string NormaliseString(string value)
+        public override string GetNormalisedString(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");

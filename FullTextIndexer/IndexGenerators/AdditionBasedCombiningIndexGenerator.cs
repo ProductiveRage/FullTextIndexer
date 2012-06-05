@@ -33,12 +33,12 @@ namespace FullTextIndexer.IndexGenerators
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
         /// </summary>
-        public IndexData<TKey> Generate(NonNullImmutableList<TSource> data)
+        public IIndexData<TKey> Generate(NonNullImmutableList<TSource> data)
         {
             if (data == null)
                 throw new ArgumentNullException("data");
 
-            var combinedIndexContent = new IndexData<TKey>(
+            IIndexData<TKey> combinedIndexContent = new IndexData<TKey>(
                 new ImmutableDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
                     _sourceStringComparer
                 ),

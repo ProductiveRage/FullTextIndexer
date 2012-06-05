@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using Common.Lists;
 using Common.Logging;
-using Common.StringComparisons;
 using FullTextIndexer.Indexes;
+using FullTextIndexer.Indexes.TernarySearchTree;
 using FullTextIndexer.TokenBreaking;
 using Tester.Common;
 using Tester.Example3.SourceData;
@@ -23,7 +23,7 @@ namespace Tester.Example3
             var data = Serialisation.ReadFromDisk<NonNullImmutableList<Article>>(dataFile);
             var productIndexGenerator = new ProductIndexGenerator(
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                new CaseInsensitiveAccentReplacingPunctuationRemovingWhitespaceStandardisingStringComparer(),
+                new DefaultStringNormaliser(),
                 new ConsoleLogger()
             );
             var index = productIndexGenerator.Generate(data);
@@ -36,12 +36,12 @@ namespace Tester.Example3
 
             var matchesOverMultipleFields = GetMatches(
                 index,
-                "Penguins Steamrolling Christopher",
+                "Penguins Slap Christopher",
                 new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
             );
         }
 
-        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IndexData<int> index, string source, ITokenBreaker tokenBreaker)
+        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IIndexData<int> index, string source, ITokenBreaker tokenBreaker)
         {
             if (string.IsNullOrWhiteSpace(source))
                 throw new ArgumentException("Null/empty source");
