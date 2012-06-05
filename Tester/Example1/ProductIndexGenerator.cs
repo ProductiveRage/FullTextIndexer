@@ -36,7 +36,6 @@ namespace Tester.Example1
             if (data == null)
                 throw new ArgumentNullException("data");
 
-            var stopwords = Constants.GetStopWords("en");
             var contentRetrievers = new List<ContentRetriever<Product, int>>();
 
             // Instantiate content retriever for the Name and Keywords, these have higher weights assigned to them than the other fields (ignore any null Keywords values)
