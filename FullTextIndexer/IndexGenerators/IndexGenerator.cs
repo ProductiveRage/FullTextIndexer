@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Common.Lists;
 using Common.Logging;
 using FullTextIndexer.Indexes;
@@ -122,16 +123,16 @@ namespace FullTextIndexer.IndexGenerators
             timer.Restart();
 
             // Combine entries where Token and Key values match
-            var combinedContent = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(
+            var combinedContent = new Dictionary<string, List<WeightedEntry<TKey>>>(
                 _sourceStringComparer
             );
             foreach (var token in indexContent.Keys)
             {
-                combinedContent.Add(token, new NonNullImmutableList<WeightedEntry<TKey>>());
+                combinedContent.Add(token, new List<WeightedEntry<TKey>>());
                 foreach (var key in indexContent[token].Keys)
                 {
                     var matches = indexContent[token][key];
-                    combinedContent[token] = combinedContent[token].Add(
+                    combinedContent[token].Add(
                         new WeightedEntry<TKey>(
                             key,
                             _weightedEntryCombiner(matches.ToImmutableList())
@@ -148,7 +149,7 @@ namespace FullTextIndexer.IndexGenerators
             // Translate this into an IndexData instance
             var indexData = new IndexData<TKey>(
                 new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(
-                    combinedContent,
+                    combinedContent.Select(entry => new KeyValuePair<string, NonNullImmutableList<WeightedEntry<TKey>>>(entry.Key, entry.Value.ToNonNullImmutableList())),
                     _sourceStringComparer
                 ),
                 _dataKeyComparer
