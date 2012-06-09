@@ -90,8 +90,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                 if (!Enum.IsDefined(typeof(MatchTypeOptions), matchType))
                     throw new ArgumentOutOfRangeException("matchType");
 
-                // Using a case-insensitive comparer means that there will be no need to adjust the case of input values in TryToTransform
-                var valuesTidied = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+                var valuesTidied = new HashSet<string>();
                 foreach (var value in values)
                 {
                     var valueTrimmed = (value ?? "").Trim();
