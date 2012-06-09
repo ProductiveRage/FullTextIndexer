@@ -32,6 +32,9 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             value = value.Trim();
             if (value == "")
                 return "";
+
+            // Need to lower case the value since the suffix comparisons are all to lower case characters
+            value = value.ToLower();
             foreach (var matcher in Matchers)
             {
                 string valueTransformed;
@@ -49,25 +52,25 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
         {
             // eg. index / indexes / indices
             new PluralEntry(new[] { "ex", "exes", "ices" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. formula / formulae / formulas
             new PluralEntry(new[] { "ula", "ulae", "ulas" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. category / categories
             new PluralEntry(new[] { "y", "ies" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. cactus / cactii
             new PluralEntry(new[] { "us", "ii" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. child / children
             new PluralEntry(new[] { "ld", "ldren" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. medium / media
             new PluralEntry(new[] { "ium", "ia" }, MatchTypeOptions.SuffixOnly),
-            
+
             // eg. CMSes (more common with anacronyms), matching "s" here means we must use "ses", "es" AND "s" as fallbacks below
             new PluralEntry(new[] { "ses", "es", "s" }, MatchTypeOptions.SuffixOnly),
-            
+
             // Common special cases
             new PluralEntry(new[] { "datum", "data" }, MatchTypeOptions.WholeWord),
             new PluralEntry(new[] { "man", "men" }, MatchTypeOptions.WholeWord),
@@ -98,7 +101,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                     if (!valuesTidied.Contains(valueTrimmed))
                         valuesTidied.Add(valueTrimmed);
                 }
-
+            
                 _values = valuesTidied;
                 _combinedValues = "[" + string.Join("][", valuesTidied) + "]";
                 _matchType = matchType;
