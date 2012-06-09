@@ -50,9 +50,6 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
 
         private readonly static PluralEntry[] Matchers = new[]
         {
-            // eg. index / indexes / indices
-            new PluralEntry(new[] { "ex", "exes", "ices" }, MatchTypeOptions.SuffixOnly),
-
             // eg. formula / formulae / formulas
             new PluralEntry(new[] { "ula", "ulae", "ulas" }, MatchTypeOptions.SuffixOnly),
 
@@ -68,10 +65,15 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             // eg. medium / media
             new PluralEntry(new[] { "ium", "ia" }, MatchTypeOptions.SuffixOnly),
 
-            // eg. CMSes (more common with anacronyms), matching "s" here means we must use "ses", "es" AND "s" as fallbacks below
+            // Common special cases that have to come before the "ses", es", "s" form
+            new PluralEntry(new[] { "index", "indexes", "indices" }, MatchTypeOptions.WholeWord),
+            new PluralEntry(new[] { "matrix", "matrices" }, MatchTypeOptions.WholeWord),
+            new PluralEntry(new[] { "vertex", "vertices" }, MatchTypeOptions.WholeWord),
+
+            // eg. Abacuses, matching "s" here means we must use "ses", "es" AND "s" as fallbacks below
             new PluralEntry(new[] { "ses", "es", "s" }, MatchTypeOptions.SuffixOnly),
 
-            // Common special cases
+            // Other common special cases
             new PluralEntry(new[] { "datum", "data" }, MatchTypeOptions.WholeWord),
             new PluralEntry(new[] { "man", "men" }, MatchTypeOptions.WholeWord),
             new PluralEntry(new[] { "woman", "women" }, MatchTypeOptions.WholeWord)
