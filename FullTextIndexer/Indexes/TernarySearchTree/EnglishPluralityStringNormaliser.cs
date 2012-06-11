@@ -16,18 +16,41 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
     {
         private Func<string, string> _normaliser;
         private IStringNormaliser _optionalPreNormaliser;
-        public EnglishPluralityStringNormaliser(IEnumerable<PluralEntry> plurals, IEnumerable<string> fallbackSuffixes, IStringNormaliser optionalPreNormaliser)
+        private PreNormaliserWorkOptions _preNormaliserWork;
+        public EnglishPluralityStringNormaliser(
+            IEnumerable<PluralEntry> plurals,
+            IEnumerable<string> fallbackSuffixes,
+            IStringNormaliser optionalPreNormaliser,
+            PreNormaliserWorkOptions preNormaliserWork)
         {
             if (plurals == null)
                 throw new ArgumentNullException("pluralEntries");
             if (fallbackSuffixes == null)
                 throw new ArgumentNullException("fallbackSuffixes");
+            var allPreNormaliserOptions = (PreNormaliserWorkOptions)0;
+            foreach (PreNormaliserWorkOptions option in Enum.GetValues(typeof(PreNormaliserWorkOptions)))
+                allPreNormaliserOptions = allPreNormaliserOptions | option;
+            if ((preNormaliserWork & allPreNormaliserOptions) != preNormaliserWork)
+                throw new ArgumentOutOfRangeException("preNormaliserWork");
 
             _normaliser = GenerateNormaliser(plurals, fallbackSuffixes);
             _optionalPreNormaliser = optionalPreNormaliser;
+            _preNormaliserWork = preNormaliserWork;
         }
-        public EnglishPluralityStringNormaliser(IStringNormaliser optionalPreNormaliser) : this(DefaultPlurals, DefaultFallback, optionalPreNormaliser) { }
-        public EnglishPluralityStringNormaliser() : this(null) { }
+
+        public EnglishPluralityStringNormaliser(IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
+            : this(DefaultPlurals, DefaultFallback, optionalPreNormaliser, preNormaliserWork) { }
+        
+        public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
+
+        [Serializable]
+        [Flags]
+        public enum PreNormaliserWorkOptions
+        {
+            PreNormaliserDoesNothing = 0,
+            PreNormaliserLowerCases = 1,
+            PreNormaliserTrims = 2
+        }
 
         public override string GetNormalisedString(string value)
         {
@@ -39,12 +62,15 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             if (_optionalPreNormaliser != null)
                 value = _optionalPreNormaliser.GetNormalisedString(value);
 
-            var valueTrimmed = value.Trim();
-            if (valueTrimmed == "")
+            if ((_preNormaliserWork & PreNormaliserWorkOptions.PreNormaliserTrims) != PreNormaliserWorkOptions.PreNormaliserTrims)
+                value = value.Trim();
+            if (value == "")
                 return "";
 
             // We have to lower case the trimmed value since the suffixes are all stored as lower case values
-            return _normaliser(valueTrimmed.ToLower());
+            if ((_preNormaliserWork & PreNormaliserWorkOptions.PreNormaliserLowerCases) != PreNormaliserWorkOptions.PreNormaliserLowerCases)
+                value = value.ToLower();
+            return _normaliser(value);
         }
 
         private static Func<string, string> GenerateNormaliser(IEnumerable<PluralEntry> plurals, IEnumerable<string> fallbackSuffixes)
@@ -54,7 +80,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             if (fallbackSuffixes == null)
                 throw new ArgumentNullException("fallbackSuffixes");
 
-            // Build up if statements for each suffix - if a match is found, return a the input value with the matched suffix replaced
+            // Build up if statements for each suffix - if a match is found, return the input value with the matched suffix replaced
             // with a combination of all the other suffixes in PluralEntry
             var result = Expression.Parameter(typeof(string), "result");
             var endLabel = Expression.Label(typeof(string));
