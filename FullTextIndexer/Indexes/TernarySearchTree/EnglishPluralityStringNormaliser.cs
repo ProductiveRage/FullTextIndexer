@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace FullTextIndexer.Indexes.TernarySearchTree
 {
@@ -12,8 +13,10 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
     /// match a few false positives, but it should catch most of the most common cases.
     /// </summary>
     [Serializable]
-    public class EnglishPluralityStringNormaliser : StringNormaliser
+    public class EnglishPluralityStringNormaliser : StringNormaliser, ISerializable
     {
+        private List<PluralEntry> _plurals;
+        private List<string> _fallbackSuffixes;
         private Func<string, string> _normaliser;
         private IStringNormaliser _optionalPreNormaliser;
         private PreNormaliserWorkOptions _preNormaliserWork;
@@ -33,15 +36,47 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             if ((preNormaliserWork & allPreNormaliserOptions) != preNormaliserWork)
                 throw new ArgumentOutOfRangeException("preNormaliserWork");
 
-            _normaliser = GenerateNormaliser(plurals, fallbackSuffixes);
+            var pluralsTidied = new List<PluralEntry>();
+            foreach (var plural in plurals)
+            {
+                if (plural == null)
+                    throw new ArgumentException("Null reference encountered in plurals set");
+                pluralsTidied.Add(plural);
+            }
+
+            // Although we don't need the plurals and fallbackSuffixes references once the normaliser has been generated in normal operation, if the instance
+            // is to be serialised then we need to record them so that the normalier can be re-generated at deserialisation (as the normaliser that is generated
+            // can not be serialised - see GetObjectData)
+            _plurals = pluralsTidied;
+            _fallbackSuffixes = TidyStringList(fallbackSuffixes, v => v.Trim().ToLower());
+            _normaliser = GenerateNormaliser();
             _optionalPreNormaliser = optionalPreNormaliser;
             _preNormaliserWork = preNormaliserWork;
         }
 
         public EnglishPluralityStringNormaliser(IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
             : this(DefaultPlurals, DefaultFallback, optionalPreNormaliser, preNormaliserWork) { }
-        
+
         public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
+
+        protected EnglishPluralityStringNormaliser(SerializationInfo info, StreamingContext context)
+            : this(
+                (IEnumerable<PluralEntry>)info.GetValue("_plurals", typeof(IEnumerable<PluralEntry>)),
+                (IEnumerable<string>)info.GetValue("_fallbackSuffixes", typeof(IEnumerable<string>)),
+                (IStringNormaliser)info.GetValue("_optionalPreNormaliser", typeof(IStringNormaliser)),
+                (PreNormaliserWorkOptions)info.GetValue("_preNormaliserWork", typeof(PreNormaliserWorkOptions))
+            ) { }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            // Unfortunately we can't serialise the generated normaliser (we'll get a "Cannot serialize delegates over unmanaged function pointers, dynamic
+            // methods or methods outside the delegate creator's assembly" error) so if we have to serialise this instance we'll store all of the dat and
+            // then re-generate the normaliser on de-serialisation. Not ideal from a performance point of view but at least it will work.
+            info.AddValue("_plurals", _plurals);
+            info.AddValue("_fallbackSuffixes", _fallbackSuffixes);
+            info.AddValue("_optionalPreNormaliser", _optionalPreNormaliser);
+            info.AddValue("_preNormaliserWork", _preNormaliserWork);
+        }
 
         [Serializable]
         [Flags]
@@ -73,24 +108,35 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             return _normaliser(value);
         }
 
-        private static Func<string, string> GenerateNormaliser(IEnumerable<PluralEntry> plurals, IEnumerable<string> fallbackSuffixes)
+        private Func<string, string> GenerateNormaliser()
         {
-            if (plurals == null)
-                throw new ArgumentNullException("pluralEntries");
-            if (fallbackSuffixes == null)
-                throw new ArgumentNullException("fallbackSuffixes");
-
             // Build up if statements for each suffix - if a match is found, return the input value with the matched suffix replaced
             // with a combination of all the other suffixes in PluralEntry
             var result = Expression.Parameter(typeof(string), "result");
             var endLabel = Expression.Label(typeof(string));
             var valueTrimmed = Expression.Parameter(typeof(string), "valueTrimmed");
             var expressions = new List<Expression>();
-            foreach (var plural in plurals)
+            foreach (var plural in _plurals)
             {
-                if (plural == null)
-                    throw new ArgumentException("Null reference encountered in plurals set");
-
+                // Before checking for for suffix matches we need to check whether the input string is a value that has already
+                // been through the normalisation process! eg. "category" and "categories" will both be transformed into the
+                // value "categor|y|ies", but if that value is passed in again it should leave as "categor|y|ies" and not
+                // have any futher attempts at normalisation applying to it.
+                expressions.Add(
+                    Expression.IfThen(
+                        GeneratePredicate(CreateSuffixExtension(plural.Values), valueTrimmed, plural.MatchType),
+                        Expression.Block(
+                            Expression.Assign(
+                                result,
+                                valueTrimmed
+                            ),
+                            Expression.Return(endLabel, result)
+                        )
+                    )
+                );
+            }
+            foreach (var plural in _plurals)
+            {
                 foreach (var suffix in plural.Values)
                 {
                     expressions.Add(
@@ -112,15 +158,14 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             }
 
             // If any fallback suffixes are specified, add a statement to append them if none of the PluralEntry matches are made
-            fallbackSuffixes = TidyStringList(fallbackSuffixes, v => v.Trim().ToLower());
-            if (fallbackSuffixes.Any())
+            if (_fallbackSuffixes.Any())
             {
                 expressions.Add(
                     Expression.Assign(
                         result,
                         GenerateStringConcatExpression(
                             valueTrimmed,
-                            Expression.Constant(CreateSuffixExtension(fallbackSuffixes), typeof(string))
+                            Expression.Constant(CreateSuffixExtension(_fallbackSuffixes), typeof(string))
                         )
                     )
                 );
@@ -290,7 +335,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
         /// Given a set of values, ensure that none are null and return them de-duplicated after having been pushed through a string manipulation.
         /// This will throw an exception for null arguments or if any null value is encountered in the values set.
         /// </summary>
-        private static IEnumerable<string> TidyStringList(IEnumerable<string> values, Func<string, string> transformer)
+        private static List<string> TidyStringList(IEnumerable<string> values, Func<string, string> transformer)
         {
             if (values == null)
                 throw new ArgumentNullException("values");
@@ -307,7 +352,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                 if (!valuesTidied.Contains(valueToStore))
                     valuesTidied.Add(valueToStore);
             }
-            return valuesTidied.Distinct();
+            return valuesTidied.Distinct().ToList();
         }
 
         public readonly static IEnumerable<string> DefaultFallback = new[] { "ses", "es", "s" };
@@ -356,7 +401,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                 if (!valuesTidied.Any())
                     throw new ArgumentException("No entries in values set");
 
-                Values = valuesTidied.Distinct().ToList().AsReadOnly();
+                Values = valuesTidied.AsReadOnly();
                 MatchType = matchType;
             }
 
