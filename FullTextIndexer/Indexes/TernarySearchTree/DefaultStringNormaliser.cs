@@ -19,12 +19,13 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
 
         public override string GetNormalisedString(string value)
         {
-            if (value == null)
+                if (value == null)
                 throw new ArgumentNullException("value");
 
-            var normalisedValue = value.Normalize(NormalizationForm.FormD);
+            var normalisedValue = value.Normalize(NormalizationForm.FormKD);
             var content = new char[normalisedValue.Length];
             var contentIndex = 0;
+            var contentIndexOfLastNonWhitespace = 0;
             var lastCharWasWhitespace = false;
             var gotContent = false;
             for (var index = 0; index < normalisedValue.Length; index++)
@@ -34,6 +35,14 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                     continue;
                 if ((currentChar == '\r') || (currentChar == '\n') || (currentChar == '\t'))
                     currentChar = ' ';
+                else
+                {
+                    var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(currentChar);
+                    if ((unicodeCategory == UnicodeCategory.EnclosingMark)
+                    || (unicodeCategory == UnicodeCategory.NonSpacingMark)
+                    || (unicodeCategory == UnicodeCategory.SpacingCombiningMark))
+                        currentChar = ' ';
+                }
                 if (currentChar == ' ')
                 {
                     if (!lastCharWasWhitespace && gotContent)
@@ -44,17 +53,15 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                     }
                     continue;
                 }
-                if (CharUnicodeInfo.GetUnicodeCategory(currentChar) != UnicodeCategory.NonSpacingMark)
-                {
-                    if (char.IsLower(currentChar))
-                        currentChar = char.ToLower(currentChar);
-                    content[contentIndex] = currentChar;
-                    contentIndex++;
-                }
+                if (!char.IsLower(currentChar))
+                    currentChar = char.ToLower(currentChar);
+                content[contentIndex] = currentChar;
+                contentIndex++;
+                contentIndexOfLastNonWhitespace = contentIndex;
                 lastCharWasWhitespace = false;
                 gotContent = true;
             }
-            return (new string(content, 0, contentIndex)).Normalize(System.Text.NormalizationForm.FormC);
+            return new string(content, 0, contentIndexOfLastNonWhitespace);
         }
     }
 }
