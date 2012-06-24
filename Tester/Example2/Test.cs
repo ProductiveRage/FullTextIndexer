@@ -28,7 +28,10 @@ namespace Tester.Example2
             var productIndexGenerator = new ProductIndexGenerator(
                 new NonNullImmutableList<LanguageDetails>(new [] { english }),
                 english,
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                ),
                 new DefaultStringNormaliser(),
                 new ConsoleLogger()
             );
@@ -37,7 +40,10 @@ namespace Tester.Example2
             var matchesOverSingleField = GetMatches(
                 index,
                 "Exercise",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                ),
                 english,
                 1
             );
@@ -45,7 +51,10 @@ namespace Tester.Example2
             var matchesOverMultipleFields = GetMatches(
                 index,
                 "Fear Moon Exercise, Boston",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                ),
                 english,
                 1
             );

@@ -24,7 +24,10 @@ namespace Tester.Example1
 
             var data = Serialisation.ReadFromDisk<NonNullImmutableList<Product>>(dataFile);
             var productIndexGenerator = new ProductIndexGenerator(
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                ),
                 new DefaultStringNormaliser(),
                 new ConsoleLogger()
             );
@@ -33,13 +36,19 @@ namespace Tester.Example1
             var matchesOverSingleField = GetMatches(
                 index,
                 "Exercise",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                )
             );
 
             var matchesOverMultipleFields = GetMatches(
                 index,
                 "Fear Moon Exercise, Boston",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                )
             );
         }
 
