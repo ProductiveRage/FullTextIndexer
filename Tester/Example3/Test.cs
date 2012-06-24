@@ -22,8 +22,14 @@ namespace Tester.Example3
 
             var data = Serialisation.ReadFromDisk<NonNullImmutableList<Article>>(dataFile);
             var productIndexGenerator = new ProductIndexGenerator(
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker())),
-                new DefaultStringNormaliser(),
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                ),
+                new EnglishPluralityStringNormaliser(
+                    new DefaultStringNormaliser(),
+                    EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases | EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims
+                ),
                 new ConsoleLogger()
             );
             var index = productIndexGenerator.Generate(data);
@@ -31,13 +37,19 @@ namespace Tester.Example3
             var matchesOverSingleField = GetMatches(
                 index,
                 "Exercise",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                )
             );
 
             var matchesOverMultipleFields = GetMatches(
                 index,
                 "Penguins Slap Christopher",
-                new WhiteSpaceTokenBreaker(new CommaAndPeriodReplacingTokenBreaker(new NoActionTokenBreaker()))
+                new WhiteSpaceExtendingTokenBreaker(
+                    new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
+                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                )
             );
         }
 

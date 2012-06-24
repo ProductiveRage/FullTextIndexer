@@ -38,7 +38,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Indexes\IIndexData.cs" />
     <Compile Include="Indexes\IndexData.cs" />
-    <Compile Include="Indexes\TernarySearchTree\EnglishPluarityStringNormaliser.cs" />
+    <Compile Include="Indexes\TernarySearchTree\EnglishPluralityStringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\ILookup.cs" />
     <Compile Include="Indexes\TernarySearchTree\StringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\DefaultStringNormaliser.cs" />
@@ -52,7 +52,7 @@
     <Compile Include="IndexGenerators\IndexGenerator.cs" />
     <Compile Include="IndexGenerators\PreBrokenContent.cs" />
     <Compile Include="TokenBreaking\ConsecutiveTokenCombiningTokenBreaker.cs" />
-    <Compile Include="TokenBreaking\CommaAndPeriodReplacingTokenBreaker.cs" />
+    <Compile Include="TokenBreaking\WhiteSpaceExtendingTokenBreaker.cs" />
     <Compile Include="TokenBreaking\NoActionTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceTokenBreaker.cs" />
     <Compile Include="TokenBreaking\ITokenBreaker.cs" />
