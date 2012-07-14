@@ -54,7 +54,6 @@
     <Compile Include="TokenBreaking\ConsecutiveTokenCombiningTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WeightAdjustingToken.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceExtendingTokenBreaker.cs" />
-    <Compile Include="TokenBreaking\NoActionTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceTokenBreaker.cs" />
     <Compile Include="TokenBreaking\ITokenBreaker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -24,7 +24,7 @@ namespace Tester.Example3
             var productIndexGenerator = new ProductIndexGenerator(
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 ),
                 new EnglishPluralityStringNormaliser(
                     new DefaultStringNormaliser(),
@@ -39,7 +39,7 @@ namespace Tester.Example3
                 "Exercise",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 )
             );
 
@@ -48,7 +48,7 @@ namespace Tester.Example3
                 "Penguins Slap Christopher",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 )
             );
         }

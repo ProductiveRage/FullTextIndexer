@@ -112,9 +112,7 @@ namespace Tester
             (new BlogExample(
                 new FullTextIndexer.TokenBreaking.WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new FullTextIndexer.TokenBreaking.WhiteSpaceTokenBreaker(
-                        new FullTextIndexer.TokenBreaking.NoActionTokenBreaker()
-                    )
+                    new FullTextIndexer.TokenBreaking.WhiteSpaceTokenBreaker()
                 ),
                 new FullTextIndexer.Indexes.TernarySearchTree.EnglishPluralityStringNormaliser(
                     new FullTextIndexer.Indexes.TernarySearchTree.DefaultStringNormaliser(),

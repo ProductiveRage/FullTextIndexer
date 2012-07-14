@@ -30,7 +30,7 @@ namespace Tester.Example2
                 english,
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 ),
                 new DefaultStringNormaliser(),
                 new ConsoleLogger()
@@ -42,7 +42,7 @@ namespace Tester.Example2
                 "Exercise",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 ),
                 english,
                 1
@@ -53,7 +53,7 @@ namespace Tester.Example2
                 "Fear Moon Exercise, Boston",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 ),
                 english,
                 1

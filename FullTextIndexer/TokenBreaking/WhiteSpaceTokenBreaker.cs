@@ -11,14 +11,15 @@ namespace FullTextIndexer.TokenBreaking
     [Serializable]
     public class WhiteSpaceTokenBreaker : ITokenBreaker
     {
-        private ITokenBreaker _tokenBreaker;
-        public WhiteSpaceTokenBreaker(ITokenBreaker tokenBreaker)
+        private ITokenBreaker _optionalWrappedTokenBreaker;
+        public WhiteSpaceTokenBreaker(ITokenBreaker optionalWrappedTokenBreaker)
         {
-            if (tokenBreaker == null)
-                throw new ArgumentNullException("tokenBreaker");
+            if (optionalWrappedTokenBreaker == null)
+                throw new ArgumentNullException("optionalWrappedTokenBreaker");
 
-            _tokenBreaker = tokenBreaker;
+            _optionalWrappedTokenBreaker = optionalWrappedTokenBreaker;
         }
+        public WhiteSpaceTokenBreaker() : this(null) { }
 
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
@@ -28,8 +29,14 @@ namespace FullTextIndexer.TokenBreaking
             if (value == null)
                 throw new ArgumentNullException("value");
 
+            IEnumerable<WeightAdjustingToken> tokensToBreak;
+            if (_optionalWrappedTokenBreaker == null)
+                tokensToBreak = new[] { new WeightAdjustingToken(value, 1) };
+            else
+                tokensToBreak = _optionalWrappedTokenBreaker.Break(value);
+            
             var tokens = new List<WeightAdjustingToken>();
-            foreach (var weightAdjustingToken in _tokenBreaker.Break(value))
+            foreach (var weightAdjustingToken in tokensToBreak)
             {
                 // Passing (char[]) null will cause breaking on any whitespace char
                 tokens.AddRange(
