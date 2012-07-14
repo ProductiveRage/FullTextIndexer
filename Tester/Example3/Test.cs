@@ -66,7 +66,7 @@ namespace Tester.Example3
             return index.GetPartialMatches(
                 source,
                 tokenBreaker,
-                (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.Sum(m => m.Weight)
+                (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.SelectMany(m => m.Weights).Sum()
             );
         }
 

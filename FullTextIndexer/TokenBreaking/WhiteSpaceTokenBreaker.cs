@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common.Lists;
 
 namespace FullTextIndexer.TokenBreaking
@@ -22,18 +23,22 @@ namespace FullTextIndexer.TokenBreaking
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
         /// </summary>
-        public NonNullOrEmptyStringList Break(string value)
+        public NonNullImmutableList<WeightAdjustingToken> Break(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            var tokens = new List<string>();
-            foreach (var token in _tokenBreaker.Break(value))
+            var tokens = new List<WeightAdjustingToken>();
+            foreach (var weightAdjustingToken in _tokenBreaker.Break(value))
             {
                 // Passing (char[]) null will cause breaking on any whitespace char
-                tokens.AddRange(token.Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
+                tokens.AddRange(
+                    weightAdjustingToken.Token
+                        .Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(token => new WeightAdjustingToken(token, weightAdjustingToken.WeightMultiplier))
+                );
             };
-            return new NonNullOrEmptyStringList(tokens);
+            return tokens.ToNonNullImmutableList();
         }
     }
 }
