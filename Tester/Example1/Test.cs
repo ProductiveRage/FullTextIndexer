@@ -26,7 +26,7 @@ namespace Tester.Example1
             var productIndexGenerator = new ProductIndexGenerator(
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 ),
                 new DefaultStringNormaliser(),
                 new ConsoleLogger()
@@ -38,7 +38,7 @@ namespace Tester.Example1
                 "Exercise",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 )
             );
 
@@ -47,7 +47,7 @@ namespace Tester.Example1
                 "Fear Moon Exercise, Boston",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
-                    new WhiteSpaceTokenBreaker(new NoActionTokenBreaker())
+                    new WhiteSpaceTokenBreaker()
                 )
             );
         }

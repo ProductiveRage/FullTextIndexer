@@ -26,7 +26,7 @@ namespace UnitTests.IndexGenerators
                 }),
                 new IntEqualityComparer(),
                 new CaseInsensitiveStringNormaliser(),
-                new WhiteSpaceTokenBreaker(new NoActionTokenBreaker()),
+                new WhiteSpaceTokenBreaker(),
                 weightedValues => weightedValues.Sum(),
                 new NullLogger()
             );
