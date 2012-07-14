@@ -14,9 +14,6 @@ namespace FullTextIndexer.TokenBreaking
         private ITokenBreaker _optionalWrappedTokenBreaker;
         public WhiteSpaceTokenBreaker(ITokenBreaker optionalWrappedTokenBreaker)
         {
-            if (optionalWrappedTokenBreaker == null)
-                throw new ArgumentNullException("optionalWrappedTokenBreaker");
-
             _optionalWrappedTokenBreaker = optionalWrappedTokenBreaker;
         }
         public WhiteSpaceTokenBreaker() : this(null) { }
