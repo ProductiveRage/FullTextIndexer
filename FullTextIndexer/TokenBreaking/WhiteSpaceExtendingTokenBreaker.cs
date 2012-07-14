@@ -27,7 +27,7 @@ namespace FullTextIndexer.TokenBreaking
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
         /// </summary>
-        public NonNullOrEmptyStringList Break(string value)
+        public NonNullImmutableList<WeightAdjustingToken> Break(string value)
         {
             if (value == null)
                 throw new ArgumentNullException("value");

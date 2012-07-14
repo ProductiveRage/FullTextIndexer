@@ -30,28 +30,45 @@ namespace FullTextIndexer.Indexes
                 throw new ArgumentNullException("matchCombiner");
 
             // Break down the source string and look for matches in the data, group the results by data key
-            var allMatchesByKey = new Dictionary<TKey, List<WeightedTokenMatch>>(
+            var allMatchesByKey = new Dictionary<TKey, Dictionary<string, List<float>>>(
                 index.KeyComparer
             );
-            var tokens = new NonNullOrEmptyStringList(
-                tokenBreaker.Break(source).Distinct(index.TokenComparer)
-            );
-            foreach (var token in tokens)
+            var weightAdjustedTokens = tokenBreaker.Break(source);
+            foreach (var weightAdjustedToken in weightAdjustedTokens)
             {
-                foreach (var match in index.GetMatches(token))
+                foreach (var match in index.GetMatches(weightAdjustedToken.Token))
                 {
-                    if (!allMatchesByKey.ContainsKey(match.Key))
-                        allMatchesByKey.Add(match.Key, new List<WeightedTokenMatch>());
-                    allMatchesByKey[match.Key].Add(new WeightedTokenMatch(token, match.Weight));
+                    // Initialise / retrieve all token data for particular match by key
+                    Dictionary<string, List<float>> tokenMatchDataForEntry;
+                    if (!allMatchesByKey.TryGetValue(match.Key, out tokenMatchDataForEntry))
+                    {
+                        tokenMatchDataForEntry = new Dictionary<string, List<float>>(index.TokenComparer);
+                        allMatchesByKey.Add(match.Key, tokenMatchDataForEntry);
+                    }
+
+                    // Initialise / retrieve data for the current token for the particular match by key
+                    if (!tokenMatchDataForEntry.ContainsKey(weightAdjustedToken.Token))
+                        tokenMatchDataForEntry.Add(weightAdjustedToken.Token, new List<float>());
+
+                    // Add the new weight value
+                    tokenMatchDataForEntry[weightAdjustedToken.Token].Add(match.Weight * weightAdjustedToken.WeightMultiplier);
                 }
             }
 
-            // Combine the data for each key, if AllBrokenTokensMustBeMatched is specified then skip over any keys that don't match all of the tokens
+            // Combine the data for each key
+            var allTokens = new NonNullOrEmptyStringList(
+                weightAdjustedTokens.Select(t => t.Token).Distinct(index.TokenComparer)
+            );
             var combinedData = new List<WeightedEntry<TKey>>();
             foreach (var match in allMatchesByKey)
             {
                 // If a weight of zero is returned then the match should be ignored
-                var weight = matchCombiner(match.Value.ToNonNullImmutableList(), tokens);
+                // - If all tokens are matched for this entry then the number of number of match.Value entries will be the same as the number of distinct broken tokens since
+                //   the same string comparer / normaliser is used by the GetMatches calls 
+                var weight = matchCombiner(
+                    match.Value.Select(v => new WeightedTokenMatch(v.Key, v.Value.ToImmutableList())).ToNonNullImmutableList(),
+                    allTokens
+                );
                 if (weight < 0)
                     throw new Exception("matchCombiner returned negative weight - invalid");
                 else if (weight > 0)
@@ -64,19 +81,23 @@ namespace FullTextIndexer.Indexes
         /// This will never be called with either null or empty lists. It must always return a value or zero or greater, if zero is returned then the match will excluded from
         /// final resultset.
         /// </summary>
-        public delegate float MatchCombiner(NonNullImmutableList<WeightedTokenMatch> tokenMatches, NonNullOrEmptyStringList allTokens);
+        public delegate float MatchCombiner(NonNullImmutableList<WeightedTokenMatch> matchedTokens, NonNullOrEmptyStringList allTokens);
 
         public class WeightedTokenMatch
         {
-            public WeightedTokenMatch(string matchedToken, float weight)
+            public WeightedTokenMatch(string matchedToken, ImmutableList<float> weights)
             {
                 if (string.IsNullOrWhiteSpace(matchedToken))
                     throw new ArgumentException("Null or empty token specified");
-                if (weight <= 0)
-                    throw new ArgumentOutOfRangeException("weight", "must be > 0");
+                if (weights == null)
+                    throw new ArgumentNullException("weights");
+                if (weights.Count == 0)
+                    throw new ArgumentException("weight may not be an empty list");
+                if (weights.Any(w => w <= 0))
+                    throw new ArgumentException("weights may not contain any values of zero or less");
 
                 MatchedToken = matchedToken;
-                Weight = weight;
+                Weights = weights;
             }
 
             /// <summary>
@@ -85,9 +106,9 @@ namespace FullTextIndexer.Indexes
             public string MatchedToken { get; private set; }
 
             /// <summary>
-            /// This will always be greater than zero
+            /// This will always never be null or empty and all values will be greater than zero
             /// </summary>
-            public float Weight { get; private set; }
+            public ImmutableList<float> Weights { get; private set; }
         }
     }
 }

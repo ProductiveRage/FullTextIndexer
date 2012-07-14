@@ -98,9 +98,10 @@ namespace FullTextIndexer.IndexGenerators
                         timeElapsedForNextUpdateMessage = timer.Elapsed.Add(TimeSpan.FromSeconds(5));
                     }
 
-                    foreach (var normalisedToken in _tokenBreaker.Break(preBrokenContent.Content).Select(token => _sourceStringComparer.GetNormalisedString(token)))
+                    foreach (var weightedTokenMatch in _tokenBreaker.Break(preBrokenContent.Content))
                     {
                         // Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
+                        var normalisedToken = _sourceStringComparer.GetNormalisedString(weightedTokenMatch.Token);
                         if (normalisedToken == "")
                             continue;
 
@@ -115,7 +116,7 @@ namespace FullTextIndexer.IndexGenerators
                             allDataForToken.Add(preBrokenContent.Key, new List<float>());
 
                         allDataForToken[preBrokenContent.Key].Add(
-                            contentRetriever.TokenWeightDeterminer(normalisedToken)
+                            contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier
                         );
                     }
                 }

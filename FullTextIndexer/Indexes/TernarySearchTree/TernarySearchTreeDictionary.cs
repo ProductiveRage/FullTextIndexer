@@ -11,7 +11,6 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
     {
         private Node _root;
         private IStringNormaliser _keyNormaliser;
-
         public TernarySearchTreeDictionary(IEnumerable<KeyValuePair<string, TValue>> data, IStringNormaliser keyNormaliser)
         {
             if (data == null)
