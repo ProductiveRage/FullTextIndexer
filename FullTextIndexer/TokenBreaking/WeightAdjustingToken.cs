@@ -11,6 +11,9 @@ namespace FullTextIndexer.TokenBreaking
                 throw new ArgumentException("Null/blank token specified");
             if ((weightMultiplier <= 0) || (weightMultiplier > 1))
                 throw new ArgumentOutOfRangeException("weightMultiplier");
+
+            Token = token;
+            WeightMultiplier = weightMultiplier;
         }
 
         /// <summary>
