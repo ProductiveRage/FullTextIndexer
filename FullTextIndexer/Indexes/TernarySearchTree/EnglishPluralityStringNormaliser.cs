@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace FullTextIndexer.Indexes.TernarySearchTree
 {
@@ -67,6 +68,7 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
                 (PreNormaliserWorkOptions)info.GetValue("_preNormaliserWork", typeof(PreNormaliserWorkOptions))
             ) { }
 
+        [SecurityCritical]
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             // Unfortunately we can't serialise the generated normaliser (we'll get a "Cannot serialize delegates over unmanaged function pointers, dynamic
