@@ -119,7 +119,7 @@ namespace FullTextIndexer.Indexes
         /// This will return a new IndexData instance without any WeightedEntry values whose Keys match the removeIf predicate. If tokens are left without any WeightedEntry
         /// values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
         /// </summary>
-        public IndexData<TKey> Remove(Predicate<TKey> removeIf)
+        public IIndexData<TKey> Remove(Predicate<TKey> removeIf)
         {
             if (removeIf == null)
                 throw new ArgumentNullException("removeIf");
