@@ -12,7 +12,7 @@ namespace FullTextIndexer.Indexes
         /// This will break a given source string and return results based upon the combination of partial matches (so results that only match part of the source string may be included
         /// in the returned data). The token breaker and the match combiner must be specified by the caller - if the match combiner returns zero then the result will not be included in
         /// the final data. To require that all tokens in the source content be present for any returned results, the following matchCombiner could be specified:
-        ///  (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.Sum(m => m.Weight)
+        ///  (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.SelectMany(m => m.Weights).Sum()
         /// </summary>
         public static NonNullImmutableList<WeightedEntry<TKey>> GetPartialMatches<TKey>(
             this IIndexData<TKey> index,
