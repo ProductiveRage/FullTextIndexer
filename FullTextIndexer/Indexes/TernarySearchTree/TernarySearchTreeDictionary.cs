@@ -87,6 +87,13 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             if (key == null)
                 throw new ArgumentNullException("key");
 
+            if (_root == null)
+            {
+                // If root is null then there is no data
+                value = default(TValue);
+                return false;
+            }
+
             var normalisedKey = _keyNormaliser.GetNormalisedString(key);
             if (normalisedKey != "")
             {
