@@ -20,14 +20,14 @@ namespace FullTextIndexer.IndexGenerators
         private IEqualityComparer<TKey> _dataKeyComparer;
         private IStringNormaliser _sourceStringComparer;
         private ITokenBreaker _tokenBreaker;
-        private WeightedEntryCombiner _weightedEntryCombiner;
+        private IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
         private ILogger _logger;
         public IndexGenerator(
             NonNullImmutableList<ContentRetriever<TSource, TKey>> contentRetrievers,
             IEqualityComparer<TKey> dataKeyComparer,
             IStringNormaliser sourceStringComparer,
             ITokenBreaker tokenBreaker,
-            WeightedEntryCombiner weightedEntryCombiner,
+            IndexGenerator.WeightedEntryCombiner weightedEntryCombiner,
             ILogger logger)
         {
             if (contentRetrievers == null)
@@ -50,11 +50,6 @@ namespace FullTextIndexer.IndexGenerators
             _weightedEntryCombiner = weightedEntryCombiner;
             _logger = logger;
         }
-
-        /// <summary>
-        /// This must always return a value greater than zero, it will never be provided a null or empty list of values and none of the values will be zero of less.
-        /// </summary>
-        public delegate float WeightedEntryCombiner(ImmutableList<float> weightedValues);
 
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
@@ -165,5 +160,13 @@ namespace FullTextIndexer.IndexGenerators
             );
             return indexData;
         }
+    }
+
+    public class IndexGenerator
+    {
+        /// <summary>
+        /// This must always return a value greater than zero, it will never be provided a null or empty list of values and none of the values will be zero of less.
+        /// </summary>
+        public delegate float WeightedEntryCombiner(ImmutableList<float> weightedValues);
     }
 }
