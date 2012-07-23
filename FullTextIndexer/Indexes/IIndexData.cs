@@ -16,7 +16,7 @@ namespace FullTextIndexer.Indexes
         /// a case where there are different TokenComparer implementations on this instance and on dataToAdd, the comparer from the current instance will be used.
         /// It is recommended that a consistent TokenComparer be used at all times. An exception will be thrown for null dataToAdd or weightCombiner references.
         /// </summary>
-        IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, Func<float, float, float> weightCombiner);
+        IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, IndexGenerators.IndexGenerator.WeightedEntryCombiner weightCombiner);
 
         /// <summary>
         /// This will return a new instance without any WeightedEntry values whose Keys match the removeIf predicate. If tokens are left without any WeightedEntry

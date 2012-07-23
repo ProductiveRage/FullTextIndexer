@@ -51,7 +51,7 @@ namespace FullTextIndexer.Indexes
         /// In a case where there are different TokenComparer implementations on this instance and on dataToAdd, the comparer from the current instance will be used. It
         /// is recommended that a consistent TokenComparer be used at all times. An exception will be thrown for null dataToAdd or weightCombiner references.
         /// </summary>
-        public IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, Func<float, float, float> weightCombiner)
+        public IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, IndexGenerators.IndexGenerator.WeightedEntryCombiner weightCombiner)
         {
             if (indexesToAdd == null)
                 throw new ArgumentNullException("indexesToAdd");
@@ -77,7 +77,7 @@ namespace FullTextIndexer.Indexes
                     combinedContent[entry.Key] = combinedContent[entry.Key]
                         .Concat(entry.Value)
                         .GroupBy(weightedEntries => weightedEntries.Key, _dataKeyComparer)
-                        .Select(g => new WeightedEntry<TKey>(g.Key, CombineWeights(g.Select(e => e.Weight), weightCombiner)))
+                        .Select(g => new WeightedEntry<TKey>(g.Key, weightCombiner(g.Select(e => e.Weight).ToImmutableList())))
                         .ToNonNullImmutableList();
                 }
             }
@@ -95,24 +95,6 @@ namespace FullTextIndexer.Indexes
         public IDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> ToDictionary()
         {
             return _data.ToDictionary();
-        }
-
-        /// <summary>
-        /// This will throw an exception for null weights, an empty weights set or a null weightCombiner
-        /// </summary>
-        private float CombineWeights(IEnumerable<float> weights, Func<float, float, float> weightCombiner)
-        {
-            if (weights == null)
-                throw new ArgumentNullException("weightCombiner");
-            if (!weights.Any())
-                throw new ArgumentException("must not be empty", "weightCombiner");
-            if (weightCombiner == null)
-                throw new ArgumentNullException("weightCombiner");
-
-            var weight = weights.First();
-            foreach (var weightToAdd in weights.Skip(1))
-                weight = weightCombiner(weight, weightToAdd);
-            return weight;
         }
 
         /// <summary>
