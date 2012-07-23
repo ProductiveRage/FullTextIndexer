@@ -52,6 +52,7 @@
     <Compile Include="IndexGenerators\IndexGenerator.cs" />
     <Compile Include="IndexGenerators\PreBrokenContent.cs" />
     <Compile Include="TokenBreaking\ConsecutiveTokenCombiningTokenBreaker.cs" />
+    <Compile Include="TokenBreaking\PartialMatchingTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WeightAdjustingToken.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceExtendingTokenBreaker.cs" />
     <Compile Include="TokenBreaking\WhiteSpaceTokenBreaker.cs" />
