@@ -48,6 +48,7 @@
     <Compile Include="Indexes\IndexData_Extensions.cs" />
     <Compile Include="Indexes\WeightedEntry.cs" />
     <Compile Include="IndexGenerators\ContentRetriever.cs" />
+    <Compile Include="IndexGenerators\DefaultEqualityComparer.cs" />
     <Compile Include="IndexGenerators\IIndexGenerator.cs" />
     <Compile Include="IndexGenerators\IndexGenerator.cs" />
     <Compile Include="IndexGenerators\PreBrokenContent.cs" />

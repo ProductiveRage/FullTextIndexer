@@ -4,10 +4,10 @@ using System.Linq;
 using Common.Lists;
 using Common.Logging;
 using FullTextIndexer.Indexes;
+using FullTextIndexer.Indexes.TernarySearchTree;
 using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 using Xunit;
-using FullTextIndexer.Indexes.TernarySearchTree;
 
 namespace UnitTests.IndexGenerators
 {
@@ -24,7 +24,7 @@ namespace UnitTests.IndexGenerators
                         token => 1f
                     )                        
                 }),
-                new IntEqualityComparer(),
+                new DefaultEqualityComparer<int>(),
                 new CaseInsensitiveStringNormaliser(),
                 new WhiteSpaceTokenBreaker(),
                 weightedValues => weightedValues.Sum(),
@@ -79,18 +79,6 @@ namespace UnitTests.IndexGenerators
         {
             public int Key { get; set; }
             public string Name { get; set; }
-        }
-
-        private class IntEqualityComparer : IEqualityComparer<int>
-        {
-            public bool Equals(int x, int y)
-            {
-                return (x == y);
-            }
-            public int GetHashCode(int obj)
-            {
-                return obj;
-            }
         }
 
         private class CaseInsensitiveStringNormaliser : IStringNormaliser
