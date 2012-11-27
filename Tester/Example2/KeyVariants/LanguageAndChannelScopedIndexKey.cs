@@ -52,7 +52,9 @@ namespace Tester.Example2.KeyVariants
 
         public override int GetHashCode()
         {
-            return String.Format("LanguageAndChannelScopedIndexKey-{0}-{1}-{2}", ProductKey, Language.Key, ChannelKey).GetHashCode();
+            // Since the overridden ToString method will consistently encapsulate all of the information for this instance
+            // we use it to override the GetHashCode method, consistent with the overridden Equals implementation
+            return ToString().GetHashCode();
         }
 
         public override string ToString()
