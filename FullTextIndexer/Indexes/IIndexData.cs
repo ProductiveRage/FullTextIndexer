@@ -13,8 +13,9 @@ namespace FullTextIndexer.Indexes
 
         /// <summary>
         /// This will return a new instance that combines the source instance's data with the data other IndexData instances using the specified weight combiner. In
-        /// a case where there are different TokenComparer implementations on this instance and on dataToAdd, the comparer from the current instance will be used.
-        /// It is recommended that a consistent TokenComparer be used at all times. An exception will be thrown for null dataToAdd or weightCombiner references.
+        /// a case where there are different TokenComparer implementations on this instance and on any of the indexesToAdd, the comparer from the current instance
+        /// will be used. It is recommended that a consistent TokenComparer be used at all times. An exception will be thrown for null dataToAdd or weightCombiner
+        /// references.
         /// </summary>
         IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, IndexGenerators.IndexGenerator.WeightedEntryCombiner weightCombiner);
 
