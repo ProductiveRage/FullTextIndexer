@@ -82,7 +82,7 @@ namespace Tester.Example1
                 
             return new IndexGenerator<Product, int>(
                 contentRetrievers.ToNonNullImmutableList(),
-                new IntEqualityComparer(),
+                new DefaultEqualityComparer<int>(),
                 _sourceStringComparer,
                 _tokenBreaker,
                 weightedValues => weightedValues.Sum(),
@@ -130,19 +130,6 @@ namespace Tester.Example1
             if (multiplier <= 0)
                 throw new ArgumentOutOfRangeException("multiplier", "must be greater than zero");
             return token => multiplier * (Constants.GetStopWords("en").Contains(token, _sourceStringComparer) ? 0.01f : 1f);
-        }
-        
-        [Serializable]
-        private class IntEqualityComparer : IEqualityComparer<int>
-        {
-            public bool Equals(int x, int y)
-            {
-                return (x == y);
-            }
-            public int GetHashCode(int obj)
-            {
-                return obj;
-            }
         }
     }
 }

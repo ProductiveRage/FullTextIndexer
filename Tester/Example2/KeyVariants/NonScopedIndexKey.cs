@@ -1,27 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
+using Tester.Example2.SourceData;
 
 namespace Tester.Example2.KeyVariants
 {
-    /// <summary>
-    /// As IIndexKey implement IEquality for IIndexKey, this class is straight-forward
-    /// </summary>
-    public sealed class IndexKeyEqualityComparer : IEqualityComparer<IIndexKey>
+    public sealed class NonScopedIndexKey : IIndexKey
     {
-        public bool Equals(IIndexKey x, IIndexKey y)
+        public NonScopedIndexKey(int productKey)
         {
-            if ((x == null) && (y == null))
-                return true;
-            else if ((x == null) || (y == null))
-                return false;
-            return x.Equals(y);
+            ProductKey = productKey;
         }
 
-        public int GetHashCode(IIndexKey obj)
+        public int ProductKey { get; private set; }
+
+        /// <summary>
+        /// This will throw an exception for a null language reference
+        /// </summary>
+        public bool IsApplicableFor(LanguageDetails language, int channelKey)
         {
-            if (obj == null)
-                throw new ArgumentNullException("obj");
-            return obj.GetHashCode();
+            if (language == null)
+                throw new ArgumentNullException("language");
+
+            return true; // This isn't scoped to any specific language or channel so it's always applicable
+        }
+
+        public bool Equals(IIndexKey obj)
+        {
+            if (obj == null || (obj.GetType() != GetType()))
+                return false;
+            return (obj.ProductKey == ProductKey);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as IIndexKey);
+        }
+
+        public override int GetHashCode()
+        {
+            // Since the overridden ToString method will consistently encapsulate all of the information for this instance
+            // we use it to override the GetHashCode method, consistent with the overridden Equals implementation
+            return ToString().GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}:{1}", base.ToString(), ProductKey);
         }
     }
 }

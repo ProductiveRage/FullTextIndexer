@@ -134,7 +134,7 @@ namespace Tester.Example2
             
             return new IndexGenerator<Product, IIndexKey>(
                 contentRetrievers.ToNonNullImmutableList(),
-                new IndexKeyEqualityComparer(),
+                new DefaultEqualityComparer<IIndexKey>(),
                 _sourceStringComparer,
                 _tokenBreaker,
                 weightedValues => weightedValues.Sum(),
