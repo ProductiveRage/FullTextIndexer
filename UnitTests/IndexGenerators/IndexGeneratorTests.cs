@@ -60,7 +60,7 @@ namespace UnitTests.IndexGenerators
 
             Comparison<WeightedEntry<int>> sorter = (x, y) =>
             {
-                var keyComparison = x.Key.CompareTo(y);
+                var keyComparison = x.Key.CompareTo(y.Key);
                 if (keyComparison != 0)
                     return keyComparison;
                 return x.Weight.CompareTo(y.Weight);
