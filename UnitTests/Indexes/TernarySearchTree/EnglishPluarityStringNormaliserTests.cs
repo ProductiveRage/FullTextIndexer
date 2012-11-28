@@ -18,13 +18,13 @@ namespace UnitTests.Indexes.TernarySearchTree
         [Fact]
         public void CatIsTransformedToCat_ses_es_s()
         {
-            Test("Cat", "Cat[ses][es][s]");
+            Test("cat", "cat|ses|es|s");
         }
 
         [Fact]
         public void CatsIsTransformedToCat_ses_es_s()
         {
-            Test("Cats", "Cat[ses][es][s]");
+            Test("cats", "cat|ses|es|s");
         }
 
         private void Test(string valueToNormalise, string expected)
