@@ -375,6 +375,12 @@ namespace FullTextIndexer.Indexes.TernarySearchTree
             // eg. medium / media
             new PluralEntry(new[] { "ium", "ia" }, MatchTypeOptions.SuffixOnly),
 
+            // eg. one / ones,  tone / tones
+            new PluralEntry(new[] { "ne", "nes" }, MatchTypeOptions.SuffixOnly),
+
+            // eg. tome / tomes (won't include "me" as SuffixOnly requires that the word length be greater than the suffix length)
+            new PluralEntry(new[] { "me", "mes" }, MatchTypeOptions.SuffixOnly),
+
             // Common special cases that have to come before the "ses", es", "s" form
             new PluralEntry(new[] { "index", "indexes", "indices" }, MatchTypeOptions.WholeWord),
             new PluralEntry(new[] { "matrix", "matrices" }, MatchTypeOptions.WholeWord),
