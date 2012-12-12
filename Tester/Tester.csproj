@@ -49,7 +49,6 @@
     <Compile Include="Example1\SourceData\AddressDetails.cs" />
     <Compile Include="Example1\SourceData\Product.cs" />
     <Compile Include="Example1\Test.cs" />
-    <Compile Include="Example2\KeyVariants\IndexKeyEqualityComparer.cs" />
     <Compile Include="Example2\KeyVariants\IIndexKey.cs" />
     <Compile Include="Example2\KeyVariants\LanguageAndChannelScopedIndexKey.cs">
       <SubType>Code</SubType>
