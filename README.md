@@ -8,9 +8,9 @@ The Index Generator can assign different weights to tokens extracted from differ
 
 There are some interesting implementation details incorporated for performance - the TernarySearchTreeDictionary used for token lookups in the generated Index instances, the singly-linked-list persistent ImmutableList and the compiled LINQ Expressions in the EnglishPluralityStringNormaliser.
 
-## The example!
+## The example
 
-This example will generate an index from a list of Posts. The manner in which tokens are extracted from the data is specified in the GetPostIndexGenerator method; greater weight is given to tokens extracted from the Title than the Content property, weight is greatly reduced for English stop words in either property, an EnglishPluralityStringNormaliser is specified as the index search comparer, input strings are split on whitespace and common word-break punctuation (such as brackets and  commas) and where the same token is identified multiple times for the same Post the weights will be combined in an additive manner.
+The following will generate an index from a list of Posts. The manner in which tokens are extracted from the data is specified in the GetPostIndexGenerator method; greater weight is given to tokens extracted from the Title than the Content property, weight is greatly reduced for English stop words in either property, an EnglishPluralityStringNormaliser is specified as the index search comparer, input strings are split on whitespace and common word-break punctuation (such as brackets and  commas) and where the same token is identified multiple times for the same Post the weights will be combined in an additive manner.
 
 Some simple data is pushed through the generator and then a query performed on that index. Using the "GetPartialMatches" method breaks the query term "cat posts" into separate searches for "cat" and "posts" and combines the results - the third argument to GetPartialMatches (the "matchCombiner" lambda) specifies that only Posts that match all of the separate terms (both "cat" *and* "post") may be elligible to be returned in the results. In the example, both Posts are both found to match though Post 2 gets a higher weight as it matches "cat" twice (to "cats" and "Cats") and "posts" once (to "post") while Post 1 matches "cat" once and "posts" once.
 
@@ -125,3 +125,5 @@ Some simple data is pushed through the generator and then a query performed on t
         }
       }
     }
+
+More information about this project - some of its approaches, some of the implementation details, some alternate ways to configure the IndexGenerator and somewhere it's actually used! - can be found at my [Full Text Indexer Round-up](http://www.productiverage.com/Read/40) blog post.
