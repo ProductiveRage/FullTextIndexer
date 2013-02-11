@@ -86,7 +86,8 @@ namespace Common.Lists
             );
         }
 
-        private class Validator : IValueValidator<T>
+        [Serializable]
+		private class Validator : IValueValidator<T>
         {
             private IValueValidator<T> _optionalInnerValidator;
             public Validator(IValueValidator<T> optionalInnerValidator)
