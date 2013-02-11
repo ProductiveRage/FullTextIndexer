@@ -68,7 +68,8 @@ namespace Common.Lists
             );
         }
 
-        private class Validator : IValueValidator<string>
+        [Serializable]
+		private class Validator : IValueValidator<string>
         {
             /// <summary>
             /// This will throw an exception for a value that does pass validation requirements

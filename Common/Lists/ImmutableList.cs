@@ -351,7 +351,8 @@ namespace Common.Lists
             }
         }
 
-        protected class Node
+        [Serializable]
+		protected class Node
         {
             public Node(T value, Node previous)
             {
