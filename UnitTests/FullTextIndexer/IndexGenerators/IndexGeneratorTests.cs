@@ -9,7 +9,7 @@ using FullTextIndexer.IndexGenerators;
 using FullTextIndexer.TokenBreaking;
 using Xunit;
 
-namespace UnitTests.IndexGenerators
+namespace UnitTests.FullTextIndexer.IndexGenerators
 {
     public class IndexGeneratorTests
     {

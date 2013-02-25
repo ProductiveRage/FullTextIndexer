@@ -2,7 +2,7 @@
 using FullTextIndexer.Indexes.TernarySearchTree;
 using Xunit;
 
-namespace UnitTests.Indexes.TernarySearchTree
+namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
 {
     public class DefaultStringNormaliserTests
     {
