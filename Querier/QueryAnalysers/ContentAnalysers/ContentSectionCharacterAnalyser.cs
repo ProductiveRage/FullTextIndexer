@@ -15,6 +15,8 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 		{
 			if (terminationCharacters == null)
 				throw new ArgumentNullException("terminationCharacters");
+			if (terminationCharacters.Contains('\\'))
+				throw new ArgumentException("may not contain \\ as this is reserved as an escape character", "terminationCharacters");
 			if (contentToQuerySegmentTranslator == null)
 				throw new ArgumentNullException("contentToQuerySegmentTranslator");
 
@@ -33,6 +35,7 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 				throw new ArgumentNullException("stringNavigator");
 
 			var contentBuilder = new StringBuilder();
+			var processNextCharacterStrictlyAsContent = false;
 			while (true)
 			{
 				if (stringNavigator.CurrentCharacter == null)
@@ -44,14 +47,20 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 					);
 				}
 
-				// TODO: Support an escape character
-				if (_terminationCharacters.Contains(stringNavigator.CurrentCharacter.Value))
+				if (processNextCharacterStrictlyAsContent)
+					processNextCharacterStrictlyAsContent = false;
+				else
 				{
-					var content = contentBuilder.ToString();
-					return new ProcessedQuerySegment(
-						stringNavigator,
-						(content == "") ? (IQuerySegment)new NoMatchContentQuerySegment() : _contentToQuerySegmentTranslator(content)
-					);
+					if (stringNavigator.CurrentCharacter == '\\')
+						processNextCharacterStrictlyAsContent = true;
+					else if (_terminationCharacters.Contains(stringNavigator.CurrentCharacter.Value))
+					{
+						var content = contentBuilder.ToString();
+						return new ProcessedQuerySegment(
+							stringNavigator,
+							(content == "") ? (IQuerySegment)new NoMatchContentQuerySegment() : _contentToQuerySegmentTranslator(content)
+						);
+					}
 				}
 
 				contentBuilder.Append(stringNavigator.CurrentCharacter.Value);
