@@ -52,7 +52,11 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 				else
 				{
 					if (stringNavigator.CurrentCharacter == '\\')
+					{
 						processNextCharacterStrictlyAsContent = true;
+						stringNavigator = stringNavigator.Next;
+						continue;
+					}
 					else if (_terminationCharacters.Contains(stringNavigator.CurrentCharacter.Value))
 					{
 						var content = contentBuilder.ToString();

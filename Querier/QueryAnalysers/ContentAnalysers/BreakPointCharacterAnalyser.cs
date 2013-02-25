@@ -64,6 +64,7 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 					if (stringNavigator.CurrentCharacter == '\\')
 					{
 						processNextCharacterStrictlyAsContent = true;
+						stringNavigator = stringNavigator.Next;
 						continue;
 					}
 
