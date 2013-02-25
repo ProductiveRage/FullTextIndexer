@@ -43,6 +43,7 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 				throw new ArgumentNullException("stringNavigator");
 
 			var querySegments = new NonNullImmutableList<IQuerySegment>();
+			var processNextCharacterStrictlyAsContent = false;
 			while (stringNavigator.CurrentCharacter != null)
 			{
 				// If this analyser instance only has to process a single segment and this loop has already achieved that then break out now
@@ -56,71 +57,80 @@ namespace Querier.QueryAnalysers.ContentAnalysers
 					continue;
 				}
 
-				// TODO: Support an escape character
-
-				// A "+" symbol means that the next segment is compulsory and should be wrapped in a CompulsoryQuerySegment (only the NEXT segment, so
-				// the SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly configuration is specified for the new BreakPointCharacterAnalyser)
-				if (stringNavigator.CurrentCharacter == '+')
+				if (processNextCharacterStrictlyAsContent)
+					processNextCharacterStrictlyAsContent = false;
+				else
 				{
-					var compulsorySectionProcessor = new BreakPointCharacterAnalyser(0, SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly);
-					var compulsorySectionResult = compulsorySectionProcessor.Process(stringNavigator.Next);
-					querySegments = querySegments.Add(
-						new CompulsoryQuerySegment(
-							compulsorySectionResult.QuerySegment
-						)
-					);
-					stringNavigator = compulsorySectionResult.StringNavigator;
-					continue;
-				}
+					if (stringNavigator.CurrentCharacter == '\\')
+					{
+						processNextCharacterStrictlyAsContent = true;
+						continue;
+					}
 
-				// A "-" symbol means that the next segment should be excluded from results
-				if (stringNavigator.CurrentCharacter == '-')
-				{
-					var compulsorySectionProcessor = new BreakPointCharacterAnalyser(0, SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly);
-					var compulsorySectionResult = compulsorySectionProcessor.Process(stringNavigator.Next);
-					querySegments = querySegments.Add(
-						new ExcludingQuerySegment(
-							compulsorySectionResult.QuerySegment
-						)
-					);
-					stringNavigator = compulsorySectionResult.StringNavigator;
-					continue;
-				}
+					// A "+" symbol means that the next segment is compulsory and should be wrapped in a CompulsoryQuerySegment (only the NEXT segment, so
+					// the SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly configuration is specified for the new BreakPointCharacterAnalyser)
+					if (stringNavigator.CurrentCharacter == '+')
+					{
+						var compulsorySectionProcessor = new BreakPointCharacterAnalyser(0, SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly);
+						var compulsorySectionResult = compulsorySectionProcessor.Process(stringNavigator.Next);
+						querySegments = querySegments.Add(
+							new CompulsoryQuerySegment(
+								compulsorySectionResult.QuerySegment
+							)
+						);
+						stringNavigator = compulsorySectionResult.StringNavigator;
+						continue;
+					}
 
-				// If an opening brace is encountered then the following content needs processing separately and wrapping into a single query segment
-				if (stringNavigator.CurrentCharacter == '(')
-				{
-					var bracketedSectionProcessor = new BreakPointCharacterAnalyser(_bracketingLevel + 1, SingleSegmentRestrictionOptions.DefaultBehaviour);
-					var bracketedSectionResult = bracketedSectionProcessor.Process(stringNavigator.Next);
-					querySegments = querySegments.Add(bracketedSectionResult.QuerySegment);
-					stringNavigator = bracketedSectionResult.StringNavigator.Next; // Skip over the closing bracket (if hit end of the content then this won't do any harm)
-					continue;
-				}
+					// A "-" symbol means that the next segment should be excluded from results
+					if (stringNavigator.CurrentCharacter == '-')
+					{
+						var compulsorySectionProcessor = new BreakPointCharacterAnalyser(0, SingleSegmentRestrictionOptions.RetrieveSingleSegmentOnly);
+						var compulsorySectionResult = compulsorySectionProcessor.Process(stringNavigator.Next);
+						querySegments = querySegments.Add(
+							new ExcludingQuerySegment(
+								compulsorySectionResult.QuerySegment
+							)
+						);
+						stringNavigator = compulsorySectionResult.StringNavigator;
+						continue;
+					}
 
-				// If a closing brace is encountered then (so long as the content is valid), we'll want to exit this loop since the processing for the
-				// nested section we must be inside has completed
-				if (stringNavigator.CurrentCharacter == ')')
-				{
-					// If we're inside a bracketed section and encounter a close bracket then we can't do any more processing inside this loop. If NOT
-					// inside a bracketed section when a close bracket is encountered then it's invalid content - just ignore the bracket and move on.
-					if (_bracketingLevel > 0)
-						break;
+					// If an opening brace is encountered then the following content needs processing separately and wrapping into a single query segment
+					if (stringNavigator.CurrentCharacter == '(')
+					{
+						var bracketedSectionProcessor = new BreakPointCharacterAnalyser(_bracketingLevel + 1, SingleSegmentRestrictionOptions.DefaultBehaviour);
+						var bracketedSectionResult = bracketedSectionProcessor.Process(stringNavigator.Next);
+						querySegments = querySegments.Add(bracketedSectionResult.QuerySegment);
+						stringNavigator = bracketedSectionResult.StringNavigator.Next; // Skip over the closing bracket (if hit end of the content then this won't do any harm)
+						continue;
+					}
 
-					stringNavigator = stringNavigator.Next;
-					continue;
-				}
+					// If a closing brace is encountered then (so long as the content is valid), we'll want to exit this loop since the processing for the
+					// nested section we must be inside has completed
+					if (stringNavigator.CurrentCharacter == ')')
+					{
+						// If we're inside a bracketed section and encounter a close bracket then we can't do any more processing inside this loop. If NOT
+						// inside a bracketed section when a close bracket is encountered then it's invalid content - just ignore the bracket and move on.
+						if (_bracketingLevel > 0)
+							break;
 
-				// A quote character means that the following content needs to be processed as a string of content and wrapped in a PreciseMatchQuerySegment
-				if (stringNavigator.CurrentCharacter == '"')
-				{
-					var quotedContentProcessor = new ContentSectionCharacterAnalyser(
-						new ImmutableList<char>(new[] { '"' }),
-						content => new PreciseMatchQuerySegment(content)
-					);
-					var quotedContentSectionResult = quotedContentProcessor.Process(stringNavigator.Next);
-					querySegments = querySegments.Add(quotedContentSectionResult.QuerySegment);
-					stringNavigator = quotedContentSectionResult.StringNavigator.Next; // Skip over the closing quote
-					continue;
+						stringNavigator = stringNavigator.Next;
+						continue;
+					}
+
+					// A quote character means that the following content needs to be processed as a string of content and wrapped in a PreciseMatchQuerySegment
+					if (stringNavigator.CurrentCharacter == '"')
+					{
+						var quotedContentProcessor = new ContentSectionCharacterAnalyser(
+							new ImmutableList<char>(new[] { '"' }),
+							content => new PreciseMatchQuerySegment(content)
+						);
+						var quotedContentSectionResult = quotedContentProcessor.Process(stringNavigator.Next);
+						querySegments = querySegments.Add(quotedContentSectionResult.QuerySegment);
+						stringNavigator = quotedContentSectionResult.StringNavigator.Next; // Skip over the closing quote
+						continue;
+					}
 				}
 
 				// Hit some actual content, start processing it using a ContentSectionCharacterAnalyser
