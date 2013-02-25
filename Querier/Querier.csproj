@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{030151E6-A34A-4996-BC7E-4D839A2CB356}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Querier</RootNamespace>
+    <AssemblyName>Querier</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="QueryAnalysers\ContentAnalysers\ProcessedQuerySegment.cs" />
+    <Compile Include="QueryAnalysers\ContentAnalysers\BreakPointCharacterAnalyser.cs" />
+    <Compile Include="QueryAnalysers\ContentAnalysers\NonNullImmutableList_IQuerySegment_Extensions.cs" />
+    <Compile Include="QueryAnalysers\ContentAnalysers\ContentSectionCharacterAnalyser.cs" />
+    <Compile Include="QueryAnalysers\QueryAnalyser.cs" />
+    <Compile Include="QueryAnalysers\IAnalyseQueries.cs" />
+    <Compile Include="QueryAnalysers\StringNavigators\GoneTooFarStringNavigator.cs" />
+    <Compile Include="QueryAnalysers\StringNavigators\IWalkThroughStrings.cs" />
+    <Compile Include="QueryAnalysers\StringNavigators\StringNavigator.cs" />
+    <Compile Include="QuerySegments\CombiningQuerySegment.cs" />
+    <Compile Include="QuerySegments\CompulsoryQuerySegment.cs" />
+    <Compile Include="QuerySegments\NoMatchContentQuerySegment.cs" />
+    <Compile Include="QuerySegments\ExcludingQuerySegment.cs" />
+    <Compile Include="QuerySegments\PreciseMatchQuerySegment.cs" />
+    <Compile Include="QuerySegments\ValueQuerySegment.cs" />
+    <Compile Include="QuerySegments\StandardMatchQuerySegment.cs" />
+    <Compile Include="QuerySegments\IQuerySegment.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{0E7590BE-6EB7-4515-9991-0C3BE5006409}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
