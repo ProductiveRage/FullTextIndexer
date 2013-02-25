@@ -38,9 +38,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Indexes\TernarySearchTree\DefaultStringNormaliserTests.cs" />
-    <Compile Include="Indexes\TernarySearchTree\EnglishPluarityStringNormaliserTests.cs" />
-    <Compile Include="IndexGenerators\IndexGeneratorTests.cs" />
+    <Compile Include="FullTextIndexer\Indexes\TernarySearchTree\DefaultStringNormaliserTests.cs" />
+    <Compile Include="FullTextIndexer\Indexes\TernarySearchTree\EnglishPluarityStringNormaliserTests.cs" />
+    <Compile Include="FullTextIndexer\IndexGenerators\IndexGeneratorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
