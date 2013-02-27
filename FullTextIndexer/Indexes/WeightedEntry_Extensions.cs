@@ -13,7 +13,7 @@ namespace FullTextIndexer.Indexes
             this NonNullImmutableList<WeightedEntry<TKey>> results,
             NonNullImmutableList<NonNullImmutableList<WeightedEntry<TKey>>> resultSetsToAdd,
             IEqualityComparer<TKey> keyComparer,
-            MatchCombiner<TKey> matchCombiner)
+            MatchCombiner matchCombiner)
         {
             if (results == null)
                 throw new ArgumentNullException("results");
@@ -24,23 +24,23 @@ namespace FullTextIndexer.Indexes
             if (matchCombiner == null)
                 throw new ArgumentNullException("matchCombiner");
 
-            var allMatchesByKey = new Dictionary<TKey, List<WeightedEntry<TKey>>>(
+            var allMatchesByKey = new Dictionary<TKey, ImmutableList<float>>(
                 keyComparer
             );
             foreach (var resultSet in resultSetsToAdd.Add(results))
             {
                 foreach (var result in resultSet)
                 {
-                    if (!allMatchesByKey.ContainsKey(result.Key))
-                        allMatchesByKey.Add(result.Key, new List<WeightedEntry<TKey>>());
-                    allMatchesByKey[result.Key].Add(result);
+					if (!allMatchesByKey.ContainsKey(result.Key))
+						allMatchesByKey.Add(result.Key, new ImmutableList<float>());
+					allMatchesByKey[result.Key] = allMatchesByKey[result.Key].Add(result.Weight);
                 }
             }
 
             var combinedData = new List<WeightedEntry<TKey>>();
             foreach (var match in allMatchesByKey)
             {
-                var weight = matchCombiner(match.Value.ToNonNullImmutableList());
+                var weight = matchCombiner(match.Value);
                 if (weight <= 0)
                     throw new Exception("matchCombiner return weight of zero or less - invalid");
                 combinedData.Add(new WeightedEntry<TKey>(match.Key, weight));
@@ -55,7 +55,7 @@ namespace FullTextIndexer.Indexes
             this NonNullImmutableList<WeightedEntry<TKey>> results,
             NonNullImmutableList<WeightedEntry<TKey>> resultsToAdd,
             IEqualityComparer<TKey> keyComparer,
-            MatchCombiner<TKey> matchCombiner)
+            MatchCombiner matchCombiner)
         {
             if (resultsToAdd == null)
                 throw new ArgumentNullException("resultsToAdd");
@@ -75,6 +75,6 @@ namespace FullTextIndexer.Indexes
         /// <summary>
         /// This will never be called with a null or empty list. It must always return a value greater than zero.
         /// </summary>
-        public delegate float MatchCombiner<TKey>(NonNullImmutableList<WeightedEntry<TKey>> matches);
+        public delegate float MatchCombiner(ImmutableList<float> matchWeights);
     }
 }
