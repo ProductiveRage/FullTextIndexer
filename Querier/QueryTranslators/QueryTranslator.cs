@@ -11,12 +11,11 @@ namespace Querier.QueryTranslators
 	/// <summary>
 	/// This will retrieve results from index data that match the specified IQuerySegment implementation requirements. Two index data sets are required; the
 	/// preciseMatchIndexData is used for retrieving results from PreciseMatchQuerySegment data while other data is retrieved from the standardMatchIndexData.
-	/// These two indexes should have the same source data (though likely different processing methods to build the index data) and both share the
-	/// same keyComparer as that specified in the QueryTranslator constructor. The matchCombiner is used to ensure that any set of query segments
-	/// returns only one WeightedEntry for any key. If a key appears multiple times in different nested query segments then the combination of
-	/// results for that key may occur multiple times - this allows, depending upon the MatchCombiner implementation, to give lower weight to
-	/// results the deeper nested that the originating query segments are (query segments are said to be nested if they are among the query
-	/// segments found in a CombiningQuerySegment).
+	/// These two indexes should have the same source data (though likely different processing methods to build the index data) and both share the same key
+	/// comparer. The matchCombiner is used to ensure that any set of query segments returns only one WeightedEntry for any key. If a key appears multiple
+	/// times in different nested query segments then the combination of results for that key may occur multiple times - this allows, depending upon the
+	/// MatchCombiner implementation, to give lower weight to results the deeper nested that the originating query segments are (query segments are said
+	/// to be nested if they are among the query segments found in a CombiningQuerySegment).
 	/// </summary>
 	public class QueryTranslator<TKey> : IQueryTranslator<TKey>
 	{
@@ -24,24 +23,22 @@ namespace Querier.QueryTranslators
 		private readonly CachingResultMatcher _preciseMatcher;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly MatchCombiner _matchCombiner;
-		public QueryTranslator(
-			IIndexData<TKey> standardMatchIndexData,
-			IIndexData<TKey> preciseMatchIndexData,
-			IEqualityComparer<TKey> keyComparer,
-			MatchCombiner matchCombiner)
+		public QueryTranslator(IIndexData<TKey> standardMatchIndexData, IIndexData<TKey> preciseMatchIndexData, MatchCombiner matchCombiner)
 		{
 			if (standardMatchIndexData == null)
 				throw new ArgumentNullException("standardMatchIndexData");
 			if (preciseMatchIndexData == null)
 				throw new ArgumentNullException("preciseMatchIndexData");
-			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
 			if (matchCombiner == null)
 				throw new ArgumentNullException("matchCombiner");
 
+			// Can't actually determine for sure that the KeyComparer of the standardMatchIndexData is equivalent to that of the preciseMatchIndexData
+			// (can't do an instance comparison since they may be different instances of the same implementation, they could even feasibly be different
+			// classes with identical functionality) so we'll have to assume that the caller is behaving themselves. We'll take the KeyComparer of the
+			// standardMatchIndexData for use when combining keys, excluding keys or otherwise processing the query segment requirements.
 			_standardMatcher = new CachingResultMatcher(standardMatchIndexData);
 			_preciseMatcher = new CachingResultMatcher(preciseMatchIndexData);
-			_keyComparer = keyComparer;
+			_keyComparer = standardMatchIndexData.KeyComparer;
 			_matchCombiner = matchCombiner;
 		}
 
