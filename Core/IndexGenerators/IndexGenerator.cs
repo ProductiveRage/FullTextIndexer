@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Common.Lists;
-using Common.Logging;
-using FullTextIndexer.Indexes;
-using FullTextIndexer.TokenBreaking;
-using FullTextIndexer.Indexes.TernarySearchTree;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Common.Logging;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.TokenBreaking;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Core.IndexGenerators
 {
     public class IndexGenerator<TSource, TKey> : IIndexGenerator<TSource, TKey> where TSource : class
     {

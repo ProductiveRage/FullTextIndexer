@@ -1,4 +1,4 @@
-﻿namespace Common.Lists
+﻿namespace FullTextIndexer.Common.Lists
 {
     public interface IValueValidator<T>
     {

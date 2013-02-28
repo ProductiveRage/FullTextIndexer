@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
-using FullTextIndexer.Indexes.TernarySearchTree;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
-namespace FullTextIndexer.Indexes
+namespace FullTextIndexer.Core.Indexes
 {
     [Serializable]
     public class IndexData<TKey> : IIndexData<TKey>

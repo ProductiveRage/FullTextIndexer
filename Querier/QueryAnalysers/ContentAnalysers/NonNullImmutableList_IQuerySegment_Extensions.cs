@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Common.Lists;
-using Querier.QuerySegments;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Querier.QuerySegments;
 
-namespace Querier.QueryAnalysers.ContentAnalysers
+namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 {
 	public static class NonNullImmutableList_IQuerySegment_Extensions
 	{

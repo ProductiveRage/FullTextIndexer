@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Core.IndexGenerators
 {
     /// <summary>
     /// This is responsible for retrieving a content section from a source item and assigning a weight to each token that results from breaking the content. It is not

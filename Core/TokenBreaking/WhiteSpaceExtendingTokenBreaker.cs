@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer.TokenBreaking
+namespace FullTextIndexer.Core.TokenBreaking
 {
     /// <summary>
     /// This will replace specified characters with whitespace. This can be useful for parsing content with code examples which separate keywords and variable names

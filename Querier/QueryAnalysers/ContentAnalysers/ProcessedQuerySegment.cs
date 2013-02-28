@@ -1,8 +1,8 @@
 ﻿using System;
-using Querier.QueryAnalysers.StringNavigators;
-using Querier.QuerySegments;
+using FullTextIndexer.Querier.QueryAnalysers.StringNavigators;
+using FullTextIndexer.Querier.QuerySegments;
 
-namespace Querier.QueryAnalysers.ContentAnalysers
+namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 {
 	public class ProcessedQuerySegment
 	{

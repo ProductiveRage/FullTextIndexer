@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer", "FullTextIndexer\FullTextIndexer.csproj", "{C1281962-80FF-4E5A-9251-F12A474ADA10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{C1281962-80FF-4E5A-9251-F12A474ADA10}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{448737D4-7361-4823-9F55-33E98974D47C}"
 EndProject

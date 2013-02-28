@@ -1,4 +1,4 @@
-﻿namespace FullTextIndexer.Indexes.TernarySearchTree
+﻿namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
     public interface ILookup<TKey, TValue>
     {

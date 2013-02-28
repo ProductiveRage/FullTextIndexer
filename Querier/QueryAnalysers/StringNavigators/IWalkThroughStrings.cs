@@ -1,4 +1,4 @@
-﻿namespace Querier.QueryAnalysers.StringNavigators
+﻿namespace FullTextIndexer.Querier.QueryAnalysers.StringNavigators
 {
 	public interface IWalkThroughStrings
 	{

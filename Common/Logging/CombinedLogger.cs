@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	[Serializable]
 	public class CombinedLogger : ILogger

@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security;
 
-namespace FullTextIndexer.Indexes.TernarySearchTree
+namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
     /// <summary>
     /// This will match common strings where one is the plural and the other the singular version of the same word. It not intended to be perfect and may

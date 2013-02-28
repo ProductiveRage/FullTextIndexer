@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FullTextIndexer.Indexes.TernarySearchTree
+namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
     [Serializable]
     public class TernarySearchTreeDictionary<TValue> : IEnumerable<string>

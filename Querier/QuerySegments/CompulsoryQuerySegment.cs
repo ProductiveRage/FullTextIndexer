@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	/// <summary>
 	/// For a set of query segments, the default behaviour is that data is considered to be identified by the query if it satisfies the requirements of any of the segments.

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer.TokenBreaking
+namespace FullTextIndexer.Core.TokenBreaking
 {
     /// <summary>
     /// Extract tokens from an input string using a specified Token Breaker and then generate partial match tokens for each entry by taking substrings

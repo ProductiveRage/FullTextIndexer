@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	/// <summary>
 	/// This logger does nothing, it doesn't even validate parameters

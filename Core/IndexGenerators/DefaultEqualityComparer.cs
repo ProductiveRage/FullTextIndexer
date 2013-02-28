@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Core.IndexGenerators
 {
     [Serializable]
     public class DefaultEqualityComparer<T> : IEqualityComparer<T>

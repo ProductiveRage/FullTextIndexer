@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	/// <summary>
 	/// This indicates a query segment value that a more forgiving string normaliser would be used with (unlike the PreciseMatchQuerySegment which indicates a value that must

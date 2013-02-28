@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Querier.QueryAnalysers.ContentAnalysers;
-using Querier.QueryAnalysers.StringNavigators;
-using Querier.QuerySegments;
+using FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers;
+using FullTextIndexer.Querier.QueryAnalysers.StringNavigators;
+using FullTextIndexer.Querier.QuerySegments;
 using Xunit;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
 namespace UnitTests.Querier.QueryAnalysers.ContentAnalysers
 {

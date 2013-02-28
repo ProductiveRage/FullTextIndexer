@@ -1,6 +1,6 @@
-﻿using Common.Lists;
+﻿using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer.TokenBreaking
+namespace FullTextIndexer.Core.TokenBreaking
 {
     /// <summary>
     /// When a content is broken up into individual tokens it may be desirable to assign different weights to tokens based upon the manner in which the tokens are extracted.

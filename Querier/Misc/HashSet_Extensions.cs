@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Querier.Misc
+namespace FullTextIndexer.Querier.Misc
 {
 	public static class HashSet_Extensions
 	{

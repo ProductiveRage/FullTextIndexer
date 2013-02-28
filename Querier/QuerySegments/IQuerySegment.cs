@@ -1,4 +1,4 @@
-﻿namespace Querier.QuerySegments
+﻿namespace FullTextIndexer.Querier.QuerySegments
 {
 	public interface IQuerySegment { }
 }

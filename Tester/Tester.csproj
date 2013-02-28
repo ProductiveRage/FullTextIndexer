@@ -78,9 +78,13 @@
       <Project>{0E7590BE-6EB7-4515-9991-0C3BE5006409}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FullTextIndexer\FullTextIndexer.csproj">
+    <ProjectReference Include="..\Core\Core.csproj">
       <Project>{C1281962-80FF-4E5A-9251-F12A474ADA10}</Project>
-      <Name>FullTextIndexer</Name>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Querier\Querier.csproj">
+      <Project>{030151E6-A34A-4996-BC7E-4D839A2CB356}</Project>
+      <Name>Querier</Name>
     </ProjectReference>
     <ProjectReference Include="..\UnitTests\UnitTests.csproj">
       <Project>{D71327C9-6886-4876-8199-9BC6F1055A61}</Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	public interface ILogger
 	{

@@ -1,8 +1,8 @@
-﻿using Common.Lists;
-using FullTextIndexer.Indexes;
-using Querier.QuerySegments;
+﻿using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Querier.QuerySegments;
 
-namespace Querier.QueryTranslators
+namespace FullTextIndexer.Querier.QueryTranslators
 {
 	/// <summary>
 	/// This will retrieve results from index data that match the specified IQuerySegment implementation requirements

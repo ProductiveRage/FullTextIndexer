@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	/// <summary>
 	/// This indicates that results that match the wrapped segment should not be included in the final results

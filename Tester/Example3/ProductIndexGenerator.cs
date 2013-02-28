@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
-using Common.Logging;
-using FullTextIndexer;
-using FullTextIndexer.Indexes;
-using FullTextIndexer.Indexes.TernarySearchTree;
-using FullTextIndexer.IndexGenerators;
-using FullTextIndexer.TokenBreaking;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Common.Logging;
+using FullTextIndexer.Core;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
+using FullTextIndexer.Core.IndexGenerators;
+using FullTextIndexer.Core.TokenBreaking;
 using Tester.Example3.SourceData;
 
 namespace Tester.Example3

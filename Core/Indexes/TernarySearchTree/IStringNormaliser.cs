@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FullTextIndexer.Indexes.TernarySearchTree
+namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
     public interface IStringNormaliser : IEqualityComparer<string>
     {

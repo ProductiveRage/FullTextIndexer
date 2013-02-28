@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 using Tester.Common;
 using Tester.Example2.SourceData;
 

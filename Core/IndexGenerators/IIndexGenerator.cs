@@ -1,7 +1,7 @@
-﻿using Common.Lists;
-using FullTextIndexer.Indexes;
+﻿using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Core.IndexGenerators
 {
     public interface IIndexGenerator<TSource, TKey> where TSource : class
     {
