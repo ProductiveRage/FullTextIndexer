@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	/// <summary>
 	/// These are listed in order of increasing severity

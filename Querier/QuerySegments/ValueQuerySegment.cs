@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	public abstract class ValueQuerySegment : IQuerySegment
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FullTextIndexer.TokenBreaking
+namespace FullTextIndexer.Core.TokenBreaking
 {
     public class WeightAdjustingToken
     {

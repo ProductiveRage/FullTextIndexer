@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
-using FullTextIndexer.Indexes;
-using FullTextIndexer.IndexGenerators;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.IndexGenerators;
 
 namespace UnitTests.Querier.QueryTranslators
 {

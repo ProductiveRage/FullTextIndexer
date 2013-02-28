@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
-using FullTextIndexer.TokenBreaking;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.TokenBreaking;
 
-namespace FullTextIndexer.Indexes
+namespace FullTextIndexer.Core.Indexes
 {
     public static class IndexData_Extensions
     {

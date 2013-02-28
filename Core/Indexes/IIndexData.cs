@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer.Indexes
+namespace FullTextIndexer.Core.Indexes
 {
     public interface IIndexData<TKey>
     {

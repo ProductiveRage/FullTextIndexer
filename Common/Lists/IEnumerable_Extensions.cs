@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Common.Lists
+namespace FullTextIndexer.Common.Lists
 {
 	public static class IEnumerable_Extensions
 	{

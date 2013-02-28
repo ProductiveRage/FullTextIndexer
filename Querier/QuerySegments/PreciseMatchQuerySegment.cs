@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	/// <summary>
 	/// This indicates a query segment that data must match precisely, a much more strict string normaliser would be used that for the StandardMatchQuerySegment

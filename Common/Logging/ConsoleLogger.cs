@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	/// <summary>
 	/// Write log messages to trace, formatted to include log level, date, time and exception details (message and stack trace) if non-null

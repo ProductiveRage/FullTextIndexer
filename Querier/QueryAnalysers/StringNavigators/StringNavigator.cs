@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Querier.QueryAnalysers.StringNavigators
+namespace FullTextIndexer.Querier.QueryAnalysers.StringNavigators
 {
 	public class StringNavigator : IWalkThroughStrings
 	{

@@ -1,6 +1,6 @@
-﻿using Querier.QuerySegments;
+﻿using FullTextIndexer.Querier.QuerySegments;
 
-namespace Querier.QueryAnalysers
+namespace FullTextIndexer.Querier.QueryAnalysers
 {
 	public interface IAnalyseQueries
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace Querier.QuerySegments
+namespace FullTextIndexer.Querier.QuerySegments
 {
 	/// <summary>
 	/// The default behaviour for a set of query segments is that data may be considered for the results if any of the query segments identify it, however this

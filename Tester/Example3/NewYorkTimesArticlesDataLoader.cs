@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Common.Lists;
-using Common.Logging;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Common.Logging;
 using Tester.Example3.SourceData;
 
 namespace Tester.Example3

@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace Common.Logging
+namespace FullTextIndexer.Common.Logging
 {
 	/// <summary>
 	/// Write log messages to trace, including additional content such as date, time and thread id

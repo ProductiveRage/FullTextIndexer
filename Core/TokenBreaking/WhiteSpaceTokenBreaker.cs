@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer.TokenBreaking
+namespace FullTextIndexer.Core.TokenBreaking
 {
     /// <summary>
     /// This will break tokens on any whitespace character, any resulting empty entries will be ignored

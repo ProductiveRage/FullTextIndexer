@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Common.Lists
+namespace FullTextIndexer.Common.Lists
 {
     [Serializable]
     public class NonNullImmutableList<T> : ImmutableList<T> where T : class

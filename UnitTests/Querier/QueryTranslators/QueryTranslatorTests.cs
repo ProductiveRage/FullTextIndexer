@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Common.Lists;
-using FullTextIndexer.Indexes;
-using FullTextIndexer.IndexGenerators;
-using Querier.QuerySegments;
-using Querier.QueryTranslators;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.IndexGenerators;
+using FullTextIndexer.Querier.QuerySegments;
+using FullTextIndexer.Querier.QueryTranslators;
 using Xunit;
 
 namespace UnitTests.Querier.QueryTranslators

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace FullTextIndexer.Indexes.TernarySearchTree
+namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
     /// <summary>
     /// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of

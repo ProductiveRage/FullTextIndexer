@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 
-namespace FullTextIndexer
+namespace FullTextIndexer.Core
 {
     public static class Constants
     {

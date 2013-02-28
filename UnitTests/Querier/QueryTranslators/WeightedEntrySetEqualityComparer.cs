@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Lists;
-using FullTextIndexer.Indexes;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 
 namespace UnitTests.Querier.QueryTranslators
 {

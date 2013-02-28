@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Common.Lists;
-using Common.Logging;
-using FullTextIndexer.Indexes;
-using FullTextIndexer.Indexes.TernarySearchTree;
-using FullTextIndexer.TokenBreaking;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Common.Logging;
+using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
+using FullTextIndexer.Core.TokenBreaking;
 using Tester.Common;
 using Tester.Example1.SourceData;
 

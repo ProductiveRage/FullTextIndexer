@@ -1,5 +1,5 @@
 ﻿using System;
-using FullTextIndexer.Indexes.TernarySearchTree;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
 using Xunit;
 
 namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree

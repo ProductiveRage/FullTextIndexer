@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FullTextIndexer.IndexGenerators
+namespace FullTextIndexer.Core.IndexGenerators
 {
     /// <summary>
     /// This is content extract from a source item for a particular key, before it is broken down into tokens

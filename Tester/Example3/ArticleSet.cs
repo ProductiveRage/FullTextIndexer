@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common.Lists;
+using FullTextIndexer.Common.Lists;
 using Tester.Example3.SourceData;
 
 namespace Tester.Example3

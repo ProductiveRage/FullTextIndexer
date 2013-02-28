@@ -1,16 +1,15 @@
-﻿// TODO: Remove all these
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using Common.Lists;
-using Common.Logging;
+using System.Linq;
+using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Common.Logging;
 
 namespace Tester
 {
     class Program
     {
-        static void Main(string[] args)
-        {
+		static void Main(string[] args)
+		{
             var searchTermMatches = new List<Tuple<string, List<int>>>
             {
                 Tuple.Create("the", new List<int> { 1, 2, 3}),

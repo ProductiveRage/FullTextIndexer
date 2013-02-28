@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Common.Lists
+namespace FullTextIndexer.Common.Lists
 {
     [Serializable]
     public class ImmutableList<T> : IEnumerable<T>
