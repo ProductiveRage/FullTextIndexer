@@ -22,7 +22,8 @@ namespace FullTextIndexer.Helpers
 		private readonly IStringNormaliser _stringNormaliserOverride;
 		private readonly ITokenBreaker _tokenBreakerOverride;
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombinerOverride;
-		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _brokenTokenWeightDeterminerGeneratorOverride;
+		private readonly NonNullImmutableList<IModifyMatchWeights> _propertyWeightAppliers;
+		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _tokenWeightDeterminerGeneratorOverride;
 		private readonly ILogger _loggerOverride;
 		private AutomatedIndexGeneratorFactoryBuilder(
 			Func<TSource, TKey> keyRetrieverOverride,
@@ -30,18 +31,23 @@ namespace FullTextIndexer.Helpers
 			IStringNormaliser stringNormaliserOverride,
 			ITokenBreaker tokenBreakerOverride,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombinerOverride,
-			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator brokenTokenWeightDeterminerGeneratorOverride,
+			NonNullImmutableList<IModifyMatchWeights> propertyWeightAppliers,
+			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator tokenWeightDeterminerGeneratorOverride,
 			ILogger loggerOverride)
 		{
+			if (propertyWeightAppliers == null)
+				throw new ArgumentNullException("propertyWeightAppliers");
+
 			_keyRetrieverOverride = keyRetrieverOverride;
 			_keyComparerOverride = keyComparerOverride;
 			_stringNormaliserOverride = stringNormaliserOverride;
 			_tokenBreakerOverride = tokenBreakerOverride;
 			_weightedEntryCombinerOverride = weightedEntryCombinerOverride;
-			_brokenTokenWeightDeterminerGeneratorOverride = brokenTokenWeightDeterminerGeneratorOverride;
+			_propertyWeightAppliers = propertyWeightAppliers;
+			_tokenWeightDeterminerGeneratorOverride = tokenWeightDeterminerGeneratorOverride;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, null, null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, new NonNullImmutableList<IModifyMatchWeights>(), null, null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -54,7 +60,8 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -70,7 +77,8 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -86,7 +94,8 @@ namespace FullTextIndexer.Helpers
 				stringNormaliser,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -102,7 +111,8 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				tokenBreaker,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -118,16 +128,20 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				weightedEntryCombiner,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
 
-		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetBrokenTokenWeightDeterminer(
-			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator brokenTokenWeightDeterminerGenerator)
+		/// <summary>
+		/// If this is specified then it will take precedence over any behaviour specified through Ignore or SetWeightMultiplier - these will be ignored
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetTokenWeightDeterminer(
+			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator weightDeterminerGenerator)
 		{
-			if (brokenTokenWeightDeterminerGenerator == null)
-				throw new ArgumentNullException("brokenTokenWeightDeterminerGenerator");
+			if (weightDeterminerGenerator == null)
+				throw new ArgumentNullException("weightDeterminerGenerator");
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -135,7 +149,102 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				brokenTokenWeightDeterminerGenerator,
+				_propertyWeightAppliers,
+				weightDeterminerGenerator,
+				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// If a value is specified through SetTokenWeightDeterminer then any calls to Ignore or SetWeightMultiplier will be ignored as that takes precedence. If a
+		/// property marked to be ignored is a type that has properties beneath it, they will be ignored as well.
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> Ignore(PropertyInfo property)
+		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreakerOverride,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, 0)),
+				_tokenWeightDeterminerGeneratorOverride,
+				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// If a value is specified through SetTokenWeightDeterminer then any calls to Ignore or SetWeightMultiplier will be ignored as that takes precedence. If a
+		/// property marked to be ignored is a type that has properties beneath it, they will be ignored as well. The typeName specified should be the FullName of
+		/// the type (eg. "FullTextIndexer.Helpers.AutomatedIndexGeneratorFactoryBuilder").
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> Ignore(string typeName, string propertyName)
+		{
+			if (string.IsNullOrWhiteSpace(typeName))
+				throw new ArgumentException("Null/blank typeName specified");
+			if (string.IsNullOrWhiteSpace(propertyName))
+				throw new ArgumentException("Null/blank propertyName specified");
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreakerOverride,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeName, propertyName, 0)),
+				_tokenWeightDeterminerGeneratorOverride,
+				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// If a value is specified through SetTokenWeightDeterminer then any calls to Ignore or SetWeightMultiplier will be ignored as that takes precedence. This
+		/// must target a specific property, there is no cumulative effect unlike Ignore (which can affect properties of any types beneath the specified property).
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightMultiplier(PropertyInfo property, float weightMultiplier)
+		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+			if (weightMultiplier <= 0)
+				throw new ArgumentOutOfRangeException("weightMultiplier", "must be greater than zero");
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreakerOverride,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, weightMultiplier)),
+				_tokenWeightDeterminerGeneratorOverride,
+				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// If a value is specified through SetTokenWeightDeterminer then any calls to Ignore or SetWeightMultiplier will be ignored as that takes precedence. This
+		/// must target a specific property, there is no cumulative effect unlike Ignore (which can affect properties of any types beneath the specified property).
+		/// The typeName specified should be the FullName of the type (eg. "FullTextIndexer.Helpers.AutomatedIndexGeneratorFactoryBuilder").
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightMultiplier(string typeName, string propertyName, float weightMultiplier)
+		{
+			if (string.IsNullOrWhiteSpace(typeName))
+				throw new ArgumentException("Null/blank typeName specified");
+			if (string.IsNullOrWhiteSpace(propertyName))
+				throw new ArgumentException("Null/blank propertyName specified");
+			if (weightMultiplier <= 0)
+				throw new ArgumentOutOfRangeException("weightMultiplier", "must be greater than zero");
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreakerOverride,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeName, propertyName, weightMultiplier)),
+				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -151,7 +260,8 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerGeneratorOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
 				logger
 			);
 		}
@@ -165,7 +275,7 @@ namespace FullTextIndexer.Helpers
 				stringNormaliser,
 				_tokenBreakerOverride ?? GetDefaultTokenBreaker(),
 				_weightedEntryCombinerOverride ?? (weightedValues => weightedValues.Sum()),
-				_brokenTokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
+				_tokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
 				_loggerOverride ?? new NullLogger()
 			);
 		}
@@ -206,8 +316,101 @@ namespace FullTextIndexer.Helpers
 
 			return property =>
 			{
-				return token => Constants.GetStopWords("en").Contains(token, stringNormaliser) ? 0.01f : 1f;
+				// Reverse the propertyWeightAppliers so that later values added to the set take precedence (eg. if, for some reason, a x5 weight is
+				// given to a property and then later it's set to be ignored, then we want to ignore it - which this will achieve)
+				var propertyWeightApplier = _propertyWeightAppliers.Reverse().FirstOrDefault(p => p.AppliesTo(property));
+				if ((propertyWeightApplier != null) && (propertyWeightApplier.WeightMultiplier == 0))
+				{
+					// A weight multiplier of zero means ignore this property, as does returning null from a WeightDeterminerGenerator call
+					return null;
+				}
+
+				var weightMultiplier = (propertyWeightApplier != null) ? propertyWeightApplier.WeightMultiplier : 1;
+				return token => weightMultiplier * (Constants.GetStopWords("en").Contains(token, stringNormaliser) ? 0.01f : 1f);
 			};
+		}
+
+		private interface IModifyMatchWeights
+		{
+			/// <summary>
+			/// This should raise an exception for a null property reference
+			/// </summary>
+			bool AppliesTo(PropertyInfo property);
+
+			/// <summary>
+			/// This must always be zero or greater
+			/// </summary>
+			float WeightMultiplier { get; }
+		}
+
+		private abstract class PropertyWeightApplier : IModifyMatchWeights
+		{
+			public PropertyWeightApplier(float weightMultiplier)
+			{
+				if (weightMultiplier < 0)
+					throw new ArgumentOutOfRangeException("weightMultiplier", "must be zero or greater");
+
+				WeightMultiplier = weightMultiplier;
+			}
+
+			/// <summary>
+			/// This should raise an exception for a null property reference
+			/// </summary>
+			public abstract bool AppliesTo(PropertyInfo property);
+
+			/// <summary>
+			/// This will always be zero or greater
+			/// </summary>
+			public float WeightMultiplier { get; private set; }
+		}
+
+		private class SpecificPropertyWeightApplier : PropertyWeightApplier
+		{
+			private readonly PropertyInfo _property;
+			public SpecificPropertyWeightApplier(PropertyInfo property, float weightMultiplier) : base(weightMultiplier)
+			{
+				if (property == null)
+					throw new ArgumentNullException("property");
+
+				_property = property;
+			}
+
+			/// <summary>
+			/// This will raise an exception for a null property reference
+			/// </summary>
+			public override bool AppliesTo(PropertyInfo property)
+			{
+				if (property == null)
+					throw new ArgumentNullException("property");
+
+				return property == _property;
+			}
+		}
+
+		private class SpecificNamedPropertyWeightApplier : PropertyWeightApplier
+		{
+			private readonly string _typeName, _propertyName;
+			public SpecificNamedPropertyWeightApplier(string typeName, string propertyName, float weightMultiplier) : base(weightMultiplier)
+			{
+				if (string.IsNullOrWhiteSpace(typeName))
+					throw new ArgumentException("must be specified if property is null", "typename");
+				if (string.IsNullOrWhiteSpace(propertyName))
+					throw new ArgumentException("must be specified if property is null", "propertyName");
+
+				_typeName = typeName;
+				_propertyName = propertyName;
+			}
+
+			/// <summary>
+			/// This will raise an exception for a null property reference
+			/// </summary>
+			public override bool AppliesTo(PropertyInfo property)
+			{
+				if (property == null)
+					throw new ArgumentNullException("property");
+
+				return (property.DeclaringType.FullName == _typeName) && (property.Name == _propertyName);
+			}
 		}
 	}
 }
