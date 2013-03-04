@@ -22,8 +22,7 @@ namespace FullTextIndexer.Helpers
 		private readonly IStringNormaliser _stringNormaliserOverride;
 		private readonly ITokenBreaker _tokenBreakerOverride;
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombinerOverride;
-		private readonly ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer _brokenTokenWeightDeterminerOverride;
-		private readonly Predicate<PropertyInfo> _propertyFilterOverride;
+		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _brokenTokenWeightDeterminerGeneratorOverride;
 		private readonly ILogger _loggerOverride;
 		private AutomatedIndexGeneratorFactoryBuilder(
 			Func<TSource, TKey> keyRetrieverOverride,
@@ -31,8 +30,7 @@ namespace FullTextIndexer.Helpers
 			IStringNormaliser stringNormaliserOverride,
 			ITokenBreaker tokenBreakerOverride,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombinerOverride,
-			ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer brokenTokenWeightDeterminerOverride,
-			Predicate<PropertyInfo> propertyFilterOverride,
+			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator brokenTokenWeightDeterminerGeneratorOverride,
 			ILogger loggerOverride)
 		{
 			_keyRetrieverOverride = keyRetrieverOverride;
@@ -40,11 +38,10 @@ namespace FullTextIndexer.Helpers
 			_stringNormaliserOverride = stringNormaliserOverride;
 			_tokenBreakerOverride = tokenBreakerOverride;
 			_weightedEntryCombinerOverride = weightedEntryCombinerOverride;
-			_brokenTokenWeightDeterminerOverride = brokenTokenWeightDeterminerOverride;
-			_propertyFilterOverride = propertyFilterOverride;
+			_brokenTokenWeightDeterminerGeneratorOverride = brokenTokenWeightDeterminerGeneratorOverride;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, null, null, null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, null, null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -57,8 +54,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -74,8 +70,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -91,8 +86,7 @@ namespace FullTextIndexer.Helpers
 				stringNormaliser,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -108,8 +102,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				tokenBreaker,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
@@ -125,16 +118,16 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				weightedEntryCombiner,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
 		}
 
-		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetBrokenTokenWeightDeterminer(ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer brokenTokenWeightDeterminer)
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetBrokenTokenWeightDeterminer(
+			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator brokenTokenWeightDeterminerGenerator)
 		{
-			if (brokenTokenWeightDeterminer == null)
-				throw new ArgumentNullException("brokenTokenWeightDeterminer");
+			if (brokenTokenWeightDeterminerGenerator == null)
+				throw new ArgumentNullException("brokenTokenWeightDeterminerGenerator");
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -142,25 +135,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				brokenTokenWeightDeterminer,
-				_propertyFilterOverride,
-				_loggerOverride
-			);
-		}
-
-		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetPropertyFilter(Predicate<PropertyInfo> propertyFilter)
-		{
-			if (propertyFilter == null)
-				throw new ArgumentNullException("propertyFilter");
-
-			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
-				_keyRetrieverOverride,
-				_keyComparerOverride,
-				_stringNormaliserOverride,
-				_tokenBreakerOverride,
-				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				propertyFilter,
+				brokenTokenWeightDeterminerGenerator,
 				_loggerOverride
 			);
 		}
@@ -176,8 +151,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_brokenTokenWeightDeterminerOverride,
-				_propertyFilterOverride,
+				_brokenTokenWeightDeterminerGeneratorOverride,
 				logger
 			);
 		}
@@ -187,12 +161,11 @@ namespace FullTextIndexer.Helpers
 			var stringNormaliser = _stringNormaliserOverride ?? new DefaultStringNormaliser();
 			return new AutomatedIndexGeneratorFactory<TSource, TKey>(
 				_keyRetrieverOverride ?? GetDefaultKeyRetriever(),
-				_propertyFilterOverride ?? (property => true),
 				_keyComparerOverride ?? new DefaultEqualityComparer<TKey>(),
 				stringNormaliser,
 				_tokenBreakerOverride ?? GetDefaultTokenBreaker(),
 				_weightedEntryCombinerOverride ?? (weightedValues => weightedValues.Sum()),
-				_brokenTokenWeightDeterminerOverride ?? GetDefaultTokenWeightDeterminer(stringNormaliser),
+				_brokenTokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
 				_loggerOverride ?? new NullLogger()
 			);
 		}
@@ -226,12 +199,15 @@ namespace FullTextIndexer.Helpers
 			);
 		}
 
-		private ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer GetDefaultTokenWeightDeterminer(IStringNormaliser stringNormaliser)
+		private AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator GetDefaultTokenWeightDeterminerGenerator(IStringNormaliser stringNormaliser)
 		{
 			if (stringNormaliser == null)
 				throw new ArgumentNullException("stringNormaliser");
 
-			return token => Constants.GetStopWords("en").Contains(token, stringNormaliser) ? 0.01f : 1f;
+			return property =>
+			{
+				return token => Constants.GetStopWords("en").Contains(token, stringNormaliser) ? 0.01f : 1f;
+			};
 		}
 	}
 }
