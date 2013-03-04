@@ -32,12 +32,12 @@ namespace FullTextIndexer.Core.TokenBreaking
             _weightMultiplierDeterminer = weightMultiplierDeterminer;
         }
 
-        /// <summary>
-        /// When tokens are combined this may affect the WeightMultiplier of the generated WeightAdjustingToken, a delegate of this form will be called to specify the
-        /// multiplier. The numberOfTokens will always be one or greater, it must always return a value greater than zero. If the weight of matches should not be
-        /// affected by the number of tokens that are combined then this would always return one.
-        /// </summary>
-        public delegate float WeightMultiplierDeterminer(int numberOfTokensCombined);
+		/// <summary>
+		/// For cases where multiple WeightAdjustingToken instances are combined into a new one, a new WeightMultiplier must be determined. This value is always
+		/// between zero and one (exlusive lower bound, inclusive upper). This delegate will never be called with a null or empty weightMultipliersOfCombinedTokens
+		/// set and must always return a value greater than zero and less than or equal to one.
+		/// </summary>
+		public delegate float WeightMultiplierDeterminer(ImmutableList<float> weightMultipliersOfCombinedTokens);
 
         /// <summary>
         /// This will never return null. It will throw an exception for null input.
@@ -51,14 +51,15 @@ namespace FullTextIndexer.Core.TokenBreaking
             var extendedTokens = new List<WeightAdjustingToken>();
             for (var combineLength = 1; combineLength <= _maxNumberOfTokens; combineLength++)
             {
-                var weightMultiplier = _weightMultiplierDeterminer(combineLength);
-                if (weightMultiplier <= 0)
-                    throw new Exception("Specified weightMultiplier return invalid value (" + weightMultiplier + ") to numberOfTokensCombined: " + combineLength);
                 for (var index = 0; index < initialTokens.Count - (combineLength - 1); index++)
                 {
-                    extendedTokens.Add(
+					var tokensToCombine = initialTokens.Skip(index).Take(combineLength).ToArray();
+					var weightMultiplier = _weightMultiplierDeterminer(tokensToCombine.Select(t => t.WeightMultiplier).ToImmutableList());
+					if ((weightMultiplier <= 0) || (weightMultiplier > 1))
+						throw new Exception("Specified WeightMultiplierDeterminer return an invalid value: " + weightMultiplier);
+					extendedTokens.Add(
                         new WeightAdjustingToken(
-                            string.Join(" ", initialTokens.Skip(index).Take(combineLength)),
+							string.Join(" ", tokensToCombine.Select(t => t.Token)),
                             weightMultiplier
                         )
                     );
