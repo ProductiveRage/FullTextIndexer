@@ -14,9 +14,8 @@ namespace FullTextIndexer.Helpers
 {
 	/// <summary>
 	/// This will try to automatically construct an Index Generator for a particular type (TSource). The type of the key for the source type must be specified (TKey) along with a
-	/// way to retrieve the key from a source type instance (the keyRetriever) and a way to specify which properties should and shouldn't be considered when the object graph is
-	/// traversed (the propertyFilter). All of the textual content encountered will be combined into one field so it is not possible to apply different weights to different
-	/// properties.
+	/// way to retrieve the key from a source type instance (the keyRetriever) and a way to adjust match weights based upon the source properties (if a property shouldn't have its
+	/// data contribute to the index data then the specified WeightDeterminerGenerator may return a null BrokenTokenWeightDeterminer instance for that property).
 	/// </summary>
 	public class AutomatedIndexGeneratorFactory<TSource, TKey> where TSource : class
 	{
@@ -25,23 +24,19 @@ namespace FullTextIndexer.Helpers
 		private readonly IStringNormaliser _stringNormaliser;
 		private readonly ITokenBreaker _tokenBreaker;
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
-		private readonly ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer _brokenTokenWeightDeterminer;
-		private readonly Predicate<PropertyInfo> _propertyFilter;
+		private readonly WeightDeterminerGenerator _brokenTokenWeightDeterminerGenerator;
 		private readonly ILogger _logger;
 		public AutomatedIndexGeneratorFactory(
 			Func<TSource, TKey> keyRetriever,
-			Predicate<PropertyInfo> propertyFilter,
 			IEqualityComparer<TKey> keyComparer,
 			IStringNormaliser stringNormaliser,
 			ITokenBreaker tokenBreaker,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombiner,
-			ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer brokenTokenWeightDeterminer,
+			WeightDeterminerGenerator brokenTokenWeightDeterminerGenerator,
 			ILogger logger)
 		{
 			if (keyRetriever == null)
 				throw new ArgumentNullException("keyRetriever");
-			if (propertyFilter == null)
-				throw new ArgumentNullException("propertyFilter");
 			if (keyComparer == null)
 				throw new ArgumentNullException("keyComparer");
 			if (stringNormaliser == null)
@@ -50,41 +45,34 @@ namespace FullTextIndexer.Helpers
 				throw new ArgumentNullException("tokenBreaker");
 			if (weightedEntryCombiner == null)
 				throw new ArgumentNullException("weightedEntryCombiner");
-			if (brokenTokenWeightDeterminer == null)
-				throw new ArgumentNullException("brokenTokenWeightDeterminer");
+			if (brokenTokenWeightDeterminerGenerator == null)
+				throw new ArgumentNullException("brokenTokenWeightDeterminerGenerator");
 			if (logger == null)
 				throw new ArgumentNullException("logger");
 
 			_keyRetriever = keyRetriever;
-			_propertyFilter = propertyFilter;
 			_keyComparer = keyComparer;
 			_stringNormaliser = stringNormaliser;
 			_tokenBreaker = tokenBreaker;
 			_weightedEntryCombiner = weightedEntryCombiner;
-			_brokenTokenWeightDeterminer = brokenTokenWeightDeterminer;
+			_brokenTokenWeightDeterminerGenerator = brokenTokenWeightDeterminerGenerator;
 			_logger = logger;
 		}
 
+		/// <summary>
+		/// This will never be called with a null property reference. If it returns null then the property will be excluded from the final data.
+		/// </summary>
+		public delegate ContentRetriever<TSource, TKey>.BrokenTokenWeightDeterminer WeightDeterminerGenerator(PropertyInfo property);
+
 		public IIndexGenerator<TSource, TKey> Get()
 		{
-			var contentRetrievers = new[]
-			{
-				new ContentRetriever<TSource, TKey>(
-					source =>
-					{
-						var contentBuilder = new StringBuilder();
-						foreach (var contentSection in GetContent(source))
-							contentBuilder.AppendLine(contentSection);
-						return new PreBrokenContent<TKey>(
-							_keyRetriever(source),
-							contentBuilder.ToString()
-						);
-					},
-					token => _brokenTokenWeightDeterminer(token)
-				)
-			};
 			return new IndexGenerator<TSource, TKey>(
-				contentRetrievers.ToNonNullImmutableList(),
+				GenerateContentRetrievers(
+					_keyRetriever,
+					source => new[] { source },
+					_brokenTokenWeightDeterminerGenerator,
+					typeof(TSource)
+				),
 				_keyComparer,
 				_stringNormaliser,
 				_tokenBreaker,
@@ -93,52 +81,138 @@ namespace FullTextIndexer.Helpers
 			);
 		}
 
-		private NonNullOrEmptyStringList GetContent(object source)
+		/// <summary>
+		/// All of the values returned by the nestedDataAccessor must be of type "type" (or assignable to it)
+		/// </summary>
+		private NonNullImmutableList<ContentRetriever<TSource, TKey>> GenerateContentRetrievers(
+			Func<TSource, TKey> keyRetriever,
+			Func<TSource, IEnumerable> nestedDataAccessor,
+			WeightDeterminerGenerator weightDeterminerGenerator,
+			Type type)
 		{
-			if (source == null)
-				throw new ArgumentNullException("source");
+			if (keyRetriever == null)
+				throw new ArgumentNullException("keyRetriever");
+			if (nestedDataAccessor == null)
+				throw new ArgumentNullException("dataRetriever");
+			if (weightDeterminerGenerator == null)
+				throw new ArgumentNullException("weightDeterminerGenerator");
+			if (type == null)
+				throw new ArgumentNullException("type");
 
-			var contentSections = new NonNullOrEmptyStringList();
-			foreach (var property in source.GetType().GetProperties().Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0)))
+			var propertyValueRetrievers = new NonNullImmutableList<ContentRetriever<TSource, TKey>>();
+			foreach (var property in type.GetProperties().Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0)))
 			{
-				if (!_propertyFilter(property))
+				var weightDeterminer = weightDeterminerGenerator(property);
+				if (weightDeterminer == null)
 					continue;
 
 				if (property.PropertyType == typeof(string))
 				{
-					var stringValue = (string)property.GetValue(source, null);
-					if (!string.IsNullOrWhiteSpace(stringValue))
-						contentSections = contentSections.Add(stringValue);
+					var propertyClone = property; // Take a copy of the reference to use in the closure
+					propertyValueRetrievers = propertyValueRetrievers.Add(
+						new ContentRetriever<TSource, TKey>(
+							source =>
+							{
+								var combinedValue = new StringBuilder();
+								foreach (var entry in nestedDataAccessor(source))
+								{
+									if (entry == null)
+										continue;
+
+									var value = (string)propertyClone.GetValue(entry, null);
+									if (!string.IsNullOrWhiteSpace(value))
+										combinedValue.AppendLine(value);
+								}
+								if (combinedValue.Length == 0)
+									return null;
+								return new PreBrokenContent<TKey>(
+									keyRetriever(source),
+									combinedValue.ToString()
+								);
+							},
+							weightDeterminer
+						)
+					);
 					continue;
 				}
 
 				if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
 				{
-					var enumerable = (IEnumerable)property.GetValue(source, null);
-					if (enumerable == null)
-						return null;
-
-					foreach (var enumerableElementValue in enumerable)
+					Type nestedTypeElementType;
+					if (property.PropertyType.IsArray)
 					{
-						if (enumerableElementValue == null)
+						if (property.PropertyType.GetArrayRank() != 1)
+						{
+							_logger.LogIgnoringAnyError(LogLevel.Warning, () => "Currently one single-dimensional arrays are supported, ignoring: " + type.FullName + "." + property);
 							continue;
-
-						contentSections = contentSections.AddRange(
-							GetContent(enumerableElementValue)
-						);
+						}
+						nestedTypeElementType = property.PropertyType.GetElementType();
 					}
+					else
+					{
+						var genericTypeParams = property.PropertyType.GetGenericArguments();
+						if ((genericTypeParams == null) || (genericTypeParams.Length != 1))
+							continue;
+						nestedTypeElementType = genericTypeParams[0];
+					}
+
+					var propertyClone = property; // Take a copy of the reference to use in the closure
+					Func<TSource, IEnumerable> nestedEnumerableTypeDataRetriever = source =>
+					{
+						var nestedTypeValues = new List<object>();
+						foreach (var entry in nestedDataAccessor(source))
+						{
+							var nestedTypeEnumerableValue = (IEnumerable)propertyClone.GetValue(entry, null);
+							if (nestedTypeEnumerableValue == null)
+								continue;
+
+							foreach (var enumeratedEntry in nestedTypeEnumerableValue)
+							{
+								if (enumeratedEntry == null)
+									continue;
+
+								nestedTypeValues.Add(enumeratedEntry);
+							}
+						}
+						return nestedTypeValues;
+					};
+					propertyValueRetrievers = propertyValueRetrievers.AddRange(
+						GenerateContentRetrievers(
+							keyRetriever,
+							nestedEnumerableTypeDataRetriever,
+							weightDeterminerGenerator,
+							nestedTypeElementType
+						)
+					);
 					continue;
 				}
 
-				var nestedTypeValue = property.GetValue(source, null);
-				if (nestedTypeValue != null)
+				if (type != typeof(object))
 				{
-					contentSections = contentSections.AddRange(
-						GetContent(nestedTypeValue)
+					var propertyClone = property; // Take a copy of the reference to use in the closure
+					Func<TSource, IEnumerable> nestedEnumerableTypeDataRetriever = source =>
+					{
+						var nestedTypeValues = new List<object>();
+						foreach (var entry in nestedDataAccessor(source))
+						{
+							var entryValue = propertyClone.GetValue(entry, null);
+							if (entryValue != null)
+								nestedTypeValues.Add(entryValue);
+						}
+						return nestedTypeValues;
+					};
+					propertyValueRetrievers = propertyValueRetrievers.AddRange(
+						GenerateContentRetrievers(
+							keyRetriever,
+							nestedEnumerableTypeDataRetriever,
+							weightDeterminerGenerator,
+							property.PropertyType
+						)
 					);
+					continue;
 				}
 			}
-			return contentSections;
+			return propertyValueRetrievers;
 		}
 	}
 }
