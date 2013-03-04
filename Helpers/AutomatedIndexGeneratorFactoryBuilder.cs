@@ -181,12 +181,14 @@ namespace FullTextIndexer.Helpers
 		/// property marked to be ignored is a type that has properties beneath it, they will be ignored as well. The typeName specified should be the FullName of
 		/// the type (eg. "FullTextIndexer.Helpers.AutomatedIndexGeneratorFactoryBuilder").
 		/// </summary>
-		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> Ignore(string typeName, string propertyName)
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> Ignore(string typeAndPropertyName)
 		{
-			if (string.IsNullOrWhiteSpace(typeName))
-				throw new ArgumentException("Null/blank typeName specified");
-			if (string.IsNullOrWhiteSpace(propertyName))
-				throw new ArgumentException("Null/blank propertyName specified");
+			if (string.IsNullOrWhiteSpace(typeAndPropertyName))
+				throw new ArgumentException("Null/blank typeAndPropertyName specified");
+
+			var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
+			if (lastBreakPoint == -1)
+				throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -194,7 +196,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeName, propertyName, 0)),
+				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
@@ -228,14 +230,16 @@ namespace FullTextIndexer.Helpers
 		/// must target a specific property, there is no cumulative effect unlike Ignore (which can affect properties of any types beneath the specified property).
 		/// The typeName specified should be the FullName of the type (eg. "FullTextIndexer.Helpers.AutomatedIndexGeneratorFactoryBuilder").
 		/// </summary>
-		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightMultiplier(string typeName, string propertyName, float weightMultiplier)
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightMultiplier(string typeAndPropertyName, float weightMultiplier)
 		{
-			if (string.IsNullOrWhiteSpace(typeName))
-				throw new ArgumentException("Null/blank typeName specified");
-			if (string.IsNullOrWhiteSpace(propertyName))
-				throw new ArgumentException("Null/blank propertyName specified");
+			if (string.IsNullOrWhiteSpace(typeAndPropertyName))
+				throw new ArgumentException("Null/blank typeAndPropertyName specified");
 			if (weightMultiplier <= 0)
 				throw new ArgumentOutOfRangeException("weightMultiplier", "must be greater than zero");
+
+			var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
+			if (lastBreakPoint == -1)
+				throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -243,7 +247,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliserOverride,
 				_tokenBreakerOverride,
 				_weightedEntryCombinerOverride,
-				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeName, propertyName, weightMultiplier)),
+				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_loggerOverride
 			);
@@ -390,15 +394,17 @@ namespace FullTextIndexer.Helpers
 		private class SpecificNamedPropertyWeightApplier : PropertyWeightApplier
 		{
 			private readonly string _typeName, _propertyName;
-			public SpecificNamedPropertyWeightApplier(string typeName, string propertyName, float weightMultiplier) : base(weightMultiplier)
+			public SpecificNamedPropertyWeightApplier(string typeAndPropertyName, float weightMultiplier) : base(weightMultiplier)
 			{
-				if (string.IsNullOrWhiteSpace(typeName))
-					throw new ArgumentException("must be specified if property is null", "typename");
-				if (string.IsNullOrWhiteSpace(propertyName))
-					throw new ArgumentException("must be specified if property is null", "propertyName");
+				if (string.IsNullOrWhiteSpace(typeAndPropertyName))
+					throw new ArgumentException("Null/blank typeAndPropertyName specified");
 
-				_typeName = typeName;
-				_propertyName = propertyName;
+				var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
+				if (lastBreakPoint == -1)
+					throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
+
+				_typeName = typeAndPropertyName.Substring(0, lastBreakPoint);
+				_propertyName = typeAndPropertyName.Substring(lastBreakPoint + 1);
 			}
 
 			/// <summary>
