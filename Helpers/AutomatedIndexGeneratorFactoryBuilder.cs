@@ -272,7 +272,7 @@ namespace FullTextIndexer.Helpers
 
 		public AutomatedIndexGeneratorFactory<TSource, TKey> Get()
 		{
-			var stringNormaliser = _stringNormaliserOverride ?? new DefaultStringNormaliser();
+			var stringNormaliser = _stringNormaliserOverride ?? GetDefaultStringNormaliser();
 			return new AutomatedIndexGeneratorFactory<TSource, TKey>(
 				_keyRetrieverOverride ?? GetDefaultKeyRetriever(),
 				_keyComparerOverride ?? new DefaultEqualityComparer<TKey>(),
@@ -303,6 +303,14 @@ namespace FullTextIndexer.Helpers
 				return null;
 
 			return entry => (TKey)property.GetValue(entry, null);
+		}
+
+		private IStringNormaliser GetDefaultStringNormaliser()
+		{
+			return new EnglishPluralityStringNormaliser(
+				new DefaultStringNormaliser(),
+				EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases | EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims
+			);
 		}
 
 		private ITokenBreaker GetDefaultTokenBreaker()
