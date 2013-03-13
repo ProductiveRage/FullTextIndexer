@@ -36,13 +36,13 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Querier.cs" />
+    <Compile Include="IQuerier.cs" />
     <Compile Include="Misc\HashSet_Extensions.cs" />
     <Compile Include="QueryAnalysers\ContentAnalysers\ProcessedQuerySegment.cs" />
     <Compile Include="QueryAnalysers\ContentAnalysers\BreakPointCharacterAnalyser.cs" />
     <Compile Include="QueryAnalysers\ContentAnalysers\NonNullImmutableList_IQuerySegment_Extensions.cs" />
     <Compile Include="QueryAnalysers\ContentAnalysers\ContentSectionCharacterAnalyser.cs" />
-    <Compile Include="QueryAnalysers\QueryAnalyser.cs" />
-    <Compile Include="QueryAnalysers\IAnalyseQueries.cs" />
     <Compile Include="QueryAnalysers\StringNavigators\GoneTooFarStringNavigator.cs" />
     <Compile Include="QueryAnalysers\StringNavigators\IWalkThroughStrings.cs" />
     <Compile Include="QueryAnalysers\StringNavigators\StringNavigator.cs" />
