@@ -331,6 +331,11 @@ namespace FullTextIndexer.Helpers
 			if (stringNormaliser == null)
 				throw new ArgumentNullException("stringNormaliser");
 
+			// Constructing a HashSet of the normalised versions of the stop words means that looking up whether normalised tokens are stop
+			// words can be a lot faster (as neither the stop words nor the token need to be fed through the normaliser again)
+			var hashSetOfNormalisedStopWords = new HashSet<string>(
+				Constants.GetStopWords("en").Select(word => stringNormaliser.GetNormalisedString(word))
+			);
 			return property =>
 			{
 				// Reverse the propertyWeightAppliers so that later values added to the set take precedence (eg. if, for some reason, a x5 weight is
@@ -343,7 +348,7 @@ namespace FullTextIndexer.Helpers
 				}
 
 				var weightMultiplier = (propertyWeightApplier != null) ? propertyWeightApplier.WeightMultiplier : 1;
-				return token => weightMultiplier * (Constants.GetStopWords("en").Contains(token, stringNormaliser) ? 0.01f : 1f);
+				return normalisedToken => weightMultiplier * (hashSetOfNormalisedStopWords.Contains(normalisedToken) ? 0.01f : 1f);
 			};
 		}
 

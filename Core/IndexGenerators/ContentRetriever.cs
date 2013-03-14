@@ -37,6 +37,6 @@ namespace FullTextIndexer.Core.IndexGenerators
         /// <summary>
         /// This must always return a value greater than zero, it will never be provided a null or empty token.
         /// </summary>
-        public delegate float BrokenTokenWeightDeterminer(string token);
+        public delegate float BrokenTokenWeightDeterminer(string normalisedToken);
     }
 }
