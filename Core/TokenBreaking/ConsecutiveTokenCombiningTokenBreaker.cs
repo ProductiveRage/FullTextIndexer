@@ -48,7 +48,7 @@ namespace FullTextIndexer.Core.TokenBreaking
                 throw new ArgumentNullException("value");
 
             var initialTokens = _tokenBreaker.Break(value);
-            var extendedTokens = new List<WeightAdjustingToken>();
+            var extendedTokens = new NonNullImmutableList<WeightAdjustingToken>();
             for (var combineLength = 1; combineLength <= _maxNumberOfTokens; combineLength++)
             {
                 for (var index = 0; index < initialTokens.Count - (combineLength - 1); index++)
@@ -57,7 +57,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 					var weightMultiplier = _weightMultiplierDeterminer(tokensToCombine.Select(t => t.WeightMultiplier).ToImmutableList());
 					if ((weightMultiplier <= 0) || (weightMultiplier > 1))
 						throw new Exception("Specified WeightMultiplierDeterminer return an invalid value: " + weightMultiplier);
-					extendedTokens.Add(
+					extendedTokens = extendedTokens.Add(
                         new WeightAdjustingToken(
 							string.Join(" ", tokensToCombine.Select(t => t.Token)),
                             weightMultiplier
@@ -65,7 +65,7 @@ namespace FullTextIndexer.Core.TokenBreaking
                     );
                 }
             }
-            return extendedTokens.ToNonNullImmutableList();
+            return extendedTokens;
         }
     }
 }
