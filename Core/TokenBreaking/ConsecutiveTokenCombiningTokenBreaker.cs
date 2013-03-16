@@ -12,9 +12,9 @@ namespace FullTextIndexer.Core.TokenBreaking
     [Serializable]
     public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
     {
-        private ITokenBreaker _tokenBreaker;
-        private int _maxNumberOfTokens;
-        private WeightMultiplierDeterminer _weightMultiplierDeterminer;
+		private readonly ITokenBreaker _tokenBreaker;
+		private readonly int _maxNumberOfTokens;
+		private readonly WeightMultiplierDeterminer _weightMultiplierDeterminer;
         public ConsecutiveTokenCombiningTokenBreaker(
             ITokenBreaker tokenBreaker,
             int maxNumberOfTokens,
@@ -57,9 +57,14 @@ namespace FullTextIndexer.Core.TokenBreaking
 					var weightMultiplier = _weightMultiplierDeterminer(tokensToCombine.Select(t => t.WeightMultiplier).ToImmutableList());
 					if ((weightMultiplier <= 0) || (weightMultiplier > 1))
 						throw new Exception("Specified WeightMultiplierDeterminer return an invalid value: " + weightMultiplier);
+
+					var firstToken = tokensToCombine[0];
+					var lastToken = tokensToCombine[tokensToCombine.Length - 1];
 					extendedTokens = extendedTokens.Add(
                         new WeightAdjustingToken(
 							string.Join(" ", tokensToCombine.Select(t => t.Token)),
+							firstToken.SourceIndex, // sourceIndex
+							(lastToken.SourceIndex + lastToken.SourceTokenLength) - firstToken.SourceIndex, // sourceTokenLength
                             weightMultiplier
                         )
                     );

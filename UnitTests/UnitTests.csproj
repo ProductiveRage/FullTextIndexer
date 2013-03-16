@@ -41,6 +41,9 @@
     <Compile Include="FullTextIndexer\Indexes\TernarySearchTree\DefaultStringNormaliserTests.cs" />
     <Compile Include="FullTextIndexer\Indexes\TernarySearchTree\EnglishPluarityStringNormaliserTests.cs" />
     <Compile Include="FullTextIndexer\IndexGenerators\IndexGeneratorTests.cs" />
+    <Compile Include="FullTextIndexer\TokenBreaking\ConsecutiveTokenCombiningTokenBreakerTests.cs" />
+    <Compile Include="FullTextIndexer\TokenBreaking\WeightAdjustingTokenComparer.cs" />
+    <Compile Include="FullTextIndexer\TokenBreaking\WhiteSpaceTokenBreakerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Querier\QueryAnalysers\ContentAnalysers\BreakPointCharacterAnalyserTests.cs" />
     <Compile Include="Querier\QueryTranslators\TestIntKeyIndexDataBuilder.cs" />

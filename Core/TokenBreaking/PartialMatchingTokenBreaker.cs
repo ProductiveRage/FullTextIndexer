@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.TokenBreaking
@@ -16,9 +17,9 @@ namespace FullTextIndexer.Core.TokenBreaking
     [Serializable]
     public class PartialMatchingTokenBreaker : ITokenBreaker
     {
-        private int _minLengthOfPartialMatches, _maxLengthOfPartialMatches;
-        private ITokenBreaker _tokenBreaker, _optionalPrePartialMatchTokenBreaker;
-        private PartialMatchWeightDeterminer _partialMatchWeightDeterminer;
+        private readonly int _minLengthOfPartialMatches, _maxLengthOfPartialMatches;
+		private readonly ITokenBreaker _tokenBreaker, _optionalPrePartialMatchTokenBreaker;
+		private readonly PartialMatchWeightDeterminer _partialMatchWeightDeterminer;
         public PartialMatchingTokenBreaker(
             int minLengthOfPartialMatches,
             int maxLengthOfPartialMatches,
@@ -66,25 +67,27 @@ namespace FullTextIndexer.Core.TokenBreaking
                 tokens.Add(weightAdjustingToken);
 
                 // Generate partial match data for this token
-                foreach (var weightAdjustingSubToken in GetTokensForPartialMatchGeneration(weightAdjustingToken.Token))
+                foreach (var weightAdjustingSubToken in GetTokensForPartialMatchGeneration(weightAdjustingToken))
                 {
-                    foreach (var subTokenMatchVariation in GenerateAllMatchVariations(weightAdjustingSubToken.Token))
+                    foreach (var subTokenMatchVariation in GenerateAllMatchVariations(weightAdjustingSubToken))
                     {
                         // If this current variation is the unaltered token value returned by the core tokenBreaker then ignore it as it's already
                         // been added to the list
-                        if (subTokenMatchVariation == weightAdjustingToken.Token)
+                        if (subTokenMatchVariation.Token == weightAdjustingToken.Token)
                             continue;
 
                         // Get the weight adjustment for the match variation; exclude it if zero or combine it with the weightAdjustingSubToken's 
                         // WeightMultiplier if greater than zero (less than zero is invalid and will cause an exception to be thrown)
-                        var partialMatchWeightMultiplier = _partialMatchWeightDeterminer(weightAdjustingToken.Token, subTokenMatchVariation);
+                        var partialMatchWeightMultiplier = _partialMatchWeightDeterminer(weightAdjustingToken.Token, subTokenMatchVariation.Token);
                         if (partialMatchWeightMultiplier < 0)
                             throw new Exception("partialMatchWeightMultiplier returned negative value");
                         else if (partialMatchWeightMultiplier == 0)
                             continue;
 
                         tokens.Add(new WeightAdjustingToken(
-                            subTokenMatchVariation,
+                            subTokenMatchVariation.Token,
+							subTokenMatchVariation.SourceIndex,
+							subTokenMatchVariation.SourceTokenLength,
                             weightAdjustingToken.WeightMultiplier * weightAdjustingSubToken.WeightMultiplier * partialMatchWeightMultiplier
                         ));
                     }
@@ -95,17 +98,26 @@ namespace FullTextIndexer.Core.TokenBreaking
 
         /// <summary>
         /// Further break any broken token using the optionalPrePartialMatchTokenBreaker, if specified (if not then return a set containing only the
-        /// specified token with a weight adjustment of one, meaning no adjustment required)
+        /// specified token)
         /// </summary>
-        private IEnumerable<WeightAdjustingToken> GetTokensForPartialMatchGeneration(string token)
+        private IEnumerable<WeightAdjustingToken> GetTokensForPartialMatchGeneration(WeightAdjustingToken token)
         {
             if (token == null)
                 throw new ArgumentNullException("token");
 
             if (_optionalPrePartialMatchTokenBreaker == null)
-                return new[] { new WeightAdjustingToken(token, 1) };
+                return new[] { token };
 
-            return _optionalPrePartialMatchTokenBreaker.Break(token);
+			// The SourceIndex and SourceTokenLength value do not have to be altered; they are used to indicate which word (or segment) in the source
+			// content is being matched - if matching that word partially then we still want that word to be indicated as being matched, even though
+			// only a section of that word will actually be being matched.
+			return _optionalPrePartialMatchTokenBreaker.Break(token.Token)
+				.Select(t => new WeightAdjustingToken(
+					t.Token,
+					token.SourceIndex,
+					token.SourceTokenLength,
+					token.WeightMultiplier
+				));
         }
 
         /// <summary>
@@ -113,19 +125,27 @@ namespace FullTextIndexer.Core.TokenBreaking
         /// constraints. Note: The original value will be included in the returned set as one of the variations. This will never return null nor a set
         /// that contains any nulls.
         /// </summary>
-        private IEnumerable<string> GenerateAllMatchVariations(string value)
+        private IEnumerable<WeightAdjustingToken> GenerateAllMatchVariations(WeightAdjustingToken token)
         {
-            if (value == null)
-                throw new ArgumentNullException("value");
+			if (token == null)
+				throw new ArgumentNullException("token");
 
-            if (value.Length < _minLengthOfPartialMatches)
-                return new string[0];
+            if (token.Token.Length < _minLengthOfPartialMatches)
+                return new WeightAdjustingToken[0];
 
-            var partialMatches = new List<string>();
-            for (var index = 0; index < value.Length; index++)
+			var partialMatches = new List<WeightAdjustingToken>();
+            for (var index = 0; index < token.Token.Length; index++)
             {
-                for (var length = _minLengthOfPartialMatches; length <= Math.Min(value.Length - index, _maxLengthOfPartialMatches); length++)
-                    partialMatches.Add(value.Substring(index, length));
+				for (var length = _minLengthOfPartialMatches; length <= Math.Min(token.Token.Length - index, _maxLengthOfPartialMatches); length++)
+				{
+					// The token's SourceIndex and SourceTokenLength are being maintained for the same reason as they are in GetTokensForPartialMatchGeneration
+					partialMatches.Add(new WeightAdjustingToken(
+						token.Token.Substring(index, length),
+						token.SourceIndex,
+						token.SourceTokenLength,
+						token.WeightMultiplier
+					));
+				}
             }
             return partialMatches;
         }
