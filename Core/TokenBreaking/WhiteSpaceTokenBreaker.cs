@@ -28,7 +28,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 
 			IEnumerable<WeightAdjustingToken> tokensToBreak;
 			if (_optionalWrappedTokenBreaker == null)
-				tokensToBreak = new[] { new WeightAdjustingToken(value, 0, value.Length, 1) };
+				tokensToBreak = new[] { new WeightAdjustingToken(value, 0, 0, value.Length, 1) };
 			else
 				tokensToBreak = _optionalWrappedTokenBreaker.Break(value);
 
@@ -46,6 +46,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 							var bufferContents = buffer.ToString();
 							tokens.Add(new WeightAdjustingToken(
 								bufferContents,
+								tokens.Count,
 								weightAdjustingToken.SourceIndex + bufferStartIndex,
 								bufferContents.Length,
 								weightAdjustingToken.WeightMultiplier
@@ -63,6 +64,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 					var bufferContents = buffer.ToString();
 					tokens.Add(new WeightAdjustingToken(
 						bufferContents,
+						tokens.Count,
 						weightAdjustingToken.SourceIndex + bufferStartIndex,
 						bufferContents.Length,
 						weightAdjustingToken.WeightMultiplier

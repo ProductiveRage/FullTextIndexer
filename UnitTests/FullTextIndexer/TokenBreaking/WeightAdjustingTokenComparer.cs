@@ -15,6 +15,7 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 
 			return (
 				(x.Token == y.Token) &&
+				(x.TokenIndex == y.TokenIndex) &&
 				(x.SourceIndex == y.SourceIndex) &&
 				(x.SourceTokenLength == y.SourceTokenLength) &&
 				(x.WeightMultiplier == y.WeightMultiplier)

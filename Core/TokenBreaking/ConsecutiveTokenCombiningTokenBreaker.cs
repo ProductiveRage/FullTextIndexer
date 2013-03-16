@@ -58,13 +58,18 @@ namespace FullTextIndexer.Core.TokenBreaking
 					if ((weightMultiplier <= 0) || (weightMultiplier > 1))
 						throw new Exception("Specified WeightMultiplierDeterminer return an invalid value: " + weightMultiplier);
 
+					// The sourceTokenLength is determined by taking the end point of the last token and subtracting the start point of the first
+					// token. The length couldn't be the combined lenth of each token since any breaking characters between tokens would not be
+					// taken into account. The TokenIndex of the first token will be used for the new WeightAdjustingToken instance - this may
+					// not be strictly accurate but since there are now overlapping tokens, it's probably the best that can be done.
 					var firstToken = tokensToCombine[0];
 					var lastToken = tokensToCombine[tokensToCombine.Length - 1];
 					extendedTokens = extendedTokens.Add(
                         new WeightAdjustingToken(
 							string.Join(" ", tokensToCombine.Select(t => t.Token)),
-							firstToken.SourceIndex, // sourceIndex
-							(lastToken.SourceIndex + lastToken.SourceTokenLength) - firstToken.SourceIndex, // sourceTokenLength
+							firstToken.TokenIndex,
+							firstToken.SourceIndex,
+							(lastToken.SourceIndex + lastToken.SourceTokenLength) - firstToken.SourceIndex,
                             weightMultiplier
                         )
                     );

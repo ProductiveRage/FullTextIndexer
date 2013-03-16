@@ -86,6 +86,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 
                         tokens.Add(new WeightAdjustingToken(
                             subTokenMatchVariation.Token,
+							subTokenMatchVariation.TokenIndex,
 							subTokenMatchVariation.SourceIndex,
 							subTokenMatchVariation.SourceTokenLength,
                             weightAdjustingToken.WeightMultiplier * weightAdjustingSubToken.WeightMultiplier * partialMatchWeightMultiplier
@@ -114,6 +115,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 			return _optionalPrePartialMatchTokenBreaker.Break(token.Token)
 				.Select(t => new WeightAdjustingToken(
 					t.Token,
+					token.TokenIndex,
 					token.SourceIndex,
 					token.SourceTokenLength,
 					token.WeightMultiplier
@@ -141,6 +143,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 					// The token's SourceIndex and SourceTokenLength are being maintained for the same reason as they are in GetTokensForPartialMatchGeneration
 					partialMatches.Add(new WeightAdjustingToken(
 						token.Token.Substring(index, length),
+						token.TokenIndex,
 						token.SourceIndex,
 						token.SourceTokenLength,
 						token.WeightMultiplier
