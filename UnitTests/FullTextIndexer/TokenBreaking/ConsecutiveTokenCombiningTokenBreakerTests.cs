@@ -18,19 +18,19 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			var content = "one two three";
 			var whiteSpaceBrokenTokens = new NonNullImmutableList<WeightAdjustingToken>(new[]
 			{
-				new WeightAdjustingToken("one", 0, 3, 1),
-				new WeightAdjustingToken("two", 4, 3, 1),
-				new WeightAdjustingToken("three", 8, 5, 1)
+				new WeightAdjustingToken("one", 0, 0, 3, 1),
+				new WeightAdjustingToken("two", 1, 4, 3, 1),
+				new WeightAdjustingToken("three", 2, 8, 5, 1)
 			});
 
 			var expected = new NonNullImmutableList<WeightAdjustingToken>(new[]
 			{
-				new WeightAdjustingToken("one", 0, 3, 1),
-				new WeightAdjustingToken("two", 4, 3, 1),
-				new WeightAdjustingToken("three", 8, 5, 1),
-				new WeightAdjustingToken("one two", 0, 7, 1),
-				new WeightAdjustingToken("two three", 4, 9, 1),
-				new WeightAdjustingToken("one two three", 0, 13, 1)
+				new WeightAdjustingToken("one", 0, 0, 3, 1),
+				new WeightAdjustingToken("two", 1, 4, 3, 1),
+				new WeightAdjustingToken("three", 2, 8, 5, 1),
+				new WeightAdjustingToken("one two", 0, 0, 7, 1),
+				new WeightAdjustingToken("two three", 1, 4, 9, 1),
+				new WeightAdjustingToken("one two three", 0, 0, 13, 1)
 			});
 			
 			Assert.Equal<WeightAdjustingToken>(

@@ -14,10 +14,10 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			var value = " one    two\r\nthree four ";
 			var expected = new[]
 			{
-				new WeightAdjustingToken("one", 1, 3, 1),
-				new WeightAdjustingToken("two", 8, 3, 1),
-				new WeightAdjustingToken("three", 13, 5, 1),
-				new WeightAdjustingToken("four", 19, 4, 1)
+				new WeightAdjustingToken("one", 0, 1, 3, 1),
+				new WeightAdjustingToken("two", 1, 8, 3, 1),
+				new WeightAdjustingToken("three", 2, 13, 5, 1),
+				new WeightAdjustingToken("four", 3, 19, 4, 1)
 			};
 
 			Assert.Equal<WeightAdjustingToken>(
@@ -33,9 +33,9 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			var value = " lower-cased  content ";
 			var expected = new[]
 			{
-				new WeightAdjustingToken("lower", 1, 5, 1),
-				new WeightAdjustingToken("cased", 7, 5, 1),
-				new WeightAdjustingToken("content", 14, 7, 1)
+				new WeightAdjustingToken("lower", 0, 1, 5, 1),
+				new WeightAdjustingToken("cased", 1, 7, 5, 1),
+				new WeightAdjustingToken("content", 2, 14, 7, 1)
 			};
 
 			Assert.Equal<WeightAdjustingToken>(
@@ -55,8 +55,8 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 				var splitPoint = value.Select((c, index) => new { Character = c, Index = index }).Where(c => c.Character == '-').Select(c => c.Index).Single();
 				return new NonNullImmutableList<WeightAdjustingToken>(new[]
 				{
-					new WeightAdjustingToken(value.Substring(0, splitPoint), 0, splitPoint, 1),
-					new WeightAdjustingToken(value.Substring(splitPoint + 1), splitPoint + 1, value.Length - (splitPoint + 1), 1)
+					new WeightAdjustingToken(value.Substring(0, splitPoint), 0, 0, splitPoint, 1),
+					new WeightAdjustingToken(value.Substring(splitPoint + 1), 1, splitPoint + 1, value.Length - (splitPoint + 1), 1)
 				});
 			}
 		}
