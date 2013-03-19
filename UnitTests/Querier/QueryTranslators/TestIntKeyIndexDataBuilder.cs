@@ -17,19 +17,28 @@ namespace UnitTests.Querier.QueryTranslators
 			_data = new Dictionary<string, NonNullImmutableList<WeightedEntry<int>>>(data);
 		}
 
-		public TestIntKeyIndexDataBuilder Add(string source, int key, float weight)
+		public TestIntKeyIndexDataBuilder Add(string source, int key, float weight, IEnumerable<SourceFieldLocation> sourceLocations)
 		{
 			if (string.IsNullOrWhiteSpace(source))
 				throw new ArgumentException("Null/blank source specified");
 			if (weight <= 0)
 				throw new ArgumentOutOfRangeException("weight", "must be greater than zero");
+			if (sourceLocations == null)
+				throw new ArgumentNullException("sourceLocations");
 
-			var newMatch = new WeightedEntry<int>(key, weight);
+			var newMatch = new WeightedEntry<int>(key, weight, sourceLocations.ToNonNullImmutableList());
 			var newData = new Dictionary<string, NonNullImmutableList<WeightedEntry<int>>>(_data);
 			if (!newData.ContainsKey(source))
 				newData.Add(source, new NonNullImmutableList<WeightedEntry<int>>());
 			newData[source] = newData[source].Add(newMatch);
 			return new TestIntKeyIndexDataBuilder(newData);
+		}
+		public TestIntKeyIndexDataBuilder Add(string source, int key, float weight, SourceFieldLocation sourceLocation)
+		{
+			if (sourceLocation == null)
+				throw new ArgumentNullException("sourceLocation");
+
+			return Add(source, key, weight, new[] { sourceLocation });
 		}
 
 		public TestIntKeyIndexData Get()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 using FullTextIndexer.Core.TokenBreaking;
 using Xunit;
 
@@ -18,19 +19,19 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			var content = "one two three";
 			var whiteSpaceBrokenTokens = new NonNullImmutableList<WeightAdjustingToken>(new[]
 			{
-				new WeightAdjustingToken("one", 0, 0, 3, 1),
-				new WeightAdjustingToken("two", 1, 4, 3, 1),
-				new WeightAdjustingToken("three", 2, 8, 5, 1)
+				new WeightAdjustingToken("one", 1, new SourceLocation(0, 0, 3)),
+				new WeightAdjustingToken("two", 1, new SourceLocation(1, 4, 3)),
+				new WeightAdjustingToken("three", 1, new SourceLocation(2, 8, 5))
 			});
 
 			var expected = new NonNullImmutableList<WeightAdjustingToken>(new[]
 			{
-				new WeightAdjustingToken("one", 0, 0, 3, 1),
-				new WeightAdjustingToken("two", 1, 4, 3, 1),
-				new WeightAdjustingToken("three", 2, 8, 5, 1),
-				new WeightAdjustingToken("one two", 0, 0, 7, 1),
-				new WeightAdjustingToken("two three", 1, 4, 9, 1),
-				new WeightAdjustingToken("one two three", 0, 0, 13, 1)
+				new WeightAdjustingToken("one", 1, new SourceLocation(0, 0, 3)),
+				new WeightAdjustingToken("two", 1, new SourceLocation(1, 4, 3)),
+				new WeightAdjustingToken("three", 1, new SourceLocation(2, 8, 5)),
+				new WeightAdjustingToken("one two", 1, new SourceLocation(0, 0, 7)),
+				new WeightAdjustingToken("two three", 1, new SourceLocation(1, 4, 9)),
+				new WeightAdjustingToken("one two three", 1, new SourceLocation(0, 0, 13))
 			});
 			
 			Assert.Equal<WeightAdjustingToken>(
