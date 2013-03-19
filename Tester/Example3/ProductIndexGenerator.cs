@@ -38,21 +38,21 @@ namespace Tester.Example3
 
             var contentRetrievers = new List<ContentRetriever<Article, int>>();
             contentRetrievers.Add(new ContentRetriever<Article, int>(
-                a => new PreBrokenContent<int>(a.Key, a.Title),
+				a => new PreBrokenContent<int>(a.Key, a.Title),
                 GetTokenWeightDeterminer(15f)
             ));
             contentRetrievers.Add(new ContentRetriever<Article, int>(
-                a => (a.ByLine == "") ? null : new PreBrokenContent<int>(a.Key, a.ByLine),
+				a => new PreBrokenContent<int>(a.Key, a.ByLine),
                 GetTokenWeightDeterminer(3f)
-            ));
+			));
             contentRetrievers.Add(new ContentRetriever<Article, int>(
-                a => (a.Keywords == "") ? null : new PreBrokenContent<int>(a.Key, a.Keywords),
+				a => new PreBrokenContent<int>(a.Key, a.Keywords),
                 GetTokenWeightDeterminer(3f)
-            ));
+			));
             contentRetrievers.Add(new ContentRetriever<Article, int>(
-                a => (a.Body == "") ? null : new PreBrokenContent<int>(a.Key, a.Body),
+				a => new PreBrokenContent<int>(a.Key, a.Body),
                 GetTokenWeightDeterminer(1f)
-            ));
+			));
                 
             return new IndexGenerator<Article, int>(
                 contentRetrievers.ToNonNullImmutableList(),

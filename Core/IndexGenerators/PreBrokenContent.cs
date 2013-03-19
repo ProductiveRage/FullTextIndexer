@@ -1,22 +1,31 @@
 ﻿using System;
+using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.IndexGenerators
 {
     /// <summary>
-    /// This is content extract from a source item for a particular key, before it is broken down into tokens
+    /// This is content extracted from a source item for a particular key, before it is broken down into tokens
     /// </summary>
     public class PreBrokenContent<TKey>
     {
-        public PreBrokenContent(TKey key, string content)
+        public PreBrokenContent(TKey key, NonNullOrEmptyStringList content)
         {
             if (key == null)
                 throw new ArgumentNullException("key");
-            if (string.IsNullOrWhiteSpace(content))
-                throw new ArgumentException("Null/blank content specified");
+			if (content == null)
+				throw new ArgumentNullException("content");
 
             Key = key;
             Content = content;
         }
+		public PreBrokenContent(TKey key, string contentIfAny) : this(key, GetContentSections(contentIfAny)) { }
+
+		private static NonNullOrEmptyStringList GetContentSections(string contentIfAny)
+		{
+			if (string.IsNullOrWhiteSpace(contentIfAny))
+				return new NonNullOrEmptyStringList();
+			return new NonNullOrEmptyStringList(new[] { contentIfAny });
+		}
 
         /// <summary>
         /// This will never be null
@@ -24,8 +33,8 @@ namespace FullTextIndexer.Core.IndexGenerators
         public TKey Key { get; private set; }
 
         /// <summary>
-        /// This will never be null or empty
+        /// This will never be null but it may be empty if there was no content for the Content Retriever to extract
         /// </summary>
-        public string Content { get; private set; }
+        public NonNullOrEmptyStringList Content { get; private set; }
     }
 }

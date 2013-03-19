@@ -113,7 +113,7 @@ namespace FullTextIndexer.Helpers
 						new ContentRetriever<TSource, TKey>(
 							source =>
 							{
-								var combinedValue = new StringBuilder();
+								var values = new NonNullOrEmptyStringList();
 								foreach (var entry in nestedDataAccessor(source))
 								{
 									if (entry == null)
@@ -121,13 +121,11 @@ namespace FullTextIndexer.Helpers
 
 									var value = (string)propertyClone.GetValue(entry, null);
 									if (!string.IsNullOrWhiteSpace(value))
-										combinedValue.AppendLine(value);
+										values = values.Add(value);
 								}
-								if (combinedValue.Length == 0)
-									return null;
 								return new PreBrokenContent<TKey>(
 									keyRetriever(source),
-									combinedValue.ToString()
+									values
 								);
 							},
 							weightDeterminer
