@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
@@ -86,10 +87,12 @@ namespace FullTextIndexer.Core.TokenBreaking
 
                         tokens.Add(new WeightAdjustingToken(
                             subTokenMatchVariation.Token,
-							subTokenMatchVariation.TokenIndex,
-							subTokenMatchVariation.SourceIndex,
-							subTokenMatchVariation.SourceTokenLength,
-                            weightAdjustingToken.WeightMultiplier * weightAdjustingSubToken.WeightMultiplier * partialMatchWeightMultiplier
+                            weightAdjustingToken.WeightMultiplier * weightAdjustingSubToken.WeightMultiplier * partialMatchWeightMultiplier,
+							new SourceLocation(
+								subTokenMatchVariation.SourceLocation.TokenIndex,
+								subTokenMatchVariation.SourceLocation.SourceIndex,
+								subTokenMatchVariation.SourceLocation.SourceTokenLength
+							)
                         ));
                     }
                 }
@@ -109,16 +112,14 @@ namespace FullTextIndexer.Core.TokenBreaking
             if (_optionalPrePartialMatchTokenBreaker == null)
                 return new[] { token };
 
-			// The SourceIndex and SourceTokenLength value do not have to be altered; they are used to indicate which word (or segment) in the source
-			// content is being matched - if matching that word partially then we still want that word to be indicated as being matched, even though
-			// only a section of that word will actually be being matched.
+			// The SourceLocation values do not have to be altered; they are used to indicate which word (or segment) in the source content is being matched,
+			// if matching that word partially then we still want that word to be indicated as being matched, even though only a section of that word will
+			// actually be being matched.
 			return _optionalPrePartialMatchTokenBreaker.Break(token.Token)
 				.Select(t => new WeightAdjustingToken(
 					t.Token,
-					token.TokenIndex,
-					token.SourceIndex,
-					token.SourceTokenLength,
-					token.WeightMultiplier
+					token.WeightMultiplier,
+					token.SourceLocation
 				));
         }
 
@@ -140,13 +141,11 @@ namespace FullTextIndexer.Core.TokenBreaking
             {
 				for (var length = _minLengthOfPartialMatches; length <= Math.Min(token.Token.Length - index, _maxLengthOfPartialMatches); length++)
 				{
-					// The token's SourceIndex and SourceTokenLength are being maintained for the same reason as they are in GetTokensForPartialMatchGeneration
+					// The token's SourceLocation is being maintained for the same reason as they are in GetTokensForPartialMatchGeneration
 					partialMatches.Add(new WeightAdjustingToken(
 						token.Token.Substring(index, length),
-						token.TokenIndex,
-						token.SourceIndex,
-						token.SourceTokenLength,
-						token.WeightMultiplier
+						token.WeightMultiplier,
+						token.SourceLocation
 					));
 				}
             }

@@ -84,17 +84,21 @@ namespace Tester.Example2
                 keysInAllSets = keysInAllSets.Intersect(matchSet.Select(m => m.Key));
 
             // Map this back to the matches for keys where the keys exist in all of the match sets
-            var combinedResults = new Dictionary<int, List<float>>();
+            var combinedResults = new Dictionary<int, List<WeightedEntry<int>>>();
             foreach (var matchSet in matchSets)
             {
                 foreach (var match in matchSet.Where(m => keysInAllSets.Contains(m.Key)))
                 {
-                    if (!combinedResults.ContainsKey(match.Key))
-                        combinedResults.Add(match.Key, new List<float>());
-                    combinedResults[match.Key].Add(match.Weight);
+					if (!combinedResults.ContainsKey(match.Key))
+						combinedResults.Add(match.Key, new List<WeightedEntry<int>>());
+					combinedResults[match.Key].Add(match);
                 }
             }
-            return combinedResults.Select(entry => new WeightedEntry<int>(entry.Key, entry.Value.Sum())).ToNonNullImmutableList();
+            return combinedResults.Select(entry => new WeightedEntry<int>(
+				entry.Key,
+				entry.Value.Sum(w => w.Weight),
+				entry.Value.SelectMany(w => w.SourceLocations).ToNonNullImmutableList()
+			)).ToNonNullImmutableList();
         }
 
         /// <summary>
@@ -111,7 +115,11 @@ namespace Tester.Example2
             return matches
                 .Where(m => m.Key.IsApplicableFor(language, channelKey))
                 .GroupBy(m => m.Key.ProductKey)
-                .Select(g => new WeightedEntry<int>(g.Key, g.Sum(e => e.Weight)))
+                .Select(g => new WeightedEntry<int>(
+					g.Key,
+					g.Sum(w => w.Weight),
+					g.SelectMany(w => w.SourceLocations).ToNonNullImmutableList()
+				))
                 .ToNonNullImmutableList();
         }
 

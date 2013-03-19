@@ -65,13 +65,14 @@ namespace FullTextIndexer.Core.IndexGenerators
             //   the sourceStringComparer
             var timer = new Stopwatch();
             timer.Start();
-            var indexContent = new Dictionary<string, Dictionary<TKey, List<float>>>();
+            var indexContent = new Dictionary<string, Dictionary<TKey, List<WeightedEntry<TKey>>>>();
             var timeElapsedForNextUpdateMessage = TimeSpan.FromSeconds(5);
             for (var index = 0; index < data.Count; index++)
             {
                 var entry = data[index];
-                foreach (var contentRetriever in _contentRetrievers)
+				for (var contentRetrieverIndex = 0; contentRetrieverIndex < _contentRetrievers.Count; contentRetrieverIndex++)
                 {
+					var contentRetriever = _contentRetrievers[contentRetrieverIndex];
                     PreBrokenContent<TKey> preBrokenContent;
                     try
                     {
@@ -93,25 +94,40 @@ namespace FullTextIndexer.Core.IndexGenerators
                         timeElapsedForNextUpdateMessage = timer.Elapsed.Add(TimeSpan.FromSeconds(5));
                     }
 
-                    foreach (var weightedTokenMatch in _tokenBreaker.Break(preBrokenContent.Content))
+					foreach (var weightedTokenMatch in _tokenBreaker.Break(preBrokenContent.Content))
                     {
                         // Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
                         var normalisedToken = _sourceStringComparer.GetNormalisedString(weightedTokenMatch.Token);
                         if (normalisedToken == "")
                             continue;
 
-                        Dictionary<TKey, List<float>> allDataForToken;
+						Dictionary<TKey, List<WeightedEntry<TKey>>> allDataForToken;
                         if (!indexContent.TryGetValue(normalisedToken, out allDataForToken))
                         {
-                            allDataForToken = new Dictionary<TKey, List<float>>(_dataKeyComparer);
+							allDataForToken = new Dictionary<TKey, List<WeightedEntry<TKey>>>(_dataKeyComparer);
                             indexContent.Add(normalisedToken, allDataForToken);
                         }
 
                         if (!allDataForToken.ContainsKey(preBrokenContent.Key))
-                            allDataForToken.Add(preBrokenContent.Key, new List<float>());
+							allDataForToken.Add(preBrokenContent.Key, new List<WeightedEntry<TKey>>());
 
-                        allDataForToken[preBrokenContent.Key].Add(
-                            contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier
+                        // Each WeightedEntry requires a sourceLocation set which specifies a location in a content field - the SourceLocation
+						// returned by the Token Breaker has the token index, start point and length but it needs a distinct field index. The
+						// index of the current Content Retriever will do fine.
+						allDataForToken[preBrokenContent.Key].Add(
+							new WeightedEntry<TKey>(
+								preBrokenContent.Key,
+								contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier,
+								(new[]
+								{
+									new SourceFieldLocation(
+										contentRetrieverIndex,
+										weightedTokenMatch.SourceLocation.TokenIndex,
+										weightedTokenMatch.SourceLocation.SourceIndex,
+										weightedTokenMatch.SourceLocation.SourceTokenLength
+									)
+								}).ToNonNullImmutableList()
+							)
                         );
                     }
                 }
@@ -135,7 +151,8 @@ namespace FullTextIndexer.Core.IndexGenerators
                     combinedContent[token].Add(
                         new WeightedEntry<TKey>(
                             key,
-                            _weightedEntryCombiner(matches.ToImmutableList())
+							_weightedEntryCombiner(matches.Select(m => m.Weight).ToImmutableList()),
+							matches.SelectMany(m => m.SourceLocations).ToNonNullImmutableList()
                         )
                     );
                 }

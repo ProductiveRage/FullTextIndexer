@@ -137,7 +137,11 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			// Group the data so that no key appears more than once by combining the match weights
 			return combinedKeys
 				.GroupBy(e => e.Key, _keyComparer)
-				.Select(group => new WeightedEntry<TKey>(group.Key, _matchCombiner(group.Select(e => e.Weight).ToImmutableList(), querySegments)))
+				.Select(group => new WeightedEntry<TKey>(
+					group.Key,
+					_matchCombiner(group.Select(e => e.Weight).ToImmutableList(), querySegments),
+					group.SelectMany(e => e.SourceLocations).ToNonNullImmutableList()
+				))
 				.ToNonNullImmutableList();
 		}
 
