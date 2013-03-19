@@ -35,6 +35,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lists\ImmutableList_Extensions.cs" />
     <Compile Include="Lists\IEnumerable_Extensions.cs" />
     <Compile Include="Lists\ImmutableDictionary.cs" />
     <Compile Include="Lists\ImmutableList.cs" />
