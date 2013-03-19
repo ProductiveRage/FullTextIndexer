@@ -36,8 +36,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Indexes\SourceFieldLocation.cs" />
     <Compile Include="Indexes\IIndexData.cs" />
     <Compile Include="Indexes\IndexData.cs" />
+    <Compile Include="Indexes\SourceLocation.cs" />
     <Compile Include="Indexes\TernarySearchTree\EnglishPluralityStringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\ILookup.cs" />
     <Compile Include="Indexes\TernarySearchTree\StringNormaliser.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
@@ -67,10 +68,12 @@ namespace FullTextIndexer.Core.TokenBreaking
 					extendedTokens = extendedTokens.Add(
                         new WeightAdjustingToken(
 							string.Join(" ", tokensToCombine.Select(t => t.Token)),
-							firstToken.TokenIndex,
-							firstToken.SourceIndex,
-							(lastToken.SourceIndex + lastToken.SourceTokenLength) - firstToken.SourceIndex,
-                            weightMultiplier
+                            weightMultiplier,
+							new SourceLocation(
+								firstToken.SourceLocation.TokenIndex,
+								firstToken.SourceLocation.SourceIndex,
+								(lastToken.SourceLocation.SourceIndex + lastToken.SourceLocation.SourceTokenLength) - firstToken.SourceLocation.SourceIndex
+							)
                         )
                     );
                 }

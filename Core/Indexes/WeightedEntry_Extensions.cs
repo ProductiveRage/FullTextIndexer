@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.Indexes
@@ -24,7 +25,7 @@ namespace FullTextIndexer.Core.Indexes
             if (matchCombiner == null)
                 throw new ArgumentNullException("matchCombiner");
 
-            var allMatchesByKey = new Dictionary<TKey, ImmutableList<float>>(
+            var allMatchesByKey = new Dictionary<TKey, List<WeightedEntry<TKey>>>(
                 keyComparer
             );
             foreach (var resultSet in resultSetsToAdd.Add(results))
@@ -32,18 +33,22 @@ namespace FullTextIndexer.Core.Indexes
                 foreach (var result in resultSet)
                 {
 					if (!allMatchesByKey.ContainsKey(result.Key))
-						allMatchesByKey.Add(result.Key, new ImmutableList<float>());
-					allMatchesByKey[result.Key] = allMatchesByKey[result.Key].Add(result.Weight);
+						allMatchesByKey.Add(result.Key, new List<WeightedEntry<TKey>>());
+					allMatchesByKey[result.Key].Add(result);
                 }
             }
 
             var combinedData = new List<WeightedEntry<TKey>>();
             foreach (var match in allMatchesByKey)
             {
-                var weight = matchCombiner(match.Value);
+                var weight = matchCombiner(match.Value.Select(v => v.Weight).ToImmutableList());
                 if (weight <= 0)
                     throw new Exception("matchCombiner return weight of zero or less - invalid");
-                combinedData.Add(new WeightedEntry<TKey>(match.Key, weight));
+                combinedData.Add(new WeightedEntry<TKey>(
+					match.Key,
+					weight,
+					match.Value.SelectMany(v => v.SourceLocations).ToNonNullImmutableList()
+				));
             }
             return combinedData.ToNonNullImmutableList();
         }

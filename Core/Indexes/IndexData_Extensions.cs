@@ -30,7 +30,7 @@ namespace FullTextIndexer.Core.Indexes
                 throw new ArgumentNullException("matchCombiner");
 
             // Break down the source string and look for matches in the data, group the results by data key
-            var allMatchesByKey = new Dictionary<TKey, Dictionary<string, List<float>>>(
+            var allMatchesByKey = new Dictionary<TKey, Dictionary<string, List<WeightedEntry<TKey>>>>(
                 index.KeyComparer
             );
             var weightAdjustedTokens = tokenBreaker.Break(source);
@@ -39,19 +39,25 @@ namespace FullTextIndexer.Core.Indexes
                 foreach (var match in index.GetMatches(weightAdjustedToken.Token))
                 {
                     // Initialise / retrieve all token data for particular match by key
-                    Dictionary<string, List<float>> tokenMatchDataForEntry;
+					Dictionary<string, List<WeightedEntry<TKey>>> tokenMatchDataForEntry;
                     if (!allMatchesByKey.TryGetValue(match.Key, out tokenMatchDataForEntry))
                     {
-                        tokenMatchDataForEntry = new Dictionary<string, List<float>>(index.TokenComparer);
+						tokenMatchDataForEntry = new Dictionary<string, List<WeightedEntry<TKey>>>(index.TokenComparer);
                         allMatchesByKey.Add(match.Key, tokenMatchDataForEntry);
                     }
 
                     // Initialise / retrieve data for the current token for the particular match by key
                     if (!tokenMatchDataForEntry.ContainsKey(weightAdjustedToken.Token))
-                        tokenMatchDataForEntry.Add(weightAdjustedToken.Token, new List<float>());
+						tokenMatchDataForEntry.Add(weightAdjustedToken.Token, new List<WeightedEntry<TKey>>());
 
                     // Add the new weight value
-                    tokenMatchDataForEntry[weightAdjustedToken.Token].Add(match.Weight * weightAdjustedToken.WeightMultiplier);
+                    tokenMatchDataForEntry[weightAdjustedToken.Token].Add(
+						new WeightedEntry<TKey>(
+							match.Key,
+							match.Weight * weightAdjustedToken.WeightMultiplier,
+							match.SourceLocations
+						)
+					);
                 }
             }
 
@@ -62,17 +68,36 @@ namespace FullTextIndexer.Core.Indexes
             var combinedData = new List<WeightedEntry<TKey>>();
             foreach (var match in allMatchesByKey)
             {
-                // If a weight of zero is returned then the match should be ignored
-                // - If all tokens are matched for this entry then the number of number of match.Value entries will be the same as the number of distinct broken tokens since
-                //   the same string comparer / normaliser is used by the GetMatches calls 
-                var weight = matchCombiner(
-                    match.Value.Select(v => new WeightedTokenMatch(v.Key, v.Value.ToImmutableList())).ToNonNullImmutableList(),
+				// Each pass through this loop will contain data for a single result key
+
+				// Extract from the data a set of WeightedTokenMatch instances for the current result; get tokens and the match weights for the token for the current result key
+				var weightedTokenMatches = match.Value
+					.Select(matchSourcesWithToken => new WeightedTokenMatch(
+						matchSourcesWithToken.Key, // This is the matched token
+						matchSourcesWithToken.Value.Select(v => v.Weight).ToImmutableList()) // This is the set of match weights for the token for a particular result key
+					);
+				
+				// The matches weights for each token must now be combined - if a weight of zero is returned then the match should be ignored
+				// - If all tokens are matched for this entry then the number of number of match.Value entries will be the same as the number of distinct broken tokens since
+				//   the same string comparer / normaliser is used by the GetMatches calls
+				var weight = matchCombiner(
+					weightedTokenMatches.ToNonNullImmutableList(),
                     allTokens
                 );
                 if (weight < 0)
                     throw new Exception("matchCombiner returned negative weight - invalid");
-                else if (weight > 0)
-                    combinedData.Add(new WeightedEntry<TKey>(match.Key, weight));
+				else if (weight > 0)
+				{
+					var matchSourceLocations = match.Value.SelectMany(
+						matchSourcesWithToken => matchSourcesWithToken.Value.SelectMany(v => v.SourceLocations)
+					);
+					combinedData.Add(new WeightedEntry<TKey>(
+						match.Key,
+						weight,
+						matchSourceLocations.ToNonNullImmutableList()
+						
+					));
+				}
             }
             return combinedData.ToNonNullImmutableList();
         }

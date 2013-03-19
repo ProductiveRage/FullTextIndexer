@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
@@ -28,7 +29,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 
 			IEnumerable<WeightAdjustingToken> tokensToBreak;
 			if (_optionalWrappedTokenBreaker == null)
-				tokensToBreak = new[] { new WeightAdjustingToken(value, 0, 0, value.Length, 1) };
+				tokensToBreak = new[] { new WeightAdjustingToken(value, 1, new SourceLocation(0, 0, value.Length)) };
 			else
 				tokensToBreak = _optionalWrappedTokenBreaker.Break(value);
 
@@ -46,10 +47,12 @@ namespace FullTextIndexer.Core.TokenBreaking
 							var bufferContents = buffer.ToString();
 							tokens.Add(new WeightAdjustingToken(
 								bufferContents,
-								tokens.Count,
-								weightAdjustingToken.SourceIndex + bufferStartIndex,
-								bufferContents.Length,
-								weightAdjustingToken.WeightMultiplier
+								weightAdjustingToken.WeightMultiplier,
+								new SourceLocation(
+									tokens.Count,
+									weightAdjustingToken.SourceLocation.SourceIndex + bufferStartIndex,
+									bufferContents.Length
+								)
 							));
 							buffer.Clear();
 						}
@@ -64,10 +67,12 @@ namespace FullTextIndexer.Core.TokenBreaking
 					var bufferContents = buffer.ToString();
 					tokens.Add(new WeightAdjustingToken(
 						bufferContents,
-						tokens.Count,
-						weightAdjustingToken.SourceIndex + bufferStartIndex,
-						bufferContents.Length,
-						weightAdjustingToken.WeightMultiplier
+						weightAdjustingToken.WeightMultiplier,
+						new SourceLocation(
+							tokens.Count,
+							weightAdjustingToken.SourceLocation.SourceIndex + bufferStartIndex,
+							bufferContents.Length
+						)
 					));
 					buffer.Clear();
 				}
