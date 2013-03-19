@@ -70,23 +70,20 @@ namespace FullTextIndexer.Core.IndexGenerators
             for (var index = 0; index < data.Count; index++)
             {
                 var entry = data[index];
-				for (var contentRetrieverIndex = 0; contentRetrieverIndex < _contentRetrievers.Count; contentRetrieverIndex++)
+				var sourceFieldIndex = 0;
+				foreach (var contentRetriever in _contentRetrievers)
                 {
-					var contentRetriever = _contentRetrievers[contentRetrieverIndex];
                     PreBrokenContent<TKey> preBrokenContent;
                     try
                     {
                         preBrokenContent = contentRetriever.InitialContentRetriever(entry);
-                        if (preBrokenContent == null)
-                        {
-                            // If no content is returned (which is valid, depending upon the input data and the content retriever), then move on
-                            continue;
-                        }
                     }
                     catch (Exception e)
                     {
                         throw new Exception("contentRetriever.InitialContentRetriever threw exception", e);
                     }
+					if (preBrokenContent == null)
+						throw new Exception("contentRetriever.InitialContentRetriever returned null - this is invalid");
 
                     if (timer.Elapsed >= timeElapsedForNextUpdateMessage)
                     {
@@ -94,43 +91,50 @@ namespace FullTextIndexer.Core.IndexGenerators
                         timeElapsedForNextUpdateMessage = timer.Elapsed.Add(TimeSpan.FromSeconds(5));
                     }
 
-					foreach (var weightedTokenMatch in _tokenBreaker.Break(preBrokenContent.Content))
-                    {
-                        // Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
-                        var normalisedToken = _sourceStringComparer.GetNormalisedString(weightedTokenMatch.Token);
-                        if (normalisedToken == "")
-                            continue;
+					foreach (var contentSection in preBrokenContent.Content)
+					{
+						foreach (var weightedTokenMatch in _tokenBreaker.Break(contentSection))
+						{
+							// Strings that are reduced to "" by the normaliser have no meaning (they can't be searched for) and should be ignored
+							var normalisedToken = _sourceStringComparer.GetNormalisedString(weightedTokenMatch.Token);
+							if (normalisedToken == "")
+								continue;
 
-						Dictionary<TKey, List<WeightedEntry<TKey>>> allDataForToken;
-                        if (!indexContent.TryGetValue(normalisedToken, out allDataForToken))
-                        {
-							allDataForToken = new Dictionary<TKey, List<WeightedEntry<TKey>>>(_dataKeyComparer);
-                            indexContent.Add(normalisedToken, allDataForToken);
-                        }
+							Dictionary<TKey, List<WeightedEntry<TKey>>> allDataForToken;
+							if (!indexContent.TryGetValue(normalisedToken, out allDataForToken))
+							{
+								allDataForToken = new Dictionary<TKey, List<WeightedEntry<TKey>>>(_dataKeyComparer);
+								indexContent.Add(normalisedToken, allDataForToken);
+							}
 
-                        if (!allDataForToken.ContainsKey(preBrokenContent.Key))
-							allDataForToken.Add(preBrokenContent.Key, new List<WeightedEntry<TKey>>());
+							if (!allDataForToken.ContainsKey(preBrokenContent.Key))
+								allDataForToken.Add(preBrokenContent.Key, new List<WeightedEntry<TKey>>());
 
-                        // Each WeightedEntry requires a sourceLocation set which specifies a location in a content field - the SourceLocation
-						// returned by the Token Breaker has the token index, start point and length but it needs a distinct field index. The
-						// index of the current Content Retriever will do fine.
-						allDataForToken[preBrokenContent.Key].Add(
-							new WeightedEntry<TKey>(
-								preBrokenContent.Key,
-								contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier,
-								(new[]
-								{
-									new SourceFieldLocation(
-										contentRetrieverIndex,
-										weightedTokenMatch.SourceLocation.TokenIndex,
-										weightedTokenMatch.SourceLocation.SourceIndex,
-										weightedTokenMatch.SourceLocation.SourceTokenLength
-									)
-								}).ToNonNullImmutableList()
-							)
-                        );
-                    }
-                }
+							// Each WeightedEntry requires a sourceLocation set which specifies a location in a content field - the SourceLocation
+							// returned by the Token Breaker has the token index, start point and length but it needs a distinct field index. The
+							// index of the current Content Retriever will do fine.
+							allDataForToken[preBrokenContent.Key].Add(
+								new WeightedEntry<TKey>(
+									preBrokenContent.Key,
+									contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier,
+									(new[]
+									{
+										new SourceFieldLocation(
+											sourceFieldIndex,
+											weightedTokenMatch.SourceLocation.TokenIndex,
+											weightedTokenMatch.SourceLocation.SourceIndex,
+											weightedTokenMatch.SourceLocation.SourceTokenLength
+										)
+									}).ToNonNullImmutableList()
+								)
+							);
+						}
+						
+						// This has to be incremented for each content section successfully extracted from the source data, to ensure that each
+						// section gets a unique SourceFieldLocation.SourceFieldIndex assigned to it
+						sourceFieldIndex++;
+					}
+				}
             }
             _logger.LogIgnoringAnyError(
                 LogLevel.Debug,

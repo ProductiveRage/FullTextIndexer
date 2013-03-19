@@ -38,47 +38,27 @@ namespace Tester.Example1
 
             var contentRetrievers = new List<ContentRetriever<Product, int>>();
 
-            // Instantiate content retriever for the Name and Keywords, these have higher weights assigned to them than the other fields (ignore any null Keywords values)
+            // Instantiate content retriever for the Name and Keywords, these have higher weights assigned to them than the other fields
             contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForProductName(),
-                GetTokenWeightDeterminer(15f)
+				p => new PreBrokenContent<int>(p.Key, p.Name),
+				GetTokenWeightDeterminer(15f)
             ));
             contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForProductKeywords(),
-                GetTokenWeightDeterminer(3f)
+				p => new PreBrokenContent<int>(p.Key, p.Keywords),
+				GetTokenWeightDeterminer(3f)
             ));
 
             // Instantiate content retriever for the Description field (ignore any null Description values)
             contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForDescription(),
+                p => new PreBrokenContent<int>(p.Key, p.Description),
                 GetStandardTokenWeightDeterminer()
             ));
 
             // Instantiate content retriever for the Address fields (ignore any null Address values or null fields within an Address)
             contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Address1),
+                GetRetrieverForAddress(),
                 GetStandardTokenWeightDeterminer()
             ));
-            contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Address2),
-                GetStandardTokenWeightDeterminer()
-            ));
-            contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Address3),
-                GetStandardTokenWeightDeterminer()
-            ));
-            contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Address4),
-                GetStandardTokenWeightDeterminer()
-            ));
-            contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Address5),
-                GetStandardTokenWeightDeterminer()
-            ));
-            contentRetrievers.Add(new ContentRetriever<Product, int>(
-                GetRetrieverForAddress(a => a.Country),
-                GetStandardTokenWeightDeterminer()
-            )); 
                 
             return new IndexGenerator<Product, int>(
                 contentRetrievers.ToNonNullImmutableList(),
@@ -90,33 +70,20 @@ namespace Tester.Example1
             ).Generate(data.ToNonNullImmutableList());
         }
 
-        private ContentRetriever<Product, int>.PreBrokenTokenContentRetriever GetRetrieverForProductName()
+        private ContentRetriever<Product, int>.PreBrokenTokenContentRetriever GetRetrieverForAddress()
         {
-            return p => new PreBrokenContent<int>(p.Key, p.Name);
-        }
-
-        private ContentRetriever<Product, int>.PreBrokenTokenContentRetriever GetRetrieverForProductKeywords()
-        {
-            return p => p.Keywords == "" ? null : new PreBrokenContent<int>(p.Key, p.Keywords);
-        }
-
-        private ContentRetriever<Product, int>.PreBrokenTokenContentRetriever GetRetrieverForDescription()
-        {
-            return p => p.Description == "" ? null : new PreBrokenContent<int>(p.Key, p.Description);
-        }
-
-        private ContentRetriever<Product, int>.PreBrokenTokenContentRetriever GetRetrieverForAddress(Func<AddressDetails, string> addressValueRetriever)
-        {
-            if (addressValueRetriever == null)
-                throw new ArgumentNullException("addressValueRetriever");
             return p =>
             {
-                if (p.Address == null)
-                    return null;
-                var value = addressValueRetriever(p.Address);
-                if (string.IsNullOrWhiteSpace(value))
-                    return null;
-                return new PreBrokenContent<int>(p.Key, value);
+				var content = new NonNullOrEmptyStringList();
+				if (p.Address != null)
+				{
+					foreach (var addressSection in new[] { p.Address.Address1, p.Address.Address2, p.Address.Address3, p.Address.Address4, p.Address.Address5, p.Address.Country})
+					{
+						if (!string.IsNullOrWhiteSpace(addressSection))
+							content = content.Add(addressSection);
+					}
+				}
+                return new PreBrokenContent<int>(p.Key, content);
             };
         }
 
