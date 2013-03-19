@@ -13,39 +13,82 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 {
     public class IndexGeneratorTests
     {
-        [Fact]
-        public void SingleProductWithSingleWordName()
-        {
-            var indexGenerator = new IndexGenerator<Product, int>(
-                new NonNullImmutableList<ContentRetriever<Product, int>>(new[]
+		[Fact]
+		public void SingleProductWithSingleWordName()
+		{
+			var indexGenerator = new IndexGenerator<Product, int>(
+				new NonNullImmutableList<ContentRetriever<Product, int>>(new[]
                 {
                     new ContentRetriever<Product, int>(
                         p => new PreBrokenContent<int>(p.Key, p.Name),
                         token => 1f
                     )                        
                 }),
-                new DefaultEqualityComparer<int>(),
-                new CaseInsensitiveStringNormaliser(),
-                new WhiteSpaceTokenBreaker(),
-                weightedValues => weightedValues.Sum(),
-                new NullLogger()
-            );
-            var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
+				new DefaultEqualityComparer<int>(),
+				new CaseInsensitiveStringNormaliser(),
+				new WhiteSpaceTokenBreaker(),
+				weightedValues => weightedValues.Sum(),
+				new NullLogger()
+			);
+			var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
             {
                 new Product() { Key = 1, Name = "Product" }
             }));
 
-            var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
+			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
             {
-                new WeightedEntry<int>(1, 1f)
+                new WeightedEntry<int>(1, 1f, (new[] { new SourceFieldLocation(0, 0, 0, 7) }).ToNonNullImmutableList())
             });
-            EnsureIndexDataMatchesExpectations(
-                expected,
-                index.GetMatches("Product")
-            );
-        }
+			EnsureIndexDataMatchesExpectations(
+				expected,
+				index.GetMatches("Product")
+			);
+		}
 
-        /// <summary>
+		[Fact]
+		public void SingleProductWithSingleWordNameAndSameSingleWordDescription()
+		{
+			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
+				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
+                {
+                    new ContentRetriever<ProductWithDescription, int>(
+                        p => new PreBrokenContent<int>(p.Key, p.Name),
+                        token => 1f
+                    ),
+                    new ContentRetriever<ProductWithDescription, int>(
+                        p => new PreBrokenContent<int>(p.Key, p.Description),
+                        token => 1f
+                    )                        
+                }),
+				new DefaultEqualityComparer<int>(),
+				new CaseInsensitiveStringNormaliser(),
+				new WhiteSpaceTokenBreaker(),
+				weightedValues => weightedValues.Sum(),
+				new NullLogger()
+			);
+			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
+            {
+                new ProductWithDescription() { Key = 1, Name = "Product", Description = "Product" }
+            }));
+
+			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
+            {
+                new WeightedEntry<int>(
+					1,
+					2f,
+					(new[]
+					{
+						new SourceFieldLocation(0, 0, 0, 7), // Match in Name field (source field index 0)
+						new SourceFieldLocation(1, 0, 0, 7)  // Match in Description field (source field index 1)
+					}).ToNonNullImmutableList())
+            });
+			EnsureIndexDataMatchesExpectations(
+				expected,
+				index.GetMatches("Product")
+			);
+		}
+
+		/// <summary>
         /// This will throw an exception if the contents of expected do not match that of actual (or if either reference is null)
         /// </summary>
         private void EnsureIndexDataMatchesExpectations(NonNullImmutableList<WeightedEntry<int>> expected, NonNullImmutableList<WeightedEntry<int>> actual)
@@ -75,11 +118,16 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
             }
         }
 
-        private class Product
+		private class Product
+		{
+			public int Key { get; set; }
+			public string Name { get; set; }
+		}
+
+        private class ProductWithDescription : Product
         {
-            public int Key { get; set; }
-            public string Name { get; set; }
-        }
+			public string Description { get; set; }
+		}
 
         private class CaseInsensitiveStringNormaliser : IStringNormaliser
         {
