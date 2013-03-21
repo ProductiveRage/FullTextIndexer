@@ -14,7 +14,7 @@ namespace FullTextIndexer.Core.Indexes
         /// the final data. To require that all tokens in the source content be present for any returned results, the following matchCombiner could be specified:
         ///  (tokenMatches, allTokens) => (tokenMatches.Count &lt; allTokens.Count) ? 0 : tokenMatches.SelectMany(m => m.Weights).Sum()
         /// </summary>
-        public static NonNullImmutableList<WeightedEntry<TKey>> GetPartialMatches<TKey>(
+		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(
             this IIndexData<TKey> index,
             string source,
             ITokenBreaker tokenBreaker,
@@ -30,32 +30,38 @@ namespace FullTextIndexer.Core.Indexes
                 throw new ArgumentNullException("matchCombiner");
 
             // Break down the source string and look for matches in the data, group the results by data key
-            var allMatchesByKey = new Dictionary<TKey, Dictionary<string, List<WeightedEntry<TKey>>>>(
+			var allMatchesByKey = new Dictionary<TKey, Dictionary<string, List<WeightedEntryWithTerm<TKey>>>>(
                 index.KeyComparer
             );
-            var weightAdjustedTokens = tokenBreaker.Break(source);
+			var weightAdjustedTokens = tokenBreaker.Break(source);
             foreach (var weightAdjustedToken in weightAdjustedTokens)
             {
                 foreach (var match in index.GetMatches(weightAdjustedToken.Token))
                 {
                     // Initialise / retrieve all token data for particular match by key
-					Dictionary<string, List<WeightedEntry<TKey>>> tokenMatchDataForEntry;
+					Dictionary<string, List<WeightedEntryWithTerm<TKey>>> tokenMatchDataForEntry;
                     if (!allMatchesByKey.TryGetValue(match.Key, out tokenMatchDataForEntry))
                     {
-						tokenMatchDataForEntry = new Dictionary<string, List<WeightedEntry<TKey>>>(index.TokenComparer);
+						tokenMatchDataForEntry = new Dictionary<string, List<WeightedEntryWithTerm<TKey>>>(index.TokenComparer);
                         allMatchesByKey.Add(match.Key, tokenMatchDataForEntry);
                     }
 
                     // Initialise / retrieve data for the current token for the particular match by key
                     if (!tokenMatchDataForEntry.ContainsKey(weightAdjustedToken.Token))
-						tokenMatchDataForEntry.Add(weightAdjustedToken.Token, new List<WeightedEntry<TKey>>());
+						tokenMatchDataForEntry.Add(weightAdjustedToken.Token, new List<WeightedEntryWithTerm<TKey>>());
 
                     // Add the new weight value
                     tokenMatchDataForEntry[weightAdjustedToken.Token].Add(
-						new WeightedEntry<TKey>(
+						new WeightedEntryWithTerm<TKey>(
 							match.Key,
 							match.Weight * weightAdjustedToken.WeightMultiplier,
-							match.SourceLocations
+							match.SourceLocations.Select(l => new WeightedEntryWithTerm<TKey>.SourceFieldLocationWithTerm(
+								l.SourceFieldIndex,
+								l.TokenIndex,
+								l.SourceIndex,
+								l.SourceTokenLength,
+								weightAdjustedToken.Token
+							)).ToNonNullImmutableList()
 						)
 					);
                 }
@@ -65,7 +71,7 @@ namespace FullTextIndexer.Core.Indexes
             var allTokens = new NonNullOrEmptyStringList(
                 weightAdjustedTokens.Select(t => t.Token).Distinct(index.TokenComparer)
             );
-            var combinedData = new List<WeightedEntry<TKey>>();
+			var combinedData = new NonNullImmutableList<WeightedEntryWithTerm<TKey>>();
             foreach (var match in allMatchesByKey)
             {
 				// Each pass through this loop will contain data for a single result key
@@ -91,15 +97,14 @@ namespace FullTextIndexer.Core.Indexes
 					var matchSourceLocations = match.Value.SelectMany(
 						matchSourcesWithToken => matchSourcesWithToken.Value.SelectMany(v => v.SourceLocations)
 					);
-					combinedData.Add(new WeightedEntry<TKey>(
+					combinedData = combinedData.Add(new WeightedEntryWithTerm<TKey>(
 						match.Key,
 						weight,
 						matchSourceLocations.ToNonNullImmutableList()
-						
 					));
 				}
             }
-            return combinedData.ToNonNullImmutableList();
+            return combinedData;
         }
 
         /// <summary>
