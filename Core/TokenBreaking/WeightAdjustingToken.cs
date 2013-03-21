@@ -31,7 +31,7 @@ namespace FullTextIndexer.Core.TokenBreaking
         public float WeightMultiplier { get; private set; }
 
 		/// <summary>
-		/// This will never be null
+		/// This will never be null, this indicates where in the source string the particular content was located - before the Token Breaker split it up
 		/// </summary>
 		public SourceLocation SourceLocation { get; private set; }
 	}
