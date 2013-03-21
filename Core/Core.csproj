@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Indexes\WeightedEntryWithTerm.cs" />
     <Compile Include="Indexes\SourceFieldLocation.cs" />
     <Compile Include="Indexes\IIndexData.cs" />
     <Compile Include="Indexes\IndexData.cs" />

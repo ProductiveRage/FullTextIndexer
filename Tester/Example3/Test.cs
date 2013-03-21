@@ -56,7 +56,7 @@ namespace Tester.Example3
         /// <summary>
         /// Find results that have all of the tokens in the specified source string somewhere in their data (not necessarily in the same fields)
         /// </summary>
-        private static NonNullImmutableList<WeightedEntry<int>> GetMatches(IIndexData<int> index, string source, ITokenBreaker tokenBreaker)
+        private static NonNullImmutableList<WeightedEntryWithTerm<int>> GetMatches(IIndexData<int> index, string source, ITokenBreaker tokenBreaker)
         {
             if (string.IsNullOrWhiteSpace(source))
                 throw new ArgumentException("Null/empty source");
