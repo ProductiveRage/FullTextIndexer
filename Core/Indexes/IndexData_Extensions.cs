@@ -55,7 +55,7 @@ namespace FullTextIndexer.Core.Indexes
 						new WeightedEntryWithTerm<TKey>(
 							match.Key,
 							match.Weight * weightAdjustedToken.WeightMultiplier,
-							match.SourceLocations.Select(l => new WeightedEntryWithTerm<TKey>.SourceFieldLocationWithTerm(
+							match.SourceLocations.Select(l => new SourceFieldLocationWithTerm(
 								l.SourceFieldIndex,
 								l.TokenIndex,
 								l.SourceIndex,
