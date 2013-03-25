@@ -34,8 +34,7 @@ namespace Tester.Example3
             );
             var index = productIndexGenerator.Generate(data);
 
-            var matchesOverSingleField = GetMatches(
-                index,
+            var matchesOverSingleField = index.GetPartialMatches(
                 "Exercise",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
@@ -43,30 +42,12 @@ namespace Tester.Example3
                 )
             );
 
-            var matchesOverMultipleFields = GetMatches(
-                index,
+            var matchesOverMultipleFields = index.GetPartialMatches(
                 "Penguins Slap Christopher",
                 new WhiteSpaceExtendingTokenBreaker(
                     new ImmutableList<char>(new[] { '<', '>', '[', ']', '(', ')', '{', '}', '.', ',' }),
                     new WhiteSpaceTokenBreaker()
                 )
-            );
-        }
-
-        /// <summary>
-        /// Find results that have all of the tokens in the specified source string somewhere in their data (not necessarily in the same fields)
-        /// </summary>
-        private static NonNullImmutableList<WeightedEntryWithTerm<int>> GetMatches(IIndexData<int> index, string source, ITokenBreaker tokenBreaker)
-        {
-            if (string.IsNullOrWhiteSpace(source))
-                throw new ArgumentException("Null/empty source");
-            if (tokenBreaker == null)
-                throw new ArgumentNullException("tokenBreaker");
-
-            return index.GetPartialMatches(
-                source,
-                tokenBreaker,
-                (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count) ? 0 : tokenMatches.SelectMany(m => m.Weights).Sum()
             );
         }
 

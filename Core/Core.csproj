@@ -37,8 +37,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Indexes\IndexDataSerialiser.cs" />
-    <Compile Include="Indexes\SourceFieldLocationWithTerm.cs" />
-    <Compile Include="Indexes\WeightedEntryWithTerm.cs" />
+    <Compile Include="Indexes\IndexData_Extensions_PartialMatches.cs" />
     <Compile Include="Indexes\SourceFieldLocation.cs" />
     <Compile Include="Indexes\IIndexData.cs" />
     <Compile Include="Indexes\IndexData.cs" />
@@ -50,7 +49,6 @@
     <Compile Include="Indexes\TernarySearchTree\IStringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\TernarySearchTreeDictionary.cs" />
     <Compile Include="Indexes\WeightedEntry_Extensions.cs" />
-    <Compile Include="Indexes\IndexData_Extensions.cs" />
     <Compile Include="Indexes\WeightedEntry.cs" />
     <Compile Include="IndexGenerators\ContentRetriever.cs" />
     <Compile Include="IndexGenerators\DefaultEqualityComparer.cs" />
