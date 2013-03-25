@@ -136,7 +136,7 @@ namespace FullTextIndexer.Core.Indexes
         /// <summary>
         /// This will never return null
         /// </summary>
-        public IEqualityComparer<string> TokenComparer
+		public IStringNormaliser TokenComparer
         {
             get { return _data.KeyNormaliser; }
         }

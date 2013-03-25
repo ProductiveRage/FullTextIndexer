@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
 namespace FullTextIndexer.Core.Indexes
 {
@@ -38,7 +39,7 @@ namespace FullTextIndexer.Core.Indexes
         /// <summary>
         /// This will never return null
         /// </summary>
-        IEqualityComparer<string> TokenComparer { get; }
+		IStringNormaliser TokenComparer { get; }
 
         /// <summary>
         /// This will never return null
