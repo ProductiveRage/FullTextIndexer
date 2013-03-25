@@ -98,7 +98,7 @@ namespace FullTextIndexer.Core.Indexes
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source, ITokenBreaker tokenBreaker)
 		{
-			return GetPartialMatches(index, source, tokenBreaker);
+			return GetPartialMatches(index, source, tokenBreaker, DefaultWeightCombiner);
 		}
 
 		/// <summary>
@@ -219,6 +219,8 @@ namespace FullTextIndexer.Core.Indexes
 					if (string.IsNullOrWhiteSpace(searchTerm))
 						throw new ArgumentException("Null/blank searchTerm specified");
 
+					TokenIndex = tokenIndex;
+					SearchTerm = searchTerm;
 				}
 
 				/// <summary>
