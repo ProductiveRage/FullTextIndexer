@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.Indexes.TernarySearchTree;
 using FullTextIndexer.Core.IndexGenerators;
 
 namespace UnitTests.Querier.QueryTranslators
@@ -59,7 +60,7 @@ namespace UnitTests.Querier.QueryTranslators
 		{
 			throw new NotImplementedException();
 		}
-		public IEqualityComparer<string> TokenComparer
+		public IStringNormaliser TokenComparer
 		{
 			get { throw new NotImplementedException(); }
 		}
