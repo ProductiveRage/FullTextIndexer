@@ -51,6 +51,7 @@ namespace FullTextIndexer.Core.Indexes
 									l.TokenIndex,
 									l.SourceIndex,
 									l.SourceTokenLength,
+									l.MatchWeightContribution,
 									new SourceFieldLocationWithTerm.SearchTermDetails(
 										tokenIndex,
 										weightAdjustedToken.Token
@@ -196,8 +197,8 @@ namespace FullTextIndexer.Core.Indexes
 		/// </summary>
 		public class SourceFieldLocationWithTerm : SourceFieldLocation
 		{
-			public SourceFieldLocationWithTerm(int sourceFieldIndex, int tokenIndex, int sourceIndex, int sourceTokenLength, SearchTermDetails searchTerm)
-				: base(sourceFieldIndex, tokenIndex, sourceIndex, sourceTokenLength)
+			public SourceFieldLocationWithTerm(int sourceFieldIndex, int tokenIndex, int sourceIndex, int sourceTokenLength, float matchWeightContribution, SearchTermDetails searchTerm)
+				: base(sourceFieldIndex, tokenIndex, sourceIndex, sourceTokenLength, matchWeightContribution)
 			{
 				if (searchTerm == null)
 					throw new ArgumentNullException("searchTerm");
