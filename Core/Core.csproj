@@ -49,6 +49,7 @@
     <Compile Include="Indexes\TernarySearchTree\IStringNormaliser.cs" />
     <Compile Include="Indexes\TernarySearchTree\TernarySearchTreeDictionary.cs" />
     <Compile Include="Indexes\WeightedEntry_Extensions.cs" />
+    <Compile Include="Indexes\IndexData_Extensions_ConsecutiveMatches.cs" />
     <Compile Include="Indexes\WeightedEntry.cs" />
     <Compile Include="IndexGenerators\ContentRetriever.cs" />
     <Compile Include="IndexGenerators\DefaultEqualityComparer.cs" />
