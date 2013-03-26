@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
+using FullTextIndexer.Core.IndexGenerators;
 using FullTextIndexer.Core.TokenBreaking;
 
 namespace FullTextIndexer.Core.Indexes
@@ -16,14 +17,16 @@ namespace FullTextIndexer.Core.Indexes
 		/// processing time to generate, and disk / memory space to store, the runs of tokens). This also has the benefit that there is no cap on the number of tokens that can be
 		/// matched consecutively (a limit on this had to be decided at index generation time when using the ConsecutiveTokenCombiningTokenBreaker). There are two sets of weight
 		/// combining calculations required; the first (handled by the weightCombinerForConsecutiveRuns) determines a weight for run of consecutive tokens - each run is considered
-		/// a single match, effectively. The second is performed when multiple matches for a particular result must be combined to give a final match weight for that result.
+		/// a single match, effectively. Each call to the first weight comber will have as many weights to combine as there are search terms, so if the "source" value is broken
+		/// down into three words by the tokenBreaker then the weightCombinerForConsecutiveRuns will always be called with sets of three weights. The second weight combination
+		/// is performed when multiple matches for a particular result must be combined to give a final match weight for that result.
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntry<TKey>> GetConsecutiveMatches<TKey>(
 			this IIndexData<TKey> index,
 			string source,
 			ITokenBreaker tokenBreaker,
-			WeightCombiner weightCombinerForConsecutiveRuns,
-			WeightCombiner weightCombinerForFinalMatches)
+			IndexGenerator.WeightedEntryCombiner weightCombinerForConsecutiveRuns,
+			IndexGenerator.WeightedEntryCombiner weightCombinerForFinalMatches)
 		{
             if (index == null)
                 throw new ArgumentNullException("index");
@@ -83,8 +86,7 @@ namespace FullTextIndexer.Core.Indexes
 				var sourceLocationOfFirstTerm = matchesForEntireTerm.First().SourceLocations.Single();
 				var sourceLocationOfLastTerm = matchesForEntireTerm.Last().SourceLocations.Single();
 				var matchWeightForConsecutiveRunEntry = weightCombinerForConsecutiveRuns(
-					matchesForEntireTerm.Select(m => m.Weight).ToImmutableList(),
-					searchTerms
+					matchesForEntireTerm.Select(m => m.Weight).ToImmutableList()
 				);
 				consecutiveMatches.Add(
 					new WeightedEntry<TKey>(
@@ -115,8 +117,7 @@ namespace FullTextIndexer.Core.Indexes
 				.Select(matches => new WeightedEntry<TKey>(
 					matches.First().Key,
 					weightCombinerForFinalMatches(
-						matches.Select(match => match.Weight).ToImmutableList(),
-						searchTerms
+						matches.Select(match => match.Weight).ToImmutableList()
 					),
 					matches.SelectMany(m => m.SourceLocations).ToNonNullImmutableList()
 				))
@@ -134,32 +135,26 @@ namespace FullTextIndexer.Core.Indexes
 		}
 
 		/// <summary>
-		/// This will never be called with null or empty lists. There will be a weight for each of the tokens extracted from the search term that have been found in a
-		/// consecutive run in content and for which a combined weight must be determined. This must always return a value greater than zero.
-		/// </summary>
-		public delegate float WeightCombiner(ImmutableList<float> weightsOfConsecutiveMatches, NonNullOrEmptyStringList searchTerms);
-
-		/// <summary>
-		/// This will add up the match weights and multiply the result by two raised to the power of the number of consecutive search terms mins one, such that longer runs
+		/// This will add up the match weights and multiply the result by two raised to the power of the number of consecutive search terms minus one, such that longer runs
 		/// get more and more weight applied. So a run of two tokens gets their combined weight multipled by two, a run of three tokens gets the combined weight multiplied
 		/// by four, four tokens get the combined weight multiplied by eight, etc..
 		/// </summary>
-		public static WeightCombiner DefaultConsecutiveRunsWeightCombiner
+		public static IndexGenerator.WeightedEntryCombiner DefaultConsecutiveRunsWeightCombiner
 		{
 			get
 			{
-				return (weightsOfConsecutiveMatches, searchTerms) => weightsOfConsecutiveMatches.Sum() * (int)Math.Pow(2, searchTerms.Count - 1);
+				return weightsOfConsecutiveMatches => weightsOfConsecutiveMatches.Sum() * (int)Math.Pow(2, weightsOfConsecutiveMatches.Count - 1);
 			}
 		}
 
 		/// <summary>
 		/// This adds up the match weights
 		/// </summary>
-		public static WeightCombiner DefaultFinalMatchWeightCombiner
+		public static IndexGenerator.WeightedEntryCombiner DefaultFinalMatchWeightCombiner
 		{
 			get
 			{
-				return (weightsOfConsecutiveMatches, searchTerms) => weightsOfConsecutiveMatches.Sum();
+				return weightsOfConsecutiveMatches => weightsOfConsecutiveMatches.Sum();
 			}
 		}
 
