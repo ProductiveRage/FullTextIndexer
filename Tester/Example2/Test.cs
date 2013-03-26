@@ -17,8 +17,6 @@ namespace Tester.Example2
     {
         public static void Go()
         {
-            // TODO: Plurality handling??
-
             var dataFile = new FileInfo("SampleData-Example2.dat");
             if (!dataFile.Exists)
                 GenerateDataFile(dataFile, "server=.\\SQLExpress;database=Pub;Trusted_Connection=True;");
