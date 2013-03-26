@@ -15,8 +15,8 @@ namespace UnitTests.Querier.QueryTranslators
 		public void PreciseMatchQuerySegmentsUseThePreciseMatchIndex()
 		{
 			var queryTranslator = new QueryTranslator<int>(
-				new TestIntKeyIndexDataBuilder().Add("test0", 1, 0.1f, new SourceFieldLocation(0, 0, 0, 5)).Get(),
-				new TestIntKeyIndexDataBuilder().Add("test0", 2, 0.1f, new SourceFieldLocation(0, 0, 0, 5)).Get(),
+				new TestIntKeyIndexDataBuilder().Add("test0", 1, 0.1f, new SourceFieldLocation(0, 0, 0, 5, 0.1f)).Get(),
+				new TestIntKeyIndexDataBuilder().Add("test0", 2, 0.1f, new SourceFieldLocation(0, 0, 0, 5, 0.1f)).Get(),
 				(matchWeights, sourceQuerySegments) => matchWeights.Sum()
 			);
 
@@ -25,7 +25,7 @@ namespace UnitTests.Querier.QueryTranslators
 				new WeightedEntry<int>(
 					2,
 					0.1f,
-					(new[] { new SourceFieldLocation(0, 0, 0, 5) }).ToNonNullImmutableList()
+					(new[] { new SourceFieldLocation(0, 0, 0, 5, 0.1f) }).ToNonNullImmutableList()
 				)
 			);
 			var actual = queryTranslator.GetMatches(

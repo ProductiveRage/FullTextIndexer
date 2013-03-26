@@ -113,17 +113,19 @@ namespace FullTextIndexer.Core.IndexGenerators
 							// Each WeightedEntry requires a sourceLocation set which specifies a location in a content field - the SourceLocation
 							// returned by the Token Breaker has the token index, start point and length but it needs a distinct field index. The
 							// index of the current Content Retriever will do fine.
+							var matchWeight = contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier;
 							allDataForToken[preBrokenContent.Key].Add(
 								new WeightedEntry<TKey>(
 									preBrokenContent.Key,
-									contentRetriever.TokenWeightDeterminer(normalisedToken) * weightedTokenMatch.WeightMultiplier,
+									matchWeight,
 									(new[]
 									{
 										new SourceFieldLocation(
 											sourceFieldIndex,
 											weightedTokenMatch.SourceLocation.TokenIndex,
 											weightedTokenMatch.SourceLocation.SourceIndex,
-											weightedTokenMatch.SourceLocation.SourceTokenLength
+											weightedTokenMatch.SourceLocation.SourceTokenLength,
+											matchWeight
 										)
 									}).ToNonNullImmutableList()
 								)

@@ -37,7 +37,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 
 			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
             {
-                new WeightedEntry<int>(1, 1f, (new[] { new SourceFieldLocation(0, 0, 0, 7) }).ToNonNullImmutableList())
+                new WeightedEntry<int>(1, 1f, (new[] { new SourceFieldLocation(0, 0, 0, 7, 1f) }).ToNonNullImmutableList())
             });
 			EnsureIndexDataMatchesExpectations(
 				expected,
@@ -78,8 +78,8 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 					2f,
 					(new[]
 					{
-						new SourceFieldLocation(0, 0, 0, 7), // Match in Name field (source field index 0)
-						new SourceFieldLocation(1, 0, 0, 7)  // Match in Description field (source field index 1)
+						new SourceFieldLocation(0, 0, 0, 7, 1f), // Match in Name field (source field index 0)
+						new SourceFieldLocation(1, 0, 0, 7, 1f)  // Match in Description field (source field index 1)
 					}).ToNonNullImmutableList())
             });
 			EnsureIndexDataMatchesExpectations(

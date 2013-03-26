@@ -156,7 +156,8 @@ namespace FullTextIndexer.Core.Indexes
 								reader.ReadInt32(),
 								reader.ReadInt32(),
 								reader.ReadInt32(),
-								reader.ReadInt32()
+								reader.ReadInt32(),
+								reader.ReadSingle()
 							)
 						);
 					}
@@ -219,6 +220,7 @@ namespace FullTextIndexer.Core.Indexes
 						writer.Write(sourceLocation.TokenIndex);
 						writer.Write(sourceLocation.SourceIndex);
 						writer.Write(sourceLocation.SourceTokenLength);
+						writer.Write(sourceLocation.MatchWeightContribution);
 					}
 				}
 			}
