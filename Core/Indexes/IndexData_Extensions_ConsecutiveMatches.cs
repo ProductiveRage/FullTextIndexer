@@ -135,6 +135,15 @@ namespace FullTextIndexer.Core.Indexes
 		}
 
 		/// <summary>
+		/// This GetConsecutiveMatches signature will call GetConsecutiveMatches specifying the DefaultConsecutiveRunsWeightCombiner and DefaultFinalMatchWeightCombiner
+		/// for the weightCombiner arguments and a WhiteSpaceTokenBreaker for the token breaker.
+		/// </summary>
+		public static NonNullImmutableList<WeightedEntry<TKey>> GetConsecutiveMatches<TKey>(this IIndexData<TKey> index, string source)
+		{
+			return GetConsecutiveMatches(index, source, new WhiteSpaceTokenBreaker());
+		}
+
+		/// <summary>
 		/// This will add up the match weights and multiply the result by two raised to the power of the number of consecutive search terms minus one, such that longer runs
 		/// get more and more weight applied. So a run of two tokens gets their combined weight multipled by two, a run of three tokens gets the combined weight multiplied
 		/// by four, four tokens get the combined weight multiplied by eight, etc..

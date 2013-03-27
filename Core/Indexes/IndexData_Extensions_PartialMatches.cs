@@ -103,6 +103,15 @@ namespace FullTextIndexer.Core.Indexes
 		}
 
 		/// <summary>
+		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument and a WhiteSpaceTokenBreaker
+		/// for the tokenBreaker
+		/// </summary>
+		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source)
+		{
+			return GetPartialMatches(index, source, new WhiteSpaceTokenBreaker());
+		}
+
+		/// <summary>
 		/// Given the complete set of match data for a particular result, this must determine the combined match weight. It must return zero or a positive value, if it
 		/// returns zero then the result will be excluded from the set returned from the GetPartialMatches method. It may be desirable to exclude results that don't
 		/// match all of the search terms at least once (this can be determined by considering the SearchTermDetails of the SourceLocations data and checking that
