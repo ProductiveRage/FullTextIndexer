@@ -39,8 +39,12 @@ namespace FullTextIndexer.Core.Indexes
 			if (weightCombinerForFinalMatches == null)
 				throw new ArgumentNullException("weightCombinerForFinalMatches");
 
-			// The index of this list will correspond to the index of the broken-down search terms
+			// If the token breaker won't actually translate the source value into multiple words then we can avoid all of the below work and just call index.GetMatches directly
 			var weightAdjustedTokens = tokenBreaker.Break(source);
+			if (weightAdjustedTokens.Count == 1)
+				return index.GetMatches(source);
+
+			// The index of this list will correspond to the index of the broken-down search terms
 			var matchesForSearchTerms = new List<WeightedEntry<TKey>[]>();
 			foreach (var weightAdjustedToken in weightAdjustedTokens)
 			{
