@@ -89,6 +89,52 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		}
 
 		/// <summary>
+		/// Only the first content retriever may result in SourceFieldLocation instances with a SourceFieledIndex of zero, regardless of whether or not it returns
+		/// any content. This is important for the enabling of search term highlighting.
+		/// </summary>
+		[Fact]
+		public void IfTheFirstContentRetrieverReturnsNoContentThenNoSourceFieldIndexZeroSourceLocationsAreReturned()
+		{
+			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
+				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
+                {
+                    new ContentRetriever<ProductWithDescription, int>(
+                        p => new PreBrokenContent<int>(p.Key, p.Name),
+                        token => 1f
+                    ),
+                    new ContentRetriever<ProductWithDescription, int>(
+                        p => new PreBrokenContent<int>(p.Key, p.Description),
+                        token => 1f
+                    )                        
+                }),
+				new DefaultEqualityComparer<int>(),
+				new CaseInsensitiveStringNormaliser(),
+				new WhiteSpaceTokenBreaker(),
+				weightedValues => weightedValues.Sum(),
+				new NullLogger()
+			);
+			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
+            {
+                new ProductWithDescription() { Key = 1, Name = "", Description = "Product" }
+            }));
+
+			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
+            {
+                new WeightedEntry<int>(
+					1,
+					1f,
+					(new[]
+					{
+						new SourceFieldLocation(1, 0, 0, 7, 1f)  // Match in Description field (source field index 1)
+					}).ToNonNullImmutableList())
+            });
+			EnsureIndexDataMatchesExpectations(
+				expected,
+				index.GetMatches("Product")
+			);
+		}
+
+		/// <summary>
         /// This will throw an exception if the contents of expected do not match that of actual (or if either reference is null)
         /// </summary>
         private void EnsureIndexDataMatchesExpectations(NonNullImmutableList<WeightedEntry<int>> expected, NonNullImmutableList<WeightedEntry<int>> actual)

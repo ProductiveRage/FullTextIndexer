@@ -136,6 +136,16 @@ namespace FullTextIndexer.Core.IndexGenerators
 						// section gets a unique SourceFieldLocation.SourceFieldIndex assigned to it
 						sourceFieldIndex++;
 					}
+					if (sourceFieldIndex == 0)
+					{
+						// The sourceFieldIndex should move at least once for the first content retriever (even if it didn't manage to extract any content using
+						// it) so that the index generator can be configured such that all source locations with SourceFieldIndex zero can be guaranteed to have
+						// come from a particular property (if it retrieves no content then there will be no source locations instances with a SourceFieldIndex
+						// value of zero). This can be used for search term highlighting. Only the first content retriever can be supported in this manner since
+						// if the first content retriever returns varying numbers of content sections then all bets are off for synchronising field index values
+						// for the subsequent retrievers.
+						sourceFieldIndex++;
+					}
 				}
             }
             _logger.LogIgnoringAnyError(
