@@ -103,12 +103,13 @@ namespace FullTextIndexer.Core.Indexes
 		}
 
 		/// <summary>
-		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument and a WhiteSpaceTokenBreaker
+		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument and the DefaultTokenBreaker
+		/// (
 		/// for the tokenBreaker
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source)
 		{
-			return GetPartialMatches(index, source, new WhiteSpaceTokenBreaker());
+			return GetPartialMatches(index, source, DefaultTokenBreaker);
 		}
 
 		/// <summary>
@@ -147,6 +148,26 @@ namespace FullTextIndexer.Core.Indexes
 					}
 					return matchSourceLocations.Sum(m => m.Weight);
 				};
+			}
+		}
+
+		/// <summary>
+		/// Note: This is consistent with the default AutomatedIndexGeneratorFactoryBuilder TokenBreaker - a WhiteSpaceExtendingTokenBreaker with various
+		/// punctuation marks identified to be considered as whitespace
+		/// </summary>
+		public static ITokenBreaker DefaultTokenBreaker
+		{
+			get
+			{
+				return new WhiteSpaceExtendingTokenBreaker(
+					new ImmutableList<char>(new[] {
+						'<', '>', '[', ']', '(', ')', '{', '}',
+						'.', ',', ':', ';', '"', '?', '!',
+						'/', '\\',
+						'@', '+', '|', '='
+					}),
+					new WhiteSpaceTokenBreaker()
+				);
 			}
 		}
 

@@ -140,11 +140,11 @@ namespace FullTextIndexer.Core.Indexes
 
 		/// <summary>
 		/// This GetConsecutiveMatches signature will call GetConsecutiveMatches specifying the DefaultConsecutiveRunsWeightCombiner and DefaultFinalMatchWeightCombiner
-		/// for the weightCombiner arguments and a WhiteSpaceTokenBreaker for the token breaker.
+		/// for the weightCombiner arguments and the DefaultTokenBreaker for the token breaker.
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntry<TKey>> GetConsecutiveMatches<TKey>(this IIndexData<TKey> index, string source)
 		{
-			return GetConsecutiveMatches(index, source, new WhiteSpaceTokenBreaker());
+			return GetConsecutiveMatches(index, source, DefaultTokenBreaker);
 		}
 
 		/// <summary>
@@ -168,6 +168,25 @@ namespace FullTextIndexer.Core.Indexes
 			get
 			{
 				return weightsOfConsecutiveMatches => weightsOfConsecutiveMatches.Sum();
+			}
+		}
+
+		/// <summary>
+		/// Note: This is consistent with the default AutomatedIndexGeneratorFactoryBuilder TokenBreaker
+		/// </summary>
+		public static ITokenBreaker DefaultTokenBreaker
+		{
+			get
+			{
+				return new WhiteSpaceExtendingTokenBreaker(
+					new ImmutableList<char>(new[] {
+						'<', '>', '[', ']', '(', ')', '{', '}',
+						'.', ',', ':', ';', '"', '?', '!',
+						'/', '\\',
+						'@', '+', '|', '='
+					}),
+					new WhiteSpaceTokenBreaker()
+				);
 			}
 		}
 
