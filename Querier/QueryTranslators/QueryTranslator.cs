@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Core.Indexes;
+using FullTextIndexer.Core.IndexGenerators;
+using FullTextIndexer.Core.TokenBreaking;
 using FullTextIndexer.Querier.Misc;
 using FullTextIndexer.Querier.QuerySegments;
 
@@ -12,10 +14,15 @@ namespace FullTextIndexer.Querier.QueryTranslators
 	/// This will retrieve results from index data that match the specified IQuerySegment implementation requirements. Two index data sets are required; the
 	/// preciseMatchIndexData is used for retrieving results from PreciseMatchQuerySegment data while other data is retrieved from the standardMatchIndexData.
 	/// These two indexes should have the same source data (though likely different processing methods to build the index data) and both share the same key
-	/// comparer. The matchCombiner is used to ensure that any set of query segments returns only one WeightedEntry for any key. If a key appears multiple
+	/// comparer. Data retrievals from the preciseMatchIndexData will use the GetConsecutiveMatches method since these are expected to describe quote values
+	/// (and so may have multiple words within a single query segment). The weight combiners and token breaker for the GetConsecutiveMatchese may be specified
+	/// or left as null to use the defaults.
+	/// 
+	/// The matchCombiner is used to ensure that any set of query segments returns only one WeightedEntry for any key. If a key appears multiple
 	/// times in different nested query segments then the combination of results for that key may occur multiple times - this allows, depending upon the
 	/// MatchCombiner implementation, to give lower weight to results the deeper nested that the originating query segments are (query segments are said
-	/// to be nested if they are among the query segments found in a CombiningQuerySegment).
+	/// to be nested if they are among the query segments found in a CombiningQuerySegment). There is a method signature where this matchCombiner need not
+	/// be specified, in which case a default will be applied that combines weighted entries by summing their weights.
 	/// </summary>
 	public class QueryTranslator<TKey> : IQueryTranslator<TKey>
 	{
@@ -23,7 +30,13 @@ namespace FullTextIndexer.Querier.QueryTranslators
 		private readonly CachingResultMatcher _preciseMatcher;
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		private readonly MatchCombiner _matchCombiner;
-		public QueryTranslator(IIndexData<TKey> standardMatchIndexData, IIndexData<TKey> preciseMatchIndexData, MatchCombiner matchCombiner)
+		public QueryTranslator(
+			IIndexData<TKey> standardMatchIndexData,
+			IIndexData<TKey> preciseMatchIndexData,
+			ITokenBreaker optionalQuotedValueConsecutiveTermTokenBreaker,
+			IndexGenerator.WeightedEntryCombiner optionalQuotedValueConsecutiveWeightCombinerForConsecutiveRuns,
+			IndexGenerator.WeightedEntryCombiner optionalQuotedValueConsecutiveWeightCombinerForFinalMatches,
+			MatchCombiner matchCombiner)
 		{
 			if (standardMatchIndexData == null)
 				throw new ArgumentNullException("standardMatchIndexData");
@@ -36,10 +49,40 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			// (can't do an instance comparison since they may be different instances of the same implementation, they could even feasibly be different
 			// classes with identical functionality) so we'll have to assume that the caller is behaving themselves. We'll take the KeyComparer of the
 			// standardMatchIndexData for use when combining keys, excluding keys or otherwise processing the query segment requirements.
-			_standardMatcher = new CachingResultMatcher(standardMatchIndexData);
-			_preciseMatcher = new CachingResultMatcher(preciseMatchIndexData);
+			_standardMatcher = new CachingResultMatcher(standardMatchIndexData.GetMatches);
+			_preciseMatcher = new CachingResultMatcher(
+				source => preciseMatchIndexData.GetConsecutiveMatches(
+					source,
+					optionalQuotedValueConsecutiveTermTokenBreaker ?? IndexData_Extensions_ConsecutiveMatches.DefaultTokenBreaker,
+					optionalQuotedValueConsecutiveWeightCombinerForConsecutiveRuns ?? IndexData_Extensions_ConsecutiveMatches.DefaultConsecutiveRunsWeightCombiner,
+					optionalQuotedValueConsecutiveWeightCombinerForFinalMatches ?? IndexData_Extensions_ConsecutiveMatches.DefaultFinalMatchWeightCombiner
+				)
+			);
 			_keyComparer = standardMatchIndexData.KeyComparer;
 			_matchCombiner = matchCombiner;
+		}
+		public QueryTranslator(
+			IIndexData<TKey> standardMatchIndexData,
+			IIndexData<TKey> preciseMatchIndexData,
+			ITokenBreaker optionalQuotedValueConsecutiveTermTokenBreaker,
+			MatchCombiner matchCombiner)
+			: this(standardMatchIndexData, preciseMatchIndexData, optionalQuotedValueConsecutiveTermTokenBreaker, null, null, matchCombiner) { }
+		public QueryTranslator(
+			IIndexData<TKey> standardMatchIndexData,
+			IIndexData<TKey> preciseMatchIndexData,
+			MatchCombiner matchCombiner)
+			: this(standardMatchIndexData, preciseMatchIndexData, null, matchCombiner) { }
+		public QueryTranslator(
+			IIndexData<TKey> standardMatchIndexData,
+			IIndexData<TKey> preciseMatchIndexData)
+			: this(standardMatchIndexData, preciseMatchIndexData, DefaultMatchCombiner) { }
+
+		public static MatchCombiner DefaultMatchCombiner
+		{
+			get
+			{
+				return (matchWeights, sourceQuerySegments) => matchWeights.Sum();
+			}
 		}
 
 		/// <summary>
@@ -111,6 +154,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 				var preciseMatchQuerySegment = querySegment as PreciseMatchQuerySegment;
 				if (preciseMatchQuerySegment != null)
 				{
+					// Since the quoted value could contain multiple terms we'll need to call 
 					allInclusiveWeighedMatches.AddRange(
 						_preciseMatcher.GetMatches(preciseMatchQuerySegment.Value)
 					);
@@ -147,14 +191,14 @@ namespace FullTextIndexer.Querier.QueryTranslators
 
 		private class CachingResultMatcher
 		{
-			private readonly IIndexData<TKey> _index;
+			private readonly Func<string, NonNullImmutableList<WeightedEntry<TKey>>> _matchRetriever;
 			private readonly Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _cache;
-			public CachingResultMatcher(IIndexData<TKey> index)
+			public CachingResultMatcher(Func<string, NonNullImmutableList<WeightedEntry<TKey>>> matchRetriever)
 			{
-				if (index == null)
-					throw new ArgumentNullException("index");
+				if (matchRetriever == null)
+					throw new ArgumentNullException("matchRetriever");
 
-				_index = index;
+				_matchRetriever = matchRetriever;
 				_cache = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>();
 			}
 
@@ -169,8 +213,8 @@ namespace FullTextIndexer.Querier.QueryTranslators
 					if (_cache.TryGetValue(source, out cachedData))
 						return cachedData;
 				}
-				
-				var data = _index.GetMatches(source);
+
+				var data = _matchRetriever(source);
 				lock (_cache)
 				{
 					if (!_cache.ContainsKey(source))
