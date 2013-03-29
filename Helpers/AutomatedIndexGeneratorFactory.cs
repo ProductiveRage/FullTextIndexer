@@ -24,6 +24,7 @@ namespace FullTextIndexer.Helpers
 		private readonly ITokenBreaker _tokenBreaker;
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
 		private readonly WeightDeterminerGenerator _brokenTokenWeightDeterminerGenerator;
+		private readonly PropertyInfo _optionalPropertyForFirstContentRetriever;
 		private readonly ILogger _logger;
 		public AutomatedIndexGeneratorFactory(
 			Func<TSource, TKey> keyRetriever,
@@ -32,6 +33,7 @@ namespace FullTextIndexer.Helpers
 			ITokenBreaker tokenBreaker,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombiner,
 			WeightDeterminerGenerator brokenTokenWeightDeterminerGenerator,
+			PropertyInfo optionalPropertyForFirstContentRetriever,
 			ILogger logger)
 		{
 			if (keyRetriever == null)
@@ -55,6 +57,7 @@ namespace FullTextIndexer.Helpers
 			_tokenBreaker = tokenBreaker;
 			_weightedEntryCombiner = weightedEntryCombiner;
 			_brokenTokenWeightDeterminerGenerator = brokenTokenWeightDeterminerGenerator;
+			_optionalPropertyForFirstContentRetriever = optionalPropertyForFirstContentRetriever;
 			_logger = logger;
 		}
 
@@ -65,13 +68,29 @@ namespace FullTextIndexer.Helpers
 
 		public IIndexGenerator<TSource, TKey> Get()
 		{
+			var contentRetrievers = GenerateContentRetrievers(
+				_keyRetriever,
+				source => new[] { source },
+				_brokenTokenWeightDeterminerGenerator,
+				typeof(TSource)
+			);
+			if (_optionalPropertyForFirstContentRetriever != null)
+			{
+				contentRetrievers = contentRetrievers.Sort((x, y) =>
+				{
+					var xIsFromFirstContentRetrieverProperty = (x.Property == _optionalPropertyForFirstContentRetriever);
+					var yIsFromFirstContentRetrieverProperty = (y.Property == _optionalPropertyForFirstContentRetriever);
+					if (xIsFromFirstContentRetrieverProperty && !yIsFromFirstContentRetrieverProperty)
+						return -1;
+					else if (!xIsFromFirstContentRetrieverProperty && yIsFromFirstContentRetrieverProperty)
+						return 1;
+					else
+						return 0;
+				});
+			}
+
 			return new IndexGenerator<TSource, TKey>(
-				GenerateContentRetrievers(
-					_keyRetriever,
-					source => new[] { source },
-					_brokenTokenWeightDeterminerGenerator,
-					typeof(TSource)
-				),
+				contentRetrievers.Select(c => c.ContentRetriever).ToNonNullImmutableList(),
 				_keyComparer,
 				_stringNormaliser,
 				_tokenBreaker,
@@ -83,7 +102,7 @@ namespace FullTextIndexer.Helpers
 		/// <summary>
 		/// All of the values returned by the nestedDataAccessor must be of type "type" (or assignable to it)
 		/// </summary>
-		private NonNullImmutableList<ContentRetriever<TSource, TKey>> GenerateContentRetrievers(
+		private NonNullImmutableList<ContentRetrieverWithSourceProperty> GenerateContentRetrievers(
 			Func<TSource, TKey> keyRetriever,
 			Func<TSource, IEnumerable> nestedDataAccessor,
 			WeightDeterminerGenerator weightDeterminerGenerator,
@@ -98,7 +117,7 @@ namespace FullTextIndexer.Helpers
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			var propertyValueRetrievers = new NonNullImmutableList<ContentRetriever<TSource, TKey>>();
+			var propertyValueRetrievers = new NonNullImmutableList<ContentRetrieverWithSourceProperty>();
 			foreach (var property in type.GetProperties().Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0)))
 			{
 				var weightDeterminer = weightDeterminerGenerator(property);
@@ -109,25 +128,28 @@ namespace FullTextIndexer.Helpers
 				{
 					var propertyClone = property; // Take a copy of the reference to use in the closure
 					propertyValueRetrievers = propertyValueRetrievers.Add(
-						new ContentRetriever<TSource, TKey>(
-							source =>
-							{
-								var values = new NonNullOrEmptyStringList();
-								foreach (var entry in nestedDataAccessor(source))
+						new ContentRetrieverWithSourceProperty(
+							new ContentRetriever<TSource, TKey>(
+								source =>
 								{
-									if (entry == null)
-										continue;
+									var values = new NonNullOrEmptyStringList();
+									foreach (var entry in nestedDataAccessor(source))
+									{
+										if (entry == null)
+											continue;
 
-									var value = (string)propertyClone.GetValue(entry, null);
-									if (!string.IsNullOrWhiteSpace(value))
-										values = values.Add(value);
-								}
-								return new PreBrokenContent<TKey>(
-									keyRetriever(source),
-									values
-								);
-							},
-							weightDeterminer
+										var value = (string)propertyClone.GetValue(entry, null);
+										if (!string.IsNullOrWhiteSpace(value))
+											values = values.Add(value);
+									}
+									return new PreBrokenContent<TKey>(
+										keyRetriever(source),
+										values
+									);
+								},
+								weightDeterminer
+							),
+							property
 						)
 					);
 					continue;
@@ -210,6 +232,30 @@ namespace FullTextIndexer.Helpers
 				}
 			}
 			return propertyValueRetrievers;
+		}
+
+		private class ContentRetrieverWithSourceProperty
+		{
+			public ContentRetrieverWithSourceProperty(ContentRetriever<TSource, TKey> contentRetriever, PropertyInfo property)
+			{
+				if (contentRetriever == null)
+					throw new ArgumentNullException("contentRetriever");
+				if (property == null)
+					throw new ArgumentNullException("property");
+
+				ContentRetriever = contentRetriever;
+				Property = property;
+			}
+
+			/// <summary>
+			/// This will never be null
+			/// </summary>
+			public ContentRetriever<TSource, TKey> ContentRetriever { get; private set; }
+
+			/// <summary>
+			/// This will never be null
+			/// </summary>
+			public PropertyInfo Property { get; private set; }
 		}
 	}
 }

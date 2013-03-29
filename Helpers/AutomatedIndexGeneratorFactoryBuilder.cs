@@ -24,6 +24,7 @@ namespace FullTextIndexer.Helpers
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombinerOverride;
 		private readonly NonNullImmutableList<IModifyMatchWeights> _propertyWeightAppliers;
 		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _tokenWeightDeterminerGeneratorOverride;
+		private readonly PropertyInfo _optionalPropertyForFirstContentRetriever;
 		private readonly ILogger _loggerOverride;
 		private AutomatedIndexGeneratorFactoryBuilder(
 			Func<TSource, TKey> keyRetrieverOverride,
@@ -33,6 +34,7 @@ namespace FullTextIndexer.Helpers
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombinerOverride,
 			NonNullImmutableList<IModifyMatchWeights> propertyWeightAppliers,
 			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator tokenWeightDeterminerGeneratorOverride,
+			PropertyInfo optionalPropertyForFirstContentRetriever,
 			ILogger loggerOverride)
 		{
 			if (propertyWeightAppliers == null)
@@ -45,9 +47,10 @@ namespace FullTextIndexer.Helpers
 			_weightedEntryCombinerOverride = weightedEntryCombinerOverride;
 			_propertyWeightAppliers = propertyWeightAppliers;
 			_tokenWeightDeterminerGeneratorOverride = tokenWeightDeterminerGeneratorOverride;
+			_optionalPropertyForFirstContentRetriever = optionalPropertyForFirstContentRetriever;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, new NonNullImmutableList<IModifyMatchWeights>(), null, null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -62,6 +65,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -79,6 +83,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -96,6 +101,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -113,6 +119,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -130,6 +137,7 @@ namespace FullTextIndexer.Helpers
 				weightedEntryCombiner,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -151,6 +159,34 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				weightDeterminerGenerator,
+				_optionalPropertyForFirstContentRetriever,
+				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// A particular property can be targetted to be responsible for the first content retriever to be generated - this would mean that any SourceFieldLocations in
+		/// match data with a SourceFieldIndex of zero would be guaranteed to have come from this property (if no content was extracted from this property for a given
+		/// source data instance then no source locations with a SourceFieldIndex of zero would be returned). This can be useful for search term highlighting since it
+		/// is common for the data for one particular field to be displayed with matched terms highlighted (the property that contains this content would be specified
+		/// here). This will only work reliably if the property returns zero or one content strings for any given result - if the property delivers multiple content
+		/// strings (eg. if lists all of the Tags that a Blog Post has associated with it) then each extracted content string will have a distint SourceFieldIndex
+		/// value, only the first one would be assigned a SourceFieldIndex of zero.
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetPropertyForFirstContentRetriever(PropertyInfo property)
+		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreakerOverride,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
+				property,
 				_loggerOverride
 			);
 		}
@@ -172,6 +208,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -198,6 +235,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -221,6 +259,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -249,6 +288,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride
 			);
 		}
@@ -266,6 +306,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
 				logger
 			);
 		}
@@ -280,6 +321,7 @@ namespace FullTextIndexer.Helpers
 				_tokenBreakerOverride ?? GetDefaultTokenBreaker(),
 				_weightedEntryCombinerOverride ?? (weightedValues => weightedValues.Sum()),
 				_tokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
+				_optionalPropertyForFirstContentRetriever,
 				_loggerOverride ?? new NullLogger()
 			);
 		}
