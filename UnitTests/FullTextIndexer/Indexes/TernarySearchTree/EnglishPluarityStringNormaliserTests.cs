@@ -11,20 +11,20 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                (new EnglishPluralityStringNormaliser()).GetNormalisedString(null);
+				GetNormaliser().GetNormalisedString(null);
             });
         }
 
         [Fact]
-        public void CatIsTransformedToCat_ses_es_s()
+        public void CatIsTransformedToCat()
         {
-            TestSpecificTransformation("cat", "cat|ses|es|s");
+            TestSpecificTransformation("cat", "cat");
         }
 
         [Fact]
-        public void CatsIsTransformedToCat_ses_es_s()
+        public void CatsIsTransformedToCat()
         {
-            TestSpecificTransformation("cats", "cat|ses|es|s");
+            TestSpecificTransformation("cats", "cat");
         }
 
         [Fact]
@@ -57,13 +57,13 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
             TestMatch("cactus", "cactii");
         }
 
-        [Fact]
-        public void EnsureMatch_formula_formulae()
-        {
-            TestMatch("formula", "formulae");
-        }
+		[Fact]
+		public void EnsureMatch_formula_formulae()
+		{
+			TestMatch("formula", "formulae");
+		}
 
-        [Fact]
+		[Fact]
         public void EnsureMatch_formula_formulas()
         {
             TestMatch("formula", "formulas");
@@ -132,7 +132,13 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
             TestMatch("tome", "tomes");
         }
 
-        private void TestSpecificTransformation(string valueToNormalise, string expected)
+		[Fact]
+		public void EnsureMatch_technique_techniques()
+		{
+			TestMatch("technique", "techniques");
+		}
+
+		private void TestSpecificTransformation(string valueToNormalise, string expected)
         {
             if (valueToNormalise == null)
                 throw new ArgumentNullException("valueToNormalise");
