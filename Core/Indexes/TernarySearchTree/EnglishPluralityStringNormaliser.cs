@@ -124,7 +124,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 {
 					// If the pluralisation rule applies to the value then return either the stem (the value minus the suffix, if
 					// the rule has a SuffixOnly match type, or the first of the plural's suffix values, if the rule's match type
-					// is WholeWord - otherwise a blank string would always be returned for WholeWord matches)
+					// is WholeWord - otherwise a blank string would always be returned for WholeWord matches). The "~" character
+					// is appended to the returned content so that if a string is fed through the normalisation process multiple
+					// times then the return values will be stable (eg. "cats" becomes "cat~" which stays at "cat~").
                     expressions.Add(
                         Expression.IfThen(
                             GeneratePredicate(suffix, valueTrimmed, plural.MatchType),
@@ -132,8 +134,8 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                                 Expression.Assign(
                                     result,
 									plural.MatchType == MatchTypeOptions.SuffixOnly
-										? GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length)
-										: Expression.Constant(plural.Values[0])
+										? GenerateAppendStringExpression(GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length), "~")
+										: Expression.Constant(plural.Values[0] + "~")
                                 ),
                                 Expression.Return(endLabel, result)
                             )
@@ -275,6 +277,20 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 )
             );
         }
+
+		private static Expression GenerateAppendStringExpression(Expression value, string toAppend)
+		{
+			if (value == null)
+				throw new ArgumentNullException("value");
+			if (toAppend == null)
+				throw new ArgumentNullException("toAppend");
+
+			return Expression.Call(
+				typeof(String).GetMethod("Concat", new[] { typeof(string), typeof(string) }),
+				value,
+				Expression.Constant(toAppend)
+			);
+		}
 
         private static string CreateSuffixExtension(IEnumerable<string> suffixes)
         {
