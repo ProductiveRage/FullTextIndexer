@@ -122,18 +122,23 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             {
                 foreach (var suffix in plural.Values)
                 {
+					// If the pluralisation rule applies to the value then return either the stem (the value minus the suffix, if
+					// the rule has a SuffixOnly match type, or the first of the plural's suffix values, if the rule's match type
+					// is WholeWord - otherwise a blank string would always be returned for WholeWord matches)
                     expressions.Add(
                         Expression.IfThen(
                             GeneratePredicate(suffix, valueTrimmed, plural.MatchType),
                             Expression.Block(
                                 Expression.Assign(
                                     result,
-									GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length)
+									plural.MatchType == MatchTypeOptions.SuffixOnly
+										? GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length)
+										: Expression.Constant(plural.Values[0])
                                 ),
                                 Expression.Return(endLabel, result)
                             )
                         )
-                    );
+                   );
                 }
             }
 
