@@ -120,25 +120,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             var expressions = new List<Expression>();
             foreach (var plural in _plurals)
             {
-                // Before checking for for suffix matches we need to check whether the input string is a value that has already
-                // been through the normalisation process! eg. "category" and "categories" will both be transformed into the
-                // value "categor|y|ies", but if that value is passed in again it should leave as "categor|y|ies" and not
-                // have any futher attempts at normalisation applying to it.
-                expressions.Add(
-                    Expression.IfThen(
-                        GeneratePredicate(CreateSuffixExtension(plural.Values), valueTrimmed, plural.MatchType),
-                        Expression.Block(
-                            Expression.Assign(
-                                result,
-                                valueTrimmed
-                            ),
-                            Expression.Return(endLabel, result)
-                        )
-                    )
-                );
-            }
-            foreach (var plural in _plurals)
-            {
                 foreach (var suffix in plural.Values)
                 {
                     expressions.Add(
@@ -147,10 +128,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                             Expression.Block(
                                 Expression.Assign(
                                     result,
-                                    GenerateStringConcatExpression(
-                                        GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length),
-                                        Expression.Constant(CreateSuffixExtension(plural.Values), typeof(string))
-                                    )
+									GenerateRemoveLastCharactersExpression(valueTrimmed, suffix.Length)
                                 ),
                                 Expression.Return(endLabel, result)
                             )
@@ -165,10 +143,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 expressions.Add(
                     Expression.Assign(
                         result,
-                        GenerateStringConcatExpression(
-                            valueTrimmed,
-                            Expression.Constant(CreateSuffixExtension(_fallbackSuffixes), typeof(string))
-                        )
+						valueTrimmed
                     )
                 );
             }
@@ -296,29 +271,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             );
         }
 
-        /// <summary>
-        /// The values Expressions must represent strings otherwise the expression will fail when executed
-        /// </summary>
-        private static Expression GenerateStringConcatExpression(params Expression[] values)
-        {
-            if (values == null)
-                throw new ArgumentNullException("values");
-
-            var valuesTidied = values.ToList();
-            if (!valuesTidied.Any())
-                throw new ArgumentException("No entries in values set");
-            if (valuesTidied.Any(v => v == null))
-                throw new ArgumentException("Null reference encountered in values set");
-
-            return Expression.Call(
-                typeof(string).GetMethod("Concat", new[] { typeof(string[]) }),
-                Expression.NewArrayInit(
-                    typeof(string),
-                    valuesTidied
-                )
-            );
-        }
-
         private static string CreateSuffixExtension(IEnumerable<string> suffixes)
         {
             if (suffixes == null)
@@ -380,6 +332,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 
             // eg. tome / tomes (won't include "me" as SuffixOnly requires that the word length be greater than the suffix length)
             new PluralEntry(new[] { "me", "mes" }, MatchTypeOptions.SuffixOnly),
+
+			// eg. technique / techniques
+            new PluralEntry(new[] { "ue", "ues" }, MatchTypeOptions.SuffixOnly),
 
             // Common special cases that have to come before the "ses", es", "s" form
             new PluralEntry(new[] { "index", "indexes", "indices" }, MatchTypeOptions.WholeWord),
