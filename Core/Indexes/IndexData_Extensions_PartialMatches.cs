@@ -104,7 +104,6 @@ namespace FullTextIndexer.Core.Indexes
 
 		/// <summary>
 		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument and the DefaultTokenBreaker
-		/// (
 		/// for the tokenBreaker
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source)
