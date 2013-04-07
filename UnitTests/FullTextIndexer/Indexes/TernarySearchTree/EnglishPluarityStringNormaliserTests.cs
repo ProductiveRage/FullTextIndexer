@@ -18,13 +18,13 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         [Fact]
         public void CatIsTransformedToCat()
         {
-            TestSpecificTransformation("cat", "cat");
+            TestSpecificTransformation("cat", "cat~");
         }
 
         [Fact]
         public void CatsIsTransformedToCat()
         {
-            TestSpecificTransformation("cats", "cat");
+            TestSpecificTransformation("cats", "cat~");
         }
 
         [Fact]
@@ -111,7 +111,6 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         public void EnsureMatch_woman_women()
         {
             TestMatch("woman", "women");
-    
         }
 
         [Fact]
@@ -158,7 +157,7 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
             if (value2 == null)
                 throw new ArgumentNullException("value2");
 
-            Assert.True(
+			Assert.True(
                 GetNormaliser().Equals(value1, value2)
             );
         }
