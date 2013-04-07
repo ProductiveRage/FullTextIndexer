@@ -16,21 +16,14 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
     [Serializable]
     public class EnglishPluralityStringNormaliser : StringNormaliser, ISerializable
     {
-        private List<PluralEntry> _plurals;
-        private List<string> _fallbackSuffixes;
-        private Func<string, string> _normaliser;
-        private IStringNormaliser _optionalPreNormaliser;
-        private PreNormaliserWorkOptions _preNormaliserWork;
-        public EnglishPluralityStringNormaliser(
-            IEnumerable<PluralEntry> plurals,
-            IEnumerable<string> fallbackSuffixes,
-            IStringNormaliser optionalPreNormaliser,
-            PreNormaliserWorkOptions preNormaliserWork)
+        private readonly List<PluralEntry> _plurals;
+		private readonly Func<string, string> _normaliser;
+		private readonly IStringNormaliser _optionalPreNormaliser;
+		private readonly PreNormaliserWorkOptions _preNormaliserWork;
+        public EnglishPluralityStringNormaliser(IEnumerable<PluralEntry> plurals, IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
         {
             if (plurals == null)
                 throw new ArgumentNullException("pluralEntries");
-            if (fallbackSuffixes == null)
-                throw new ArgumentNullException("fallbackSuffixes");
             var allPreNormaliserOptions = (PreNormaliserWorkOptions)0;
             foreach (PreNormaliserWorkOptions option in Enum.GetValues(typeof(PreNormaliserWorkOptions)))
                 allPreNormaliserOptions = allPreNormaliserOptions | option;
@@ -45,25 +38,22 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 pluralsTidied.Add(plural);
             }
 
-            // Although we don't need the plurals and fallbackSuffixes references once the normaliser has been generated in normal operation, if the instance
-            // is to be serialised then we need to record them so that the normalier can be re-generated at deserialisation (as the normaliser that is generated
-            // can not be serialised - see GetObjectData)
+            // Although we don't need the plurals once the normaliser has been generated in normal operation, if the instance is to be serialised then we need to record
+			// them so that the normalier can be re-generated at deserialisation (as the normaliser that is generated can not be serialised - see GetObjectData)
             _plurals = pluralsTidied;
-            _fallbackSuffixes = TidyStringList(fallbackSuffixes, v => v.Trim().ToLower());
             _normaliser = GenerateNormaliser();
             _optionalPreNormaliser = optionalPreNormaliser;
             _preNormaliserWork = preNormaliserWork;
         }
 
         public EnglishPluralityStringNormaliser(IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
-            : this(DefaultPlurals, DefaultFallback, optionalPreNormaliser, preNormaliserWork) { }
+            : this(DefaultPlurals, optionalPreNormaliser, preNormaliserWork) { }
 
         public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
 
         protected EnglishPluralityStringNormaliser(SerializationInfo info, StreamingContext context)
             : this(
                 (IEnumerable<PluralEntry>)info.GetValue("_plurals", typeof(IEnumerable<PluralEntry>)),
-                (IEnumerable<string>)info.GetValue("_fallbackSuffixes", typeof(IEnumerable<string>)),
                 (IStringNormaliser)info.GetValue("_optionalPreNormaliser", typeof(IStringNormaliser)),
                 (PreNormaliserWorkOptions)info.GetValue("_preNormaliserWork", typeof(PreNormaliserWorkOptions))
             ) { }
@@ -75,7 +65,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             // methods or methods outside the delegate creator's assembly" error) so if we have to serialise this instance we'll store all of the dat and
             // then re-generate the normaliser on de-serialisation. Not ideal from a performance point of view but at least it will work.
             info.AddValue("_plurals", _plurals);
-            info.AddValue("_fallbackSuffixes", _fallbackSuffixes);
             info.AddValue("_optionalPreNormaliser", _optionalPreNormaliser);
             info.AddValue("_preNormaliserWork", _preNormaliserWork);
         }
@@ -144,18 +133,32 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 }
             }
 
-            // If any fallback suffixes are specified, add a statement to append them if none of the PluralEntry matches are made
-            if (_fallbackSuffixes.Any())
-            {
-                expressions.Add(
-                    Expression.Assign(
-                        result,
-						valueTrimmed
-                    )
-                );
-            }
-            else
-                expressions.Add(Expression.Assign(result, valueTrimmed));
+			// Insert an expression to check whether the value already ends with a "~" and, if so, return it (we can safely do
+			// this without worrying about whether the input value is a plural that ends with a "~" that should be processed
+			// because this class will not consider "cats~" to be the plural of "cat~" or "cat", it checks the end of the word
+			// and so will not make any matches for words that end with "~"). Value that end with "~" are either values that
+			// have been manipulated by this process already or are values that this process should not alter.
+			expressions.Insert(
+				0,
+				Expression.IfThen(
+					GeneratePredicate("~", valueTrimmed, MatchTypeOptions.SuffixOnly),
+					Expression.Block(
+						Expression.Assign(
+							result,
+							valueTrimmed
+						),
+						Expression.Return(endLabel, result)
+					)
+				)
+			);
+
+            // If none of the suffixes apply (and the value does not already have a trailing "~") then append the "~"
+			expressions.Add(
+				Expression.Assign(
+					result,
+					GenerateAppendStringExpression(valueTrimmed, "~")
+				)
+			);
 
             // Add the return-point label, configured to return the string value in "result"
             expressions.Add(Expression.Label(endLabel, result));
@@ -330,7 +333,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             return valuesTidied.Distinct().ToList();
         }
 
-        public readonly static IEnumerable<string> DefaultFallback = new[] { "ses", "es", "s" };
         public readonly static PluralEntry[] DefaultPlurals = new[]
         {
             // eg. formula / formulae / formulas
