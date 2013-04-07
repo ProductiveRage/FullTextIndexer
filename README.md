@@ -36,14 +36,14 @@ Some simple data is pushed through the generator and then a query performed on t
             new Post(2, "Two", "A follow-up post, also about cats. Cats are the best.")
           }));
           var catPosts =
-          index.GetPartialMatches<int>(
-            "cat posts",
-            GetTokenBreaker(),
-            (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
-              ? 0
-              : tokenMatches.Sum(m => m.Weight)
-          )
-          .OrderByDescending(match => match.Weight);
+            index.GetPartialMatches<int>(
+              "cat posts",
+              GetTokenBreaker(),
+              (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
+                ? 0
+                : tokenMatches.Sum(m => m.Weight)
+            )
+            .OrderByDescending(match => match.Weight);
         }
 
         private static IndexGenerator<Post, int> GetPostIndexGenerator()
