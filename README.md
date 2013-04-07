@@ -17,12 +17,12 @@ Some simple data is pushed through the generator and then a query performed on t
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Common.Lists;
-    using Common.Logging;
-    using FullTextIndexer.Indexes;
-    using FullTextIndexer.Indexes.TernarySearchTree;
-    using FullTextIndexer.IndexGenerators;
-    using FullTextIndexer.TokenBreaking;
+    using FullTextIndexer.Common.Lists;
+    using FullTextIndexer.Common.Logging;
+    using FullTextIndexer.Core.Indexes;
+    using FullTextIndexer.Core.Indexes.TernarySearchTree;
+    using FullTextIndexer.Core.IndexGenerators;
+    using FullTextIndexer.Core.TokenBreaking;
 
     namespace Tester
     {
@@ -36,14 +36,14 @@ Some simple data is pushed through the generator and then a query performed on t
             new Post(2, "Two", "A follow-up post, also about cats. Cats are the best.")
           }));
           var catPosts =
-            index.GetPartialMatches<int>(
-              "cat posts",
-              GetTokenBreaker(),
-              (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
-                ? 0
-                : tokenMatches.SelectMany(m => m.Weights).Sum()
-            )
-            .OrderByDescending(match => match.Weight);
+          index.GetPartialMatches<int>(
+            "cat posts",
+            GetTokenBreaker(),
+            (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
+              ? 0
+              : tokenMatches.Sum(m => m.Weight)
+          )
+          .OrderByDescending(match => match.Weight);
         }
 
         private static IndexGenerator<Post, int> GetPostIndexGenerator()
@@ -60,7 +60,7 @@ Some simple data is pushed through the generator and then a query performed on t
           //   qualities are determined than other words will receive
           // - Words in the title will be given 5x the weight of words found
           //   in body content
-          var stopWords = FullTextIndexer.Constants.GetStopWords("en");
+          var stopWords = FullTextIndexer.Core.Constants.GetStopWords("en");
           var contentRetrievers = new List<ContentRetriever<Post, int>>();
           contentRetrievers.Add(new ContentRetriever<Post, int>(
             p => new PreBrokenContent<int>(p.Id, p.Title),
