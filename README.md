@@ -125,5 +125,56 @@ Some simple data is pushed through the generator and then a query performed on t
         }
       }
     }
+    
 
 More information about this project - some of its approaches, some of the implementation details, some alternate ways to configure the IndexGenerator and somewhere it's actually used! - can be found at my [Full Text Indexer Round-up](http://www.productiverage.com/Read/40) blog post.
+
+## An example: Abbreviated
+
+The above code illustrates how to configure all of the options for Index Generation but there is a class in the FullTextIndexer.Helpers namespace that can do a lot of the hard work but examining the source type with reflection and liberally applying defaults. The resulting code (which anables generation of a searchable index in just a few lines) is:
+
+    using System;
+    using System.Linq;
+    using FullTextIndexer.Common.Lists;
+    using FullTextIndexer.Core.Indexes;
+    using FullTextIndexer.Helpers;
+
+    namespace Tester
+    {
+      class Program
+      {
+        static void Main(string[] args)
+        {
+          var indexGenerator = new AutomatedIndexGeneratorFactoryBuilder<Post, int>()
+            .SetWeightMultiplier(typeof(Post).GetProperty("Title"), 5)
+            .Get()
+            .Get();
+          var index = indexGenerator.Generate(new NonNullImmutableList<Post>(new[] {
+            new Post(1, "One", "This is a post about a cat."),
+            new Post(2, "Two", "A follow-up post, also about cats. Cats are the best.")
+          }));
+          var catPosts = index.GetPartialMatches<int>("one cat posts").OrderByDescending(match => match.Weight);
+        }
+
+        public class Post
+        {
+          public Post(int id, string title, string content)
+          {
+            if (string.IsNullOrWhiteSpace(title))
+              throw new ArgumentException("Null/blank title specified");
+            if (string.IsNullOrWhiteSpace(content))
+              throw new ArgumentException("Null/blank content specified");
+
+            Id = id;
+            Title = title.Trim();
+            Content = content.Trim();
+          }
+
+          public int Id { get; private set; }
+          public string Title { get; private set; }
+          public string Content { get; private set; }
+        }
+      }
+    }
+
+More information can be found about this in the Post [The Full Text Indexer - Automating Index Generation](http://www.productiverage.com/Read/48).
