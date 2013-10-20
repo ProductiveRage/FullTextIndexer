@@ -48,7 +48,11 @@ namespace FullTextIndexer.Common.Lists
                 if ((index < 0) || (index >= Count))
                     throw new ArgumentOutOfRangeException("index");
 
-                EnsureAllValuesDataIsPopulated();
+				// Getting the value of the last item is a very quick operation so we can add a shortcut for it
+				if (index == Count - 1)
+					return _tail.Value;
+				
+				EnsureAllValuesDataIsPopulated();
                 return _allValues[index];
             }
         }
@@ -276,7 +280,25 @@ namespace FullTextIndexer.Common.Lists
             return new ImmutableList<T>(node, _optionalValueValidator);
         }
 
-        public IEnumerator<T> GetEnumerator()
+		public ImmutableList<T> RemoveLast()
+		{
+			return RemoveLast(1);
+		}
+
+		public ImmutableList<T> RemoveLast(int numberToRemove)
+		{
+			if (numberToRemove <= 0)
+				throw new ArgumentOutOfRangeException("numberToRemove", "must be greater than zero");
+			if (numberToRemove > Count)
+				throw new ArgumentOutOfRangeException("numberToRemove", "must not be greater than Count");
+
+			var node = _tail;
+			for (var index = 0; index < numberToRemove; index++)
+				node = node.Previous;
+			return new ImmutableList<T>(node, _optionalValueValidator);
+		}
+
+		public IEnumerator<T> GetEnumerator()
         {
             // As documented at http://msdn.microsoft.com/en-us/library/system.array.aspx, from .Net 2.0 onward, the Array class implements
             // IEnumerable<T> but this is only provided at runtime so we have to explicitly cast access its generic GetEnumerator method

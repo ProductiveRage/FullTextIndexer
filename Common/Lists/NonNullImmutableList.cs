@@ -63,7 +63,15 @@ namespace FullTextIndexer.Common.Lists
         {
             return ToNonNullImmutableList(base.RemoveRange(removeAtIndex, count));
         }
-        public new NonNullImmutableList<T> Sort()
+		public new NonNullImmutableList<T> RemoveLast()
+		{
+			return ToNonNullImmutableList(base.RemoveLast());
+		}
+		public new NonNullImmutableList<T> RemoveLast(int numberToRemove)
+		{
+			return ToNonNullImmutableList(base.RemoveLast(numberToRemove));
+		}
+		public new NonNullImmutableList<T> Sort()
         {
             return ToNonNullImmutableList(base.Sort());
         }
