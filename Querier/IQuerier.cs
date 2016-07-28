@@ -3,7 +3,7 @@ using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Querier
 {
-	public interface IQuerier<TSource, TKey>
+	public interface IQuerier<TKey>
 	{
 		/// <summary>
 		/// This will never return null. It will throw an exception for a null or blank searchTerm.

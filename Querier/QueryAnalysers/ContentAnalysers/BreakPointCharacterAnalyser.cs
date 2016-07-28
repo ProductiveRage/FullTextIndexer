@@ -6,6 +6,23 @@ using FullTextIndexer.Querier.QuerySegments;
 
 namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 {
+	/// <summary>
+	/// This is used to break down a structured query into an IQuerySegment representation. For example, the query text:
+	/// 
+	///   +fruit +nut +(apples pears bananas) -orange
+	/// 
+	/// would be translated into a
+	/// 
+	///   CombiningQuerySegment containing
+	///     CompulsoryQuerySegment (for "fruit")
+	///     CompulsoryQuerySegment (for "nut")
+	///     CompulsoryQuerySegment that wraps another CombiningQuerySegment that contains "apples", "pears" and "bananas" segments
+	///     ExcludingQuerySegment (for "orange")
+	///   
+	/// A CombiningQuerySegment indicates that documents should contain at least one of the inner segments unless those segments are of type
+	/// CompulsoryQuerySegment (in which case that segment MUST be present in the document) or ExcludingQuerySegment (in which case that segment
+	/// must NOT be present in the document).
+	/// </summary>
 	public class BreakPointCharacterAnalyser
 	{
 		private readonly int _bracketingLevel;
@@ -124,7 +141,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 					if (stringNavigator.CurrentCharacter == '"')
 					{
 						var quotedContentProcessor = new ContentSectionCharacterAnalyser(
-							new ImmutableList<char>(new[] { '"' }),
+							new ImmutableList<char>('"'),
 							content => new PreciseMatchQuerySegment(content)
 						);
 						var quotedContentSectionResult = quotedContentProcessor.Process(stringNavigator.Next);
@@ -139,7 +156,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 				//   encountered (as it indicates that the content segment that was being processed has ended and a nested section is starting or ending, which
 				//   should be handled by this)
 				var contentProcessor = new ContentSectionCharacterAnalyser(
-					_whiteSpaceCharacters.AddRange(new ImmutableList<char>(new[] { '(', ')' })),
+					_whiteSpaceCharacters.AddRange(new ImmutableList<char>('(', ')')),
 					content => new StandardMatchQuerySegment(content)
 				);
 				var contentSectionResult = contentProcessor.Process(stringNavigator);
