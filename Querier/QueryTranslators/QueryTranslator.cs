@@ -131,10 +131,12 @@ namespace FullTextIndexer.Querier.QueryTranslators
 				var compulsoryQuerySegment = querySegment as CompulsoryQuerySegment;
 				if (compulsoryQuerySegment != null)
 				{
-					if (compulsoryKeys == null)
-						compulsoryKeys = new HashSet<TKey>(_keyComparer);
 					var compulsoryQuerySegmentKeys = GetMatches(compulsoryQuerySegment.Segment);
-					compulsoryKeys.AddRange(compulsoryQuerySegmentKeys.Select(e => e.Key));
+					var keysForCurrentSegment = compulsoryQuerySegmentKeys.Select(e => e.Key);
+					if (compulsoryKeys == null)
+						compulsoryKeys = new HashSet<TKey>(keysForCurrentSegment, _keyComparer);
+					else
+						compulsoryKeys.IntersectWith(keysForCurrentSegment);
 					allInclusiveWeighedMatches.AddRange(compulsoryQuerySegmentKeys);
 					continue;
 				}
