@@ -358,12 +358,12 @@ namespace FullTextIndexer.Helpers
 		private ITokenBreaker GetDefaultTokenBreaker()
 		{
 			return new WhiteSpaceExtendingTokenBreaker(
-				new ImmutableList<char>(new[] {
+				new ImmutableList<char>(
 					'<', '>', '[', ']', '(', ')', '{', '}',
 					'.', ',', ':', ';', '"', '?', '!',
 					'/', '\\',
 					'@', '+', '|', '='
-				}),
+				),
 				new WhiteSpaceTokenBreaker()
 			);
 		}

@@ -6,7 +6,7 @@ using FullTextIndexer.Core.TokenBreaking;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    public static class IndexData_Extensions_PartialMatches
+	public static class IndexData_Extensions_PartialMatches
     {
 		/// <summary>
 		/// This will break a given source string and return results based upon the combination of partial matches (so results that only match part of the source string may be included
@@ -159,12 +159,12 @@ namespace FullTextIndexer.Core.Indexes
 			get
 			{
 				return new WhiteSpaceExtendingTokenBreaker(
-					new ImmutableList<char>(new[] {
+					new ImmutableList<char>(
 						'<', '>', '[', ']', '(', ')', '{', '}',
 						'.', ',', ':', ';', '"', '?', '!',
 						'/', '\\',
 						'@', '+', '|', '='
-					}),
+					),
 					new WhiteSpaceTokenBreaker()
 				);
 			}
