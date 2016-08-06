@@ -7,7 +7,7 @@ using FullTextIndexer.Core.TokenBreaking;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    public static class IndexData_Extensions_ConsecutiveMatches
+	public static class IndexData_Extensions_ConsecutiveMatches
     {
 		/// <summary>
 		/// This will break down a source search term into words (according to the logic of the specified token breaker) and then return matches where the words were found in a run in a
@@ -179,12 +179,12 @@ namespace FullTextIndexer.Core.Indexes
 			get
 			{
 				return new WhiteSpaceExtendingTokenBreaker(
-					new ImmutableList<char>(new[] {
+					new ImmutableList<char>(
 						'<', '>', '[', ']', '(', ')', '{', '}',
 						'.', ',', ':', ';', '"', '?', '!',
 						'/', '\\',
 						'@', '+', '|', '='
-					}),
+					),
 					new WhiteSpaceTokenBreaker()
 				);
 			}
