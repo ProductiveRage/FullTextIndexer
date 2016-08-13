@@ -1,6 +1,6 @@
 # Full Text Indexer
 
-*If you happen to be curious about how any of this works under the hood, I've written a series of blog posts about its various aspects - see [The Full Text Indexer Post Round-up](http://www.productiverage.com/the-full-text-indexer-post-roundup).*
+*(If you happen to be curious about how any of this works under the hood, I've written a series of blog posts about its various aspects - see [The Full Text Indexer Post Round-up](http://www.productiverage.com/the-full-text-indexer-post-roundup))*
 
 This is a project to play around with some ideas for a Full-Text Indexer. It was inspired by some problems I encountered with a Lucene integration. It's not intended to be any kind of drop-in replacement or compete on performance necessarily, but to follow the train of thought "how hard can it be??"
 
