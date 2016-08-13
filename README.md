@@ -1,5 +1,7 @@
 # Full Text Indexer
 
+*If you happen to be curious about how any of this works under the hood, I've written a series of blog posts about its various aspects - see [The Full Text Indexer Post Round-up](http://www.productiverage.com/the-full-text-indexer-post-roundup).*
+
 This is a project to play around with some ideas for a Full-Text Indexer. It was inspired by some problems I encountered with a Lucene integration. It's not intended to be any kind of drop-in replacement or compete on performance necessarily, but to follow the train of thought "how hard can it be??"
 
 An "Index Generator" must be defined which takes a set of keyed data and generates an index that maps tokens generated from the content onto keys, along with a match weight. In the simplest case, tokens are individual words in strings in the input data. While the most obvious case for token matching is to do a straight comparison of search term to tokens in the generated index there is also support for common variations such as case-insensitivity, ignoring of punctuation, plurality handling (in English) and facility to match individual terms in the query to produce a combined match weight (rather than requiring that the entire query match, for cases where a multiple-word query is specified).
