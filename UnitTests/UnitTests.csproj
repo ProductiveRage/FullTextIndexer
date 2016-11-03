@@ -38,10 +38,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common">
-      <HintPath>..\Common\bin\Debug\net452\Common.dll</HintPath>
+      <HintPath>..\Common\bin\$(Configuration)\net452\Common.dll</HintPath>
     </Reference>
     <Reference Include="Core">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Core\bin\$(Configuration)\net452\Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
