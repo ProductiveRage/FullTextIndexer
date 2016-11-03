@@ -3,7 +3,6 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Common.Logging
 {
-	[Serializable]
 	public class CombinedLogger : ILogger
 	{
 		private NonNullImmutableList<ILogger> _loggers;
@@ -26,7 +25,7 @@ namespace FullTextIndexer.Common.Logging
 				throw new ArgumentNullException("contentGenerator");
 
 			foreach (var logger in _loggers)
-                logger.Log(logLevel, logDate, contentGenerator, exception);
+				logger.Log(logLevel, logDate, contentGenerator, exception);
 		}
 	}
 }
