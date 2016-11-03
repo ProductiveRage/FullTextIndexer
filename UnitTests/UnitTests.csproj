@@ -40,6 +40,10 @@
     <Reference Include="Common">
       <HintPath>..\Common\bin\Debug\net452\Common.dll</HintPath>
     </Reference>
+    <Reference Include="Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Core\bin\$(Configuration)\net452\Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
@@ -75,10 +79,6 @@
     <Compile Include="Querier\QuerierTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj">
-      <Project>{C1281962-80FF-4E5A-9251-F12A474ADA10}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Helpers\Helpers.csproj">
       <Project>{ca392ad5-7cc2-4934-bc39-687a5a4615a9}</Project>
       <Name>Helpers</Name>

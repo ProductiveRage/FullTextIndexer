@@ -8,7 +8,6 @@ namespace FullTextIndexer.Core.TokenBreaking
     /// with various brackets or other operators. It may also be useful if there is text content without consistently including spaces after commas or full stops.
     /// The expected tokenBreaker specified in the constructor would be the WhiteSpaceTokenBreaker since this effectively works as the step before that.
     /// </summary>
-    [Serializable]
     public class WhiteSpaceExtendingTokenBreaker : ITokenBreaker
     {
         private ImmutableList<char> _charsToTreatAsWhitespace;

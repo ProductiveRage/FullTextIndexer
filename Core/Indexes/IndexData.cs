@@ -6,7 +6,6 @@ using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    [Serializable]
     public class IndexData<TKey> : IIndexData<TKey>
     {
         private TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> _data;

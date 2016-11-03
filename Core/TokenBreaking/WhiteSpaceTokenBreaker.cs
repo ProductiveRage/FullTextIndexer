@@ -6,10 +6,9 @@ using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
-    /// <summary>
-    /// This will break tokens on any whitespace character, any resulting empty entries will be ignored
-    /// </summary>
-	[Serializable]
+	/// <summary>
+	/// This will break tokens on any whitespace character, any resulting empty entries will be ignored
+	/// </summary>
 	public class WhiteSpaceTokenBreaker : ITokenBreaker
 	{
 		private readonly ITokenBreaker _optionalWrappedTokenBreaker;

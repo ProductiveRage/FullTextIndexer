@@ -11,7 +11,7 @@ namespace FullTextIndexer.Core
                 throw new ArgumentException("Null/empty languageCode");
 
             // Currently only support English stopwords
-            if (languageCode.Equals("en", StringComparison.InvariantCultureIgnoreCase))
+            if (languageCode.Equals("en", StringComparison.OrdinalIgnoreCase))
                 return EnglishStopWords;
             return new NonNullOrEmptyStringList();
         }
