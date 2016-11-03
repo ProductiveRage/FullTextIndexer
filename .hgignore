@@ -34,3 +34,5 @@ _ReSharper*/
 *.orig
 
 [Pp]ackages/
+.vs/
+project.lock.json
