@@ -3,7 +3,6 @@ using FullTextIndexer.Common.Lists;
 
 namespace Tester.SourceData
 {
-	[Serializable]
 	public sealed class Post
 	{
 		public Post(int id, NonBlankTrimmedString title, NonBlankTrimmedString body, NonBlankTrimmedString author, DateTime publishedAt, NonNullOrEmptyStringList tags)
