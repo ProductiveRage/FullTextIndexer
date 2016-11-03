@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Data.SQLite;
 using System.Linq;
-using Dapper;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Common.Logging;
 using FullTextIndexer.Core.Indexes;
 using FullTextIndexer.Core.Indexes.TernarySearchTree;
 using FullTextIndexer.Core.TokenBreaking;
-using FullTextIndexer.Querier;
-using FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers;
-using FullTextIndexer.Querier.QueryAnalysers.StringNavigators;
-using FullTextIndexer.Querier.QuerySegments;
-using FullTextIndexer.Querier.QueryTranslators;
-using MarkdownSharp;
-using Tester.SourceData;
 
 namespace Tester
 {

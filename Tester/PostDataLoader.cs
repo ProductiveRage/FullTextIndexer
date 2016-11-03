@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using Dapper;
 using FullTextIndexer.Common.Lists;
-using MarkdownSharp;
+using HeyRed.MarkdownSharp;
+using Microsoft.Data.Sqlite;
 using Tester.SourceData;
 
 namespace Tester
@@ -12,7 +13,8 @@ namespace Tester
 	{
 		public static NonNullImmutableList<Post> GetFromLocalSqliteFile()
 		{
-			using (var connection = new SQLiteConnection("data source=Blog.sqlite; Version=3;"))
+			var connectionString = new SqliteConnectionStringBuilder { DataSource = new FileInfo("Blog.sqlite").FullName };
+			using (var connection = new SqliteConnection(connectionString.ToString()))
 			{
 				var tags = connection.Query<MutablePostTagLink>("SELECT PostTags.PostId, Tags.Tag FROM PostTags INNER JOIN Tags ON Tags.Id = PostTags.TagId");
 
