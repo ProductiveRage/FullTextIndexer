@@ -2,7 +2,6 @@
 
 namespace FullTextIndexer.Core.Indexes
 {
-	[Serializable]
 	public class SourceLocation
 	{
 		public SourceLocation(int tokenIndex, int sourceIndex, int sourceTokenLength)

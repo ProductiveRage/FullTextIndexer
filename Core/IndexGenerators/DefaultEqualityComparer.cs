@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Core.IndexGenerators
 {
-    [Serializable]
     public class DefaultEqualityComparer<T> : IEqualityComparer<T>
     {
         public bool Equals(T x, T y)

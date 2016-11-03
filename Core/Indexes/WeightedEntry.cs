@@ -4,7 +4,6 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    [Serializable]
     public class WeightedEntry<TKey>
     {
 		public WeightedEntry(TKey key, float weight, NonNullImmutableList<SourceFieldLocation> sourceLocations)

@@ -13,7 +13,6 @@ namespace FullTextIndexer.Core.TokenBreaking
 	/// index and it puts a cap on the length of runs of consecutive tokens that can be searched for (see the maxNumberOfTokens constructor argument). The GetConsecutiveMatches
 	/// method has no such limit and can operate much more efficiently now that Source Location data is included with the match content.
     /// </summary>
-    [Serializable]
     public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
     {
 		private readonly ITokenBreaker _tokenBreaker;
