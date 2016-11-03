@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-    [Serializable]
     public class ImmutableDictionary<TKey, TValue>
     {
 		private Dictionary<TKey, TValue> _data;

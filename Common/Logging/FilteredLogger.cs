@@ -6,7 +6,6 @@ namespace FullTextIndexer.Common.Logging
 	/// <summary>
 	/// Write log messages to trace, including additional content such as date, time and thread id
 	/// </summary>
-	[Serializable]
 	public class FilteredLogger : ILogger
 	{
 		private ILogger _logger;
@@ -41,8 +40,8 @@ namespace FullTextIndexer.Common.Logging
 			if (contentGenerator == null)
 				throw new ArgumentNullException("contentGenerator");
 
-            if (_allowedLogLevels.Contains(logLevel))
-                _logger.Log(logLevel, logDate, contentGenerator, exception);
+			if (_allowedLogLevels.Contains(logLevel))
+				_logger.Log(logLevel, logDate, contentGenerator, exception);
 		}
 	}
 }
