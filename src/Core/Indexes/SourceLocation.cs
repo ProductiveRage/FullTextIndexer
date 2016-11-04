@@ -2,6 +2,9 @@
 
 namespace FullTextIndexer.Core.Indexes
 {
+#if NET452
+    [Serializable]
+#endif
 	public class SourceLocation
 	{
 		public SourceLocation(int tokenIndex, int sourceIndex, int sourceTokenLength)

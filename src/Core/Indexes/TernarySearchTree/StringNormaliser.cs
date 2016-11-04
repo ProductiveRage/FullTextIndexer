@@ -2,10 +2,13 @@
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
-    /// <summary>
-    /// This base class contains simple Equals and GetHashCode implementations which all IStringNormaliser classes must have
-    /// </summary>
-    public abstract class StringNormaliser : IStringNormaliser
+	/// <summary>
+	/// This base class contains simple Equals and GetHashCode implementations which all IStringNormaliser classes must have
+	/// </summary>
+#if NET452
+    [Serializable]
+#endif
+	public abstract class StringNormaliser : IStringNormaliser
     {
         /// <summary>
         /// This will never return null. If it returns an empty string then the string should not be considered elligible as a key. It will throw

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
+#if NET452
+    [Serializable]
+#endif
 	public class NonNullImmutableList<T> : ImmutableList<T> where T : class
 	{
 		private readonly static Validator _defaultValidator = new Validator(null);
@@ -93,6 +96,9 @@ namespace FullTextIndexer.Common.Lists
 			);
 		}
 
+#if NET452
+    [Serializable]
+#endif
 		private class Validator : IValueValidator<T>
 		{
 			private IValueValidator<T> _optionalInnerValidator;

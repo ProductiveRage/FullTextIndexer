@@ -6,7 +6,10 @@ using System.Text;
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
-    public class TernarySearchTreeDictionary<TValue> : IEnumerable<string>
+#if NET452
+    [Serializable]
+#endif
+	public class TernarySearchTreeDictionary<TValue> : IEnumerable<string>
     {
         private Node _root;
         private IStringNormaliser _keyNormaliser;
@@ -327,7 +330,10 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             return GetEnumerator();
         }
 
-        private class Node
+#if NET452
+    [Serializable]
+#endif
+		private class Node
         {
             public char Character { get; set; }
             public Node LeftChild { get; set; }

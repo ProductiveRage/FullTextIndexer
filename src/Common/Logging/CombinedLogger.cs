@@ -3,6 +3,9 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Common.Logging
 {
+#if NET452
+    [Serializable]
+#endif
 	public class CombinedLogger : ILogger
 	{
 		private NonNullImmutableList<ILogger> _loggers;
