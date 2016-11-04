@@ -6,34 +6,37 @@ using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
-    /// <summary>
-    /// This will extend a token set by combinining strings of consecutive tokens (eg. maxNumberOfTokens is 3 and the tokens returned by the internal break are "this", "is",
-    /// "a", "test" then "this", "is", "a", "test", "this is", "is a", "a test", "this is a", "is a test" will be returned). This should now be considered obsolete and searches
+	/// <summary>
+	/// This will extend a token set by combinining strings of consecutive tokens (eg. maxNumberOfTokens is 3 and the tokens returned by the internal break are "this", "is",
+	/// "a", "test" then "this", "is", "a", "test", "this is", "is a", "a test", "this is a", "is a test" will be returned). This should now be considered obsolete and searches
 	/// for consecutive tokens be performed with the GetConsecutiveMatches IIndexData extension method - use of this token breaker can greatly increase the time to generate an
 	/// index and it puts a cap on the length of runs of consecutive tokens that can be searched for (see the maxNumberOfTokens constructor argument). The GetConsecutiveMatches
 	/// method has no such limit and can operate much more efficiently now that Source Location data is included with the match content.
-    /// </summary>
-    public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
-    {
+	/// </summary>
+#if NET452
+    [Serializable]
+#endif
+	public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
+	{
 		private readonly ITokenBreaker _tokenBreaker;
 		private readonly int _maxNumberOfTokens;
 		private readonly WeightMultiplierDeterminer _weightMultiplierDeterminer;
-        public ConsecutiveTokenCombiningTokenBreaker(
-            ITokenBreaker tokenBreaker,
-            int maxNumberOfTokens,
-            WeightMultiplierDeterminer weightMultiplierDeterminer)
-        {
-            if (tokenBreaker == null)
-                throw new ArgumentNullException("tokenBreaker");
-            if (maxNumberOfTokens < 1)
-                throw new ArgumentOutOfRangeException("maxNumberOfTokens", "must be >= 1");
-            if (weightMultiplierDeterminer == null)
-                throw new ArgumentNullException("weightMultiplierDeterminer");
+		public ConsecutiveTokenCombiningTokenBreaker(
+			ITokenBreaker tokenBreaker,
+			int maxNumberOfTokens,
+			WeightMultiplierDeterminer weightMultiplierDeterminer)
+		{
+			if (tokenBreaker == null)
+				throw new ArgumentNullException("tokenBreaker");
+			if (maxNumberOfTokens < 1)
+				throw new ArgumentOutOfRangeException("maxNumberOfTokens", "must be >= 1");
+			if (weightMultiplierDeterminer == null)
+				throw new ArgumentNullException("weightMultiplierDeterminer");
 
-            _tokenBreaker = tokenBreaker;
-            _maxNumberOfTokens = maxNumberOfTokens;
-            _weightMultiplierDeterminer = weightMultiplierDeterminer;
-        }
+			_tokenBreaker = tokenBreaker;
+			_maxNumberOfTokens = maxNumberOfTokens;
+			_weightMultiplierDeterminer = weightMultiplierDeterminer;
+		}
 
 		/// <summary>
 		/// For cases where multiple WeightAdjustingToken instances are combined into a new one, a new WeightMultiplier must be determined. This value is always
@@ -42,20 +45,20 @@ namespace FullTextIndexer.Core.TokenBreaking
 		/// </summary>
 		public delegate float WeightMultiplierDeterminer(ImmutableList<float> weightMultipliersOfCombinedTokens);
 
-        /// <summary>
-        /// This will never return null. It will throw an exception for null input.
-        /// </summary>
-        public NonNullImmutableList<WeightAdjustingToken> Break(string value)
-        {
-            if (value == null)
-                throw new ArgumentNullException("value");
+		/// <summary>
+		/// This will never return null. It will throw an exception for null input.
+		/// </summary>
+		public NonNullImmutableList<WeightAdjustingToken> Break(string value)
+		{
+			if (value == null)
+				throw new ArgumentNullException("value");
 
-            var initialTokens = _tokenBreaker.Break(value);
-            var extendedTokens = new NonNullImmutableList<WeightAdjustingToken>();
-            for (var combineLength = 1; combineLength <= _maxNumberOfTokens; combineLength++)
-            {
-                for (var index = 0; index < initialTokens.Count - (combineLength - 1); index++)
-                {
+			var initialTokens = _tokenBreaker.Break(value);
+			var extendedTokens = new NonNullImmutableList<WeightAdjustingToken>();
+			for (var combineLength = 1; combineLength <= _maxNumberOfTokens; combineLength++)
+			{
+				for (var index = 0; index < initialTokens.Count - (combineLength - 1); index++)
+				{
 					var tokensToCombine = initialTokens.Skip(index).Take(combineLength).ToArray();
 					var weightMultiplier = _weightMultiplierDeterminer(tokensToCombine.Select(t => t.WeightMultiplier).ToImmutableList());
 					if ((weightMultiplier <= 0) || (weightMultiplier > 1))
@@ -68,19 +71,19 @@ namespace FullTextIndexer.Core.TokenBreaking
 					var firstToken = tokensToCombine[0];
 					var lastToken = tokensToCombine[tokensToCombine.Length - 1];
 					extendedTokens = extendedTokens.Add(
-                        new WeightAdjustingToken(
+						new WeightAdjustingToken(
 							string.Join(" ", tokensToCombine.Select(t => t.Token)),
-                            weightMultiplier,
+							weightMultiplier,
 							new SourceLocation(
 								firstToken.SourceLocation.TokenIndex,
 								firstToken.SourceLocation.SourceIndex,
 								(lastToken.SourceLocation.SourceIndex + lastToken.SourceLocation.SourceTokenLength) - firstToken.SourceLocation.SourceIndex
 							)
-                        )
-                    );
-                }
-            }
-            return extendedTokens;
-        }
-    }
+						)
+					);
+				}
+			}
+			return extendedTokens;
+		}
+	}
 }

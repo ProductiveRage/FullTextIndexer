@@ -4,6 +4,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+#if NET452
+using System.Runtime.Serialization;
+#endif
 using System.Security;
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
@@ -12,7 +15,13 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 	/// This will match common strings where one is the plural and the other the singular version of the same word. It not intended to be perfect and may
 	/// match a few false positives, but it should catch most of the most common cases.
 	/// </summary>
+#if NET452
+	[Serializable]
+#endif
 	public class EnglishPluralityStringNormaliser : StringNormaliser
+#if NET452
+		, ISerializable
+#endif
 	{
 		private readonly List<PluralEntry> _plurals;
 		private readonly Func<string, string> _normaliser;
@@ -49,6 +58,29 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 
 		public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
 
+#if NET452
+		protected EnglishPluralityStringNormaliser(SerializationInfo info, StreamingContext context)
+			: this(
+				(IEnumerable<PluralEntry>)info.GetValue("_plurals", typeof(IEnumerable<PluralEntry>)),
+				(IStringNormaliser)info.GetValue("_optionalPreNormaliser", typeof(IStringNormaliser)),
+				(PreNormaliserWorkOptions)info.GetValue("_preNormaliserWork", typeof(PreNormaliserWorkOptions))
+			) { }
+
+		[SecurityCritical]
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			// Unfortunately we can't serialise the generated normaliser (we'll get a "Cannot serialize delegates over unmanaged function pointers, dynamic
+			// methods or methods outside the delegate creator's assembly" error) so if we have to serialise this instance we'll store all of the dat and
+			// then re-generate the normaliser on de-serialisation. Not ideal from a performance point of view but at least it will work.
+			info.AddValue("_plurals", _plurals);
+			info.AddValue("_optionalPreNormaliser", _optionalPreNormaliser);
+			info.AddValue("_preNormaliserWork", _preNormaliserWork);
+		}
+#endif
+
+#if NET452
+	[Serializable]
+#endif
 		[Flags]
 		public enum PreNormaliserWorkOptions
 		{
@@ -352,6 +384,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			new PluralEntry(new[] { "woman", "women" }, MatchTypeOptions.WholeWord)
 		};
 
+#if NET452
+	[Serializable]
+#endif
 		public class PluralEntry
 		{
 			public PluralEntry(IEnumerable<string> values, MatchTypeOptions matchType)
@@ -377,6 +412,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			public MatchTypeOptions MatchType { get; private set; }
 		}
 
+#if NET452
+	[Serializable]
+#endif
 		public enum MatchTypeOptions
 		{
 			SuffixOnly,

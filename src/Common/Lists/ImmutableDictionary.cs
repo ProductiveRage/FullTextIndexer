@@ -3,8 +3,11 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-    public class ImmutableDictionary<TKey, TValue>
-    {
+#if NET452
+	[Serializable]
+#endif
+	public class ImmutableDictionary<TKey, TValue>
+	{
 		private Dictionary<TKey, TValue> _data;
 		private IEqualityComparer<TKey> _keyComparer;
 		public ImmutableDictionary(IDictionary<TKey, TValue> data, IEqualityComparer<TKey> keyComparer)
@@ -17,7 +20,7 @@ namespace FullTextIndexer.Common.Lists
 			_data = new Dictionary<TKey, TValue>(data, keyComparer);
 			_keyComparer = keyComparer;
 		}
-        public ImmutableDictionary(IDictionary<TKey, TValue> data) : this(data, new StandardEqualityComparer<TKey>()) { }
+		public ImmutableDictionary(IDictionary<TKey, TValue> data) : this(data, new StandardEqualityComparer<TKey>()) { }
 		public ImmutableDictionary(IEqualityComparer<TKey> keyComparer) : this(new Dictionary<TKey, TValue>(), keyComparer) { }
 		public ImmutableDictionary() : this(new Dictionary<TKey, TValue>(), new StandardEqualityComparer<TKey>()) { }
 
@@ -56,13 +59,13 @@ namespace FullTextIndexer.Common.Lists
 			get { return _data.Keys.ToImmutableList(); }
 		}
 
-        /// <summary>
-        /// This will never return null
-        /// </summary>
-        public IEqualityComparer<TKey> KeyComparer
-        {
-            get { return _keyComparer; }
-        }
+		/// <summary>
+		/// This will never return null
+		/// </summary>
+		public IEqualityComparer<TKey> KeyComparer
+		{
+			get { return _keyComparer; }
+		}
 
 		/// <summary>
 		/// This will raise an exception for a null key

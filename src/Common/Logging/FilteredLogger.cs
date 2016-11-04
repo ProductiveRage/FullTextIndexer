@@ -6,6 +6,9 @@ namespace FullTextIndexer.Common.Logging
 	/// <summary>
 	/// Write log messages to trace, including additional content such as date, time and thread id
 	/// </summary>
+#if NET452
+    [Serializable]
+#endif
 	public class FilteredLogger : ILogger
 	{
 		private ILogger _logger;
