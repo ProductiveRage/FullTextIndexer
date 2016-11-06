@@ -1,0 +1,1 @@
+﻿This project exists only as a very lazy way to generate one NuGet package that pulls in the Common, Core, Helpers, Querier and Serialisation.Json dependencies (and to include a description of that combined package in NuGet metatadata). It has no behaviour of its own.
