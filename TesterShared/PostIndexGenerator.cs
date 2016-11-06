@@ -33,7 +33,7 @@ namespace Tester
 			_logger = logger;
 		}
 
-		public IIndexData<int> Generate(NonNullImmutableList<Post> data)
+		public IndexData<int> Generate(NonNullImmutableList<Post> data)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
