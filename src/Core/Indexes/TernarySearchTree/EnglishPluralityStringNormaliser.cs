@@ -6,8 +6,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 #if NET452
 using System.Runtime.Serialization;
-#endif
 using System.Security;
+#endif
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
@@ -24,7 +24,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 #endif
 	{
 		private readonly List<PluralEntry> _plurals;
-		private readonly Func<string, string> _normaliser;
+		private readonly Func<string, string> _normaliser; // Note: Don't try to serialise this, it's probably not possible (not via ISerializable nor JSON.Net)
 		private readonly IStringNormaliser _optionalPreNormaliser;
 		private readonly PreNormaliserWorkOptions _preNormaliserWork;
 		public EnglishPluralityStringNormaliser(IEnumerable<PluralEntry> plurals, IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
