@@ -10,23 +10,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Common", "src\Common\Common.xproj", "{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Common", "src\FullTextIndexer.Common\FullTextIndexer.Common.xproj", "{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Core", "src\Core\Core.xproj", "{ABB917BF-BF95-451A-A888-BE82CA14F177}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Core", "src\FullTextIndexer.Core\FullTextIndexer.Core.xproj", "{ABB917BF-BF95-451A-A888-BE82CA14F177}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Helpers", "src\Helpers\Helpers.xproj", "{AA50478E-5C0B-4040-8F87-2C56A160884F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Helpers", "src\FullTextIndexer.Helpers\FullTextIndexer.Helpers.xproj", "{AA50478E-5C0B-4040-8F87-2C56A160884F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Querier", "src\Querier\Querier.xproj", "{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Querier", "src\FullTextIndexer.Querier\FullTextIndexer.Querier.xproj", "{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Tester", "src\Tester\Tester.xproj", "{CE14FFA5-8B55-43CB-981D-5589791D1486}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UnitTests", "src\UnitTests\UnitTests.xproj", "{5B83EC88-8F9E-4B33-9C6B-B7C5F150B6BD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Serialisation.Json", "src\Serialisation.Json\Serialisation.Json.xproj", "{40E81672-A794-4C38-8ADA-9EF3D7E2803D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Serialisation.Json", "src\FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.xproj", "{40E81672-A794-4C38-8ADA-9EF3D7E2803D}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TesterShared", "TesterShared\TesterShared.shproj", "{8ABE7EE3-9AB2-4304-8F1A-4955303A0B77}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterNET452", "TesterNET452\TesterNET452.csproj", "{318F5362-47A9-4FF2-912F-9FFF9E7831EC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8} = {CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8}
+		{40E81672-A794-4C38-8ADA-9EF3D7E2803D} = {40E81672-A794-4C38-8ADA-9EF3D7E2803D}
+		{AA50478E-5C0B-4040-8F87-2C56A160884F} = {AA50478E-5C0B-4040-8F87-2C56A160884F}
+		{ABB917BF-BF95-451A-A888-BE82CA14F177} = {ABB917BF-BF95-451A-A888-BE82CA14F177}
+		{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586} = {6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
