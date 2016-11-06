@@ -1,0 +1,30 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "packOptions": {
+    "summary": "A project to try implementing a full text index service from scratch in C# and .NET Core",
+    "iconUrl": "https://secure.gravatar.com/avatar/6a1f781d4d5e2d50dcff04f8f049767a?s=200",
+    "projectUrl": "https://bitbucket.org/DanRoberts/full-text-indexer",
+    "tags": [ "C#", "full text index", "search" ]
+  },
+  "authors": [ "ProductiveRage" ],
+  "copyright": "Copyright 2016 ProductiveRage",
+
+  "dependencies": {
+    "FullTextIndexer.Common": "1.0.0-*",
+    "FullTextIndexer.Core": "1.0.0-*",
+    "FullTextIndexer.Helpers": "1.0.0-*",
+    "FullTextIndexer.Querier": "1.0.0-*",
+    "FullTextIndexer.Serialisation.Json": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"
+      }
+    },
+    "net452": {}
+  }
+}
