@@ -1,7 +1,13 @@
-﻿{
+{
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "compile": {
+      "include": [
+        "../../TesterShared/**/*.cs"
+      ]
+    },
+    "copyToOutput": "../../TesterShared/Blog.sqlite"
   },
 
   "dependencies": {
@@ -14,7 +20,10 @@
     },
     "Dapper": "1.50.2",
     "Microsoft.Data.Sqlite": "1.0.0",
-    "Markdown": "2.2.0"
+    "Markdown": "2.2.0",
+    "Newtonsoft.Json": "9.0.1",
+    "System.Runtime.Serialization.Xml": "4.1.1",
+    "Serialisation.Json": "1.0.0-*"
   },
 
   "frameworks": {

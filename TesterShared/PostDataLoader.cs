@@ -11,9 +11,21 @@ namespace Tester
 {
 	public static class PostDataLoader
 	{
-		public static NonNullImmutableList<Post> GetFromLocalSqliteFile()
+		public static NonNullImmutableList<Post> GetFromLocalSqliteFile(FileInfo databaseFile)
 		{
-			var connectionString = new SqliteConnectionStringBuilder { DataSource = new FileInfo("Blog.sqlite").FullName };
+			if (databaseFile == null)
+				throw new ArgumentNullException(nameof(databaseFile));
+
+			// If the file doesn't exist then the SqliteConnection will say that the specified TABLE doesn't exist, which is confusing - so check this first
+			databaseFile.Refresh();
+			if (!databaseFile.Exists)
+				throw new ArgumentException($"Specified {nameof(databaseFile)} does not exist");
+
+			var connectionString = new SqliteConnectionStringBuilder
+			{
+				DataSource = databaseFile.FullName,
+				Mode = SqliteOpenMode.ReadOnly // Unless the connection is readonly, an empty file will be created if the database file doesn't exist (which is crazy)
+			};
 			using (var connection = new SqliteConnection(connectionString.ToString()))
 			{
 				var tags = connection.Query<MutablePostTagLink>("SELECT PostTags.PostId, Tags.Tag FROM PostTags INNER JOIN Tags ON Tags.Id = PostTags.TagId");
