@@ -48,7 +48,11 @@ namespace FullTextIndexer.Serialisation.Json
 		}
 
 		/// <summary>
-		/// TODO: Explain
+		/// The IndexDataJsonSerialiser class only serialises the full end-to-end serialisation of an IndexData instance, which is a complex object. For unit testing, it would be
+		/// nice if smaller tests could be written for some of the particular special cases that the serialiser must handle (such as "can it serialise a TernarySearchTreeDictionary
+		/// that has an IStringNormaliser dependency?" - since JSON.NET doesn't do well at deserialising to an interface by default); to allow that form of type of testing, this
+		/// class allows (de)serialisation of smaller types but only has internal accessibility, to avoid extending the public interface of this class more than necessary (the
+		/// UnitTests class will be given special access to this internal type).
 		/// </summary>
 		internal static class GenericSerialiser
 		{
