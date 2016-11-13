@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.1-*",
   "buildOptions": {
     "emitEntryPoint": true,
     "compile": {
@@ -12,8 +12,8 @@
 
   "dependencies": {
     "FullTextIndexer.Common": "1.0.0-*",
-    "FullTextIndexer.Core": "1.0.0-*",
-    "FullTextIndexer.Querier": "1.0.0-*",
+    "FullTextIndexer.Core": "1.0.1-*",
+    "FullTextIndexer.Querier": "1.0.1-*",
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.1"
@@ -23,7 +23,7 @@
     "Markdown": "2.2.0",
     "Newtonsoft.Json": "9.0.1",
     "System.Runtime.Serialization.Xml": "4.1.1",
-    "FullTextIndexer.Serialisation.Json": "1.0.0-*"
+    "FullTextIndexer.Serialisation.Json": "1.0.1-*"
   },
 
   "frameworks": {
