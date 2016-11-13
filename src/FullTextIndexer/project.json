@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0-*",
+  "version": "1.0.1-*",
 
   "packOptions": {
     "summary": "A project to try implementing a full text index service from scratch in C# and .NET Core",
@@ -12,10 +12,10 @@
 
   "dependencies": {
     "FullTextIndexer.Common": "1.0.0-*",
-    "FullTextIndexer.Core": "1.0.0-*",
-    "FullTextIndexer.Helpers": "1.0.0-*",
-    "FullTextIndexer.Querier": "1.0.0-*",
-    "FullTextIndexer.Serialisation.Json": "1.0.0-*"
+    "FullTextIndexer.Core": "1.0.1-*",
+    "FullTextIndexer.Helpers": "1.0.1-*",
+    "FullTextIndexer.Querier": "1.0.1-*",
+    "FullTextIndexer.Serialisation.Json": "1.0.1-*"
   },
 
   "frameworks": {
