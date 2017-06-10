@@ -3,26 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{25113336-0B74-404C-BEA2-BE8173E56980}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Common", "src\FullTextIndexer.Common\FullTextIndexer.Common.xproj", "{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Common", "FullTextIndexer.Common\FullTextIndexer.Common.xproj", "{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Core", "src\FullTextIndexer.Core\FullTextIndexer.Core.xproj", "{ABB917BF-BF95-451A-A888-BE82CA14F177}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Core", "FullTextIndexer.Core\FullTextIndexer.Core.xproj", "{ABB917BF-BF95-451A-A888-BE82CA14F177}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Helpers", "src\FullTextIndexer.Helpers\FullTextIndexer.Helpers.xproj", "{AA50478E-5C0B-4040-8F87-2C56A160884F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Helpers", "FullTextIndexer.Helpers\FullTextIndexer.Helpers.xproj", "{AA50478E-5C0B-4040-8F87-2C56A160884F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Querier", "src\FullTextIndexer.Querier\FullTextIndexer.Querier.xproj", "{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Querier", "FullTextIndexer.Querier\FullTextIndexer.Querier.xproj", "{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Tester", "src\Tester\Tester.xproj", "{CE14FFA5-8B55-43CB-981D-5589791D1486}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Tester", "Tester\Tester.xproj", "{CE14FFA5-8B55-43CB-981D-5589791D1486}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UnitTests", "src\UnitTests\UnitTests.xproj", "{5B83EC88-8F9E-4B33-9C6B-B7C5F150B6BD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UnitTests", "UnitTests\UnitTests.xproj", "{5B83EC88-8F9E-4B33-9C6B-B7C5F150B6BD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Serialisation.Json", "src\FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.xproj", "{40E81672-A794-4C38-8ADA-9EF3D7E2803D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer.Serialisation.Json", "FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.xproj", "{40E81672-A794-4C38-8ADA-9EF3D7E2803D}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TesterShared", "TesterShared\TesterShared.shproj", "{8ABE7EE3-9AB2-4304-8F1A-4955303A0B77}"
 EndProject
@@ -35,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterNET452", "TesterNET45
 		{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586} = {6A46E4DE-FCDE-44BF-8C0B-642AF9A58586}
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer", "src\FullTextIndexer\FullTextIndexer.xproj", "{219E4A06-F330-495E-94FC-9A3D984A48D8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "FullTextIndexer", "FullTextIndexer\FullTextIndexer.xproj", "{219E4A06-F330-495E-94FC-9A3D984A48D8}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -86,15 +84,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{6A46E4DE-FCDE-44BF-8C0B-642AF9A58586} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{ABB917BF-BF95-451A-A888-BE82CA14F177} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{AA50478E-5C0B-4040-8F87-2C56A160884F} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{CBF1A51A-C555-47F0-90B0-0E6D2C40F1E8} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{CE14FFA5-8B55-43CB-981D-5589791D1486} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{5B83EC88-8F9E-4B33-9C6B-B7C5F150B6BD} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{40E81672-A794-4C38-8ADA-9EF3D7E2803D} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
-		{219E4A06-F330-495E-94FC-9A3D984A48D8} = {1D42AF9F-2D63-4833-8FF7-3A3DDF759B7B}
 	EndGlobalSection
 EndGlobal

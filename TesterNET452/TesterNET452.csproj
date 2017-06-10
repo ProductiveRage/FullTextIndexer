@@ -61,16 +61,16 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="FullTextIndexer.Common">
-      <HintPath>..\src\FullTextIndexer.Common\bin\$(Configuration)\net452\FullTextIndexer.Common.dll</HintPath>
+      <HintPath>..\FullTextIndexer.Common\bin\$(Configuration)\net452\FullTextIndexer.Common.dll</HintPath>
     </Reference>
     <Reference Include="FullTextIndexer.Core">
-      <HintPath>..\src\FullTextIndexer.Core\bin\$(Configuration)\net452\FullTextIndexer.Core.dll</HintPath>
+      <HintPath>..\FullTextIndexer.Core\bin\$(Configuration)\net452\FullTextIndexer.Core.dll</HintPath>
     </Reference>
     <Reference Include="FullTextIndexer.Querier">
-      <HintPath>..\src\FullTextIndexer.Querier\bin\$(Configuration)\net452\FullTextIndexer.Querier.dll</HintPath>
+      <HintPath>..\FullTextIndexer.Querier\bin\$(Configuration)\net452\FullTextIndexer.Querier.dll</HintPath>
     </Reference>
     <Reference Include="FullTextIndexer.Serialisation.Json">
-      <HintPath>..\src\FullTextIndexer.Serialisation.Json\bin\$(Configuration)\net452\FullTextIndexer.Serialisation.Json.dll</HintPath>
+      <HintPath>..\FullTextIndexer.Serialisation.Json\bin\$(Configuration)\net452\FullTextIndexer.Serialisation.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
