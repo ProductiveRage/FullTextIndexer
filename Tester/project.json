@@ -4,10 +4,10 @@
     "emitEntryPoint": true,
     "compile": {
       "include": [
-        "../../TesterShared/**/*.cs"
+        "../TesterShared/**/*.cs"
       ]
     },
-    "copyToOutput": "../../TesterShared/Blog.sqlite"
+    "copyToOutput": "../TesterShared/Blog.sqlite"
   },
 
   "dependencies": {
