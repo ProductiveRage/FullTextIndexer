@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FullTextIndexer.Common.Lists
 {
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class ImmutableList<T> : IEnumerable<T>
@@ -376,7 +376,7 @@ namespace FullTextIndexer.Common.Lists
 			}
 		}
 
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 		protected class Node

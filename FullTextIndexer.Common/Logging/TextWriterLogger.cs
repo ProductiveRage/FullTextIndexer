@@ -6,7 +6,7 @@ namespace FullTextIndexer.Common.Logging
 	/// <summary>
 	/// Write log messages to a text output, formatted to include log level, date, time and exception details (message and stack trace) if non-null
 	/// </summary>
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public abstract class TextWriterLogger : ILogger

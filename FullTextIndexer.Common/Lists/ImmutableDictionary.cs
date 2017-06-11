@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class ImmutableDictionary<TKey, TValue>

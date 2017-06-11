@@ -5,7 +5,7 @@ namespace FullTextIndexer.Common.Logging
 	/// <summary>
 	/// This logger does nothing, it doesn't even validate parameters
 	/// </summary>
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public class NullLogger : ILogger

@@ -29,7 +29,7 @@ namespace FullTextIndexer.Serialisation.Json
 			// Ignore anything to do with [Serializable] or ISerializable, all serialisation should be handled explicitly by JSON.NET (in particular, it's important that
 			// the ISerializable GetObjectData implementation of the EnglishPluralityStringNormaliser be ignored since that will write away the private data itself and
 			// the CreateProperties method below won't be called - which means that the type name property won't be injected)
-#if NET452
+#if NET45
 			IgnoreSerializableAttribute = true;
 			IgnoreSerializableInterface = true;
 #endif

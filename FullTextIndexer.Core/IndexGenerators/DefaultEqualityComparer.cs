@@ -8,7 +8,7 @@ namespace FullTextIndexer.Core.IndexGenerators
 	/// However, that type is not decorated with the Serializable attribute and so you will have to be careful when trying to serialise an index that has a reference to one of
 	/// those comparer (if you are using the IndexDataJsonSerialiser then that is not an issue and you may use either this or the framework class).
 	/// </summary>
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class DefaultEqualityComparer<T> : IEqualityComparer<T>

@@ -10,7 +10,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 	/// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
 	/// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
 	/// </summary>
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public sealed class DefaultStringNormaliser : StringNormaliser

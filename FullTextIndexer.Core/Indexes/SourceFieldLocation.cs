@@ -9,7 +9,7 @@ namespace FullTextIndexer.Core.Indexes
 	/// configured to give lower weight to stop words, for example). A WeightedEntry may have multiple SourceFieldLocation instances, its Weight value represents a
 	/// combined value that is calculated from the MatchWeightContribution values of its Source Locations.
 	/// </summary>
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public class SourceFieldLocation : SourceLocation
