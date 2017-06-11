@@ -2,7 +2,7 @@
 
 namespace FullTextIndexer.Core.Indexes
 {
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public class SourceLocation

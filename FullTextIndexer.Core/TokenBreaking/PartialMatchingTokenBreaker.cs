@@ -15,7 +15,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 	/// "lower" and "cased" before partial matches are generated for it; potentially returning "lower", "cased", "low", "owe", "ower" and "case" if a
 	/// partial match weight determiner was used that returned zero for any non-English words.
 	/// </summary>
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class PartialMatchingTokenBreaker : ITokenBreaker

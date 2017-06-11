@@ -4,7 +4,7 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.Indexes
 {
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class WeightedEntry<TKey>

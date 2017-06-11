@@ -5,7 +5,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 	/// <summary>
 	/// This base class contains simple Equals and GetHashCode implementations which all IStringNormaliser classes must have
 	/// </summary>
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public abstract class StringNormaliser : IStringNormaliser

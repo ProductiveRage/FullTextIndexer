@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-#if NET452
+#if NET45
 using System.Runtime.Serialization;
 using System.Security;
 #endif
@@ -15,11 +15,11 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 	/// This will match common strings where one is the plural and the other the singular version of the same word. It not intended to be perfect and may
 	/// match a few false positives, but it should catch most of the most common cases.
 	/// </summary>
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 	public class EnglishPluralityStringNormaliser : StringNormaliser
-#if NET452
+#if NET45
 		, ISerializable
 #endif
 	{
@@ -58,7 +58,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 
 		public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
 
-#if NET452
+#if NET45
 		protected EnglishPluralityStringNormaliser(SerializationInfo info, StreamingContext context)
 			: this(
 				(IEnumerable<PluralEntry>)info.GetValue("_plurals", typeof(IEnumerable<PluralEntry>)),
@@ -78,7 +78,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		}
 #endif
 
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 		[Flags]
@@ -384,7 +384,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			new PluralEntry(new[] { "woman", "women" }, MatchTypeOptions.WholeWord)
 		};
 
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 		public class PluralEntry
@@ -412,7 +412,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			public MatchTypeOptions MatchType { get; private set; }
 		}
 
-#if NET452
+#if NET45
 	[Serializable]
 #endif
 		public enum MatchTypeOptions

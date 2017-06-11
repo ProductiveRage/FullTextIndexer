@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-#if NET452
+#if NET45
     [Serializable]
 #endif
 	public class NonNullImmutableList<T> : ImmutableList<T> where T : class
@@ -96,7 +96,7 @@ namespace FullTextIndexer.Common.Lists
 			);
 		}
 
-#if NET452
+#if NET45
     [Serializable]
 #endif
 		private class Validator : IValueValidator<T>

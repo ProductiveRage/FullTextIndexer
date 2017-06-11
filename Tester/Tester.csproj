@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="..\TesterShared\TesterShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.50.2" />
+    <PackageReference Include="Markdown" Version="2.2.1" />
+    <PackageReference Include="Microsoft.Data.SQLite" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FullTextIndexer.Common\FullTextIndexer.Common.csproj" />
+    <ProjectReference Include="..\FullTextIndexer.Core\FullTextIndexer.Core.csproj" />
+    <ProjectReference Include="..\FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.csproj" />
+  </ItemGroup>
+
+</Project>
