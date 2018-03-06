@@ -20,7 +20,7 @@ namespace FullTextIndexer.Helpers
 		private readonly Func<TSource, TKey> _keyRetrieverOverride;
 		private readonly IEqualityComparer<TKey> _keyComparerOverride;
 		private readonly IStringNormaliser _stringNormaliserOverride;
-		private readonly ITokenBreaker _tokenBreakerOverride;
+		private readonly ITokenBreaker _tokenBreaker;
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombinerOverride;
 		private readonly NonNullImmutableList<IModifyMatchWeights> _propertyWeightAppliers;
 		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _tokenWeightDeterminerGeneratorOverride;
@@ -30,7 +30,7 @@ namespace FullTextIndexer.Helpers
 			Func<TSource, TKey> keyRetrieverOverride,
 			IEqualityComparer<TKey> keyComparerOverride,
 			IStringNormaliser stringNormaliserOverride,
-			ITokenBreaker tokenBreakerOverride,
+			ITokenBreaker tokenBreaker,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombinerOverride,
 			NonNullImmutableList<IModifyMatchWeights> propertyWeightAppliers,
 			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator tokenWeightDeterminerGeneratorOverride,
@@ -39,18 +39,20 @@ namespace FullTextIndexer.Helpers
 		{
 			if (propertyWeightAppliers == null)
 				throw new ArgumentNullException("propertyWeightAppliers");
+			if (tokenBreaker == null)
+				throw new ArgumentNullException(nameof(tokenBreaker));
 
 			_keyRetrieverOverride = keyRetrieverOverride;
 			_keyComparerOverride = keyComparerOverride;
 			_stringNormaliserOverride = stringNormaliserOverride;
-			_tokenBreakerOverride = tokenBreakerOverride;
+			_tokenBreaker = tokenBreaker;
 			_weightedEntryCombinerOverride = weightedEntryCombinerOverride;
 			_propertyWeightAppliers = propertyWeightAppliers;
 			_tokenWeightDeterminerGeneratorOverride = tokenWeightDeterminerGeneratorOverride;
 			_optionalPropertyForFirstContentRetriever = optionalPropertyForFirstContentRetriever;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, null, null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, GetDefaultTokenBreaker(), null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -61,7 +63,7 @@ namespace FullTextIndexer.Helpers
 				keyRetriever,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -79,7 +81,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				keyComparer,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -97,7 +99,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				stringNormaliser,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -124,6 +126,29 @@ namespace FullTextIndexer.Helpers
 			);
 		}
 
+		public delegate ITokenBreaker TokenBreakerInjector(ITokenBreaker currentTokenBreaker);
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> InjectTokenBreaker(TokenBreakerInjector injector)
+		{
+			if (injector == null)
+				throw new ArgumentNullException(nameof(injector));
+
+			var newTokenBreaker = injector(_tokenBreaker);
+			if (newTokenBreaker == null)
+				throw new ArgumentException("Returned null reference - invalid", nameof(injector));
+
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				newTokenBreaker,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
+				_loggerOverride
+			);
+		}
+
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightedEntryCombiner(IndexGenerator.WeightedEntryCombiner weightedEntryCombiner)
 		{
 			if (weightedEntryCombiner == null)
@@ -133,7 +158,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				weightedEntryCombiner,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -155,7 +180,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				weightDeterminerGenerator,
@@ -182,7 +207,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -204,7 +229,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
@@ -231,7 +256,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
@@ -255,7 +280,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
@@ -284,7 +309,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
@@ -302,7 +327,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride,
 				_keyComparerOverride,
 				_stringNormaliserOverride,
-				_tokenBreakerOverride,
+				_tokenBreaker,
 				_weightedEntryCombinerOverride,
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
@@ -318,7 +343,7 @@ namespace FullTextIndexer.Helpers
 				_keyRetrieverOverride ?? GetDefaultKeyRetriever(),
 				_keyComparerOverride ?? new DefaultEqualityComparer<TKey>(),
 				stringNormaliser,
-				_tokenBreakerOverride ?? GetDefaultTokenBreaker(),
+				_tokenBreaker ?? GetDefaultTokenBreaker(),
 				_weightedEntryCombinerOverride ?? (weightedValues => weightedValues.Sum()),
 				_tokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
 				_optionalPropertyForFirstContentRetriever,
@@ -326,7 +351,7 @@ namespace FullTextIndexer.Helpers
 			);
 		}
 
-		private Func<TSource, TKey> GetDefaultKeyRetriever()
+		private static Func<TSource, TKey> GetDefaultKeyRetriever()
 		{
 			var keyRetriever = TryToGetAsKeyRetriever("Key") ?? TryToGetAsKeyRetriever("Id");
 			if (keyRetriever == null)
@@ -335,7 +360,7 @@ namespace FullTextIndexer.Helpers
 			return keyRetriever;
 		}
 
-		private Func<TSource, TKey> TryToGetAsKeyRetriever(string propertyName)
+		private static Func<TSource, TKey> TryToGetAsKeyRetriever(string propertyName)
 		{
 			if (string.IsNullOrWhiteSpace(propertyName))
 				throw new ArgumentException("Null/blank propertyName specified");
@@ -347,7 +372,7 @@ namespace FullTextIndexer.Helpers
 			return entry => (TKey)property.GetValue(entry, null);
 		}
 
-		private IStringNormaliser GetDefaultStringNormaliser()
+		private static IStringNormaliser GetDefaultStringNormaliser()
 		{
 			return new EnglishPluralityStringNormaliser(
 				new DefaultStringNormaliser(),
@@ -355,7 +380,7 @@ namespace FullTextIndexer.Helpers
 			);
 		}
 
-		private ITokenBreaker GetDefaultTokenBreaker()
+		private static ITokenBreaker GetDefaultTokenBreaker()
 		{
 			return new WhiteSpaceExtendingTokenBreaker(
 				new ImmutableList<char>(
