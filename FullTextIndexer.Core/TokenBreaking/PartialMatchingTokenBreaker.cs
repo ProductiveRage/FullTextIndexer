@@ -48,6 +48,12 @@ namespace FullTextIndexer.Core.TokenBreaking
 			_partialMatchWeightDeterminer = partialMatchWeightDeterminer;
 		}
 
+		public PartialMatchingTokenBreaker(
+			int minLengthOfPartialMatches,
+			int maxLengthOfPartialMatches,
+			ITokenBreaker tokenBreaker,
+			PartialMatchWeightDeterminer partialMatchWeightDeterminer) : this(minLengthOfPartialMatches, maxLengthOfPartialMatches, tokenBreaker, null, partialMatchWeightDeterminer) { }
+
 		/// <summary>
 		/// This will return the weight multiplier that a generated partial match should be assigned - the fragment value will be a partial match
 		/// variation generated from the specified token. This must never return a value less than zero. Returning a value of zero means that the
