@@ -117,8 +117,19 @@ namespace FullTextIndexer.Helpers
 			if (type == null)
 				throw new ArgumentNullException("type");
 
+			// 2018-03-07 DWR: When looking for properties to interrogate, the easy checks are CanRead (need to be able to read the value to extract content!) and ensuring that it is
+			// not an index property (what index value(s) would we pass whenever we wanted to extract content?) but I also want to consider only instance properties because there is
+			// HOPEFULLY not any value in looking at static properties because these won't vary from instance to instance (if there are derived types of TSource then there could
+			// arguably be different static property values per type but I'm not worried about that enough to offset the benefit of ignoring static properties) and there is a fairly
+			// common pattern that breaks if we try to consider static properties where an immutable type may have an "Empty" or "Default" (or similar) property that is the initial
+			// state that should be used in favour of calling the constructor (so that instances of that initial state are shared) - if we try to examine that property then we'll
+			// end up in an infinite loop here.
+			var propertiesToConsider = type
+				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+				.Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0));
+
 			var propertyValueRetrievers = new NonNullImmutableList<ContentRetrieverWithSourceProperty>();
-			foreach (var property in type.GetProperties().Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0)))
+			foreach (var property in propertiesToConsider)
 			{
 				var weightDeterminer = weightDeterminerGenerator(property);
 				if (weightDeterminer == null)
