@@ -21,11 +21,13 @@ namespace FullTextIndexer.Core.TokenBreaking
 	public class PartialMatchingTokenBreaker : ITokenBreaker
 	{
 		private readonly int _minLengthOfPartialMatches, _maxLengthOfPartialMatches;
+		private readonly bool _fromStartOfTokenOnly;
 		private readonly ITokenBreaker _tokenBreaker, _optionalPrePartialMatchTokenBreaker;
 		private readonly PartialMatchWeightDeterminer _partialMatchWeightDeterminer;
 		public PartialMatchingTokenBreaker(
 			int minLengthOfPartialMatches,
 			int maxLengthOfPartialMatches,
+			bool fromStartOfTokenOnly,
 			ITokenBreaker tokenBreaker,
 			ITokenBreaker optionalPrePartialMatchTokenBreaker,
 			PartialMatchWeightDeterminer partialMatchWeightDeterminer)
@@ -43,6 +45,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 			
 			_minLengthOfPartialMatches = minLengthOfPartialMatches;
 			_maxLengthOfPartialMatches = maxLengthOfPartialMatches;
+			_fromStartOfTokenOnly = fromStartOfTokenOnly;
 			_tokenBreaker = tokenBreaker;
 			_optionalPrePartialMatchTokenBreaker = optionalPrePartialMatchTokenBreaker;
 			_partialMatchWeightDeterminer = partialMatchWeightDeterminer;
@@ -51,8 +54,15 @@ namespace FullTextIndexer.Core.TokenBreaking
 		public PartialMatchingTokenBreaker(
 			int minLengthOfPartialMatches,
 			int maxLengthOfPartialMatches,
+			bool fromStartOfTokenOnly,
 			ITokenBreaker tokenBreaker,
-			PartialMatchWeightDeterminer partialMatchWeightDeterminer) : this(minLengthOfPartialMatches, maxLengthOfPartialMatches, tokenBreaker, null, partialMatchWeightDeterminer) { }
+			PartialMatchWeightDeterminer partialMatchWeightDeterminer) : this(minLengthOfPartialMatches, maxLengthOfPartialMatches, fromStartOfTokenOnly, tokenBreaker, null, partialMatchWeightDeterminer) { }
+
+		public PartialMatchingTokenBreaker(
+			int minLengthOfPartialMatches,
+			int maxLengthOfPartialMatches,
+			ITokenBreaker tokenBreaker,
+			PartialMatchWeightDeterminer partialMatchWeightDeterminer) : this(minLengthOfPartialMatches, maxLengthOfPartialMatches, false, tokenBreaker, partialMatchWeightDeterminer) { }
 
 		/// <summary>
 		/// This will return the weight multiplier that a generated partial match should be assigned - the fragment value will be a partial match
@@ -156,6 +166,10 @@ namespace FullTextIndexer.Core.TokenBreaking
 						token.SourceLocation
 					));
 				}
+
+				// If we only want to extract sub tokens from the start of the string then we only need a single pass of the outer loop
+				if (_fromStartOfTokenOnly)
+					break;
 			}
 			return partialMatches;
 		}
