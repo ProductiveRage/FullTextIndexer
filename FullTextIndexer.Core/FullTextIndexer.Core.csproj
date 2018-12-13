@@ -2,14 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
-
     <PackageId>FullTextIndexer.Core</PackageId>
-    <PackageVersion>1.2.0</PackageVersion>
-    <Authors>ProductiveRage</Authors>
-    <Copyright>Copyright 2017 Productive Rage</Copyright>
-    <PackageTags>C# full text index search</PackageTags>
-    <PackageIconUrl>https://secure.gravatar.com/avatar/6a1f781d4d5e2d50dcff04f8f049767a?s=200</PackageIconUrl>
-    <PackageProjectUrl>https://bitbucket.org/DanRoberts/full-text-indexer</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
