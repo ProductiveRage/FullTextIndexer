@@ -3,25 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer.Common", "FullTextIndexer.Common\FullTextIndexer.Common.csproj", "{5FFFA463-D4E0-4540-BF1F-9F4FC46DF6CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Common", "FullTextIndexer.Common\FullTextIndexer.Common.csproj", "{5FFFA463-D4E0-4540-BF1F-9F4FC46DF6CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer.Core", "FullTextIndexer.Core\FullTextIndexer.Core.csproj", "{53BBD861-D687-4A1A-9C59-9D7A39E9DBA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Core", "FullTextIndexer.Core\FullTextIndexer.Core.csproj", "{53BBD861-D687-4A1A-9C59-9D7A39E9DBA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer.Helpers", "FullTextIndexer.Helpers\FullTextIndexer.Helpers.csproj", "{604BE146-09DE-4908-BD2B-5F7188DAB0F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Helpers", "FullTextIndexer.Helpers\FullTextIndexer.Helpers.csproj", "{604BE146-09DE-4908-BD2B-5F7188DAB0F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer.Serialisation.Json", "FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.csproj", "{B4A8CAD3-A1CC-4B98-B85D-6A0D5A62C593}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Serialisation.Json", "FullTextIndexer.Serialisation.Json\FullTextIndexer.Serialisation.Json.csproj", "{B4A8CAD3-A1CC-4B98-B85D-6A0D5A62C593}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer.Querier", "FullTextIndexer.Querier\FullTextIndexer.Querier.csproj", "{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Querier", "FullTextIndexer.Querier\FullTextIndexer.Querier.csproj", "{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TesterShared", "TesterShared\TesterShared.shproj", "{F92962FD-908F-4CD6-8FB8-9C30B55938D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterNET452", "TesterNET452\TesterNET452.csproj", "{75334017-483E-4098-921C-6FD8F3704D7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{A1E35C61-799D-4826-84E9-3ED38E0888D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "Tester\Tester.csproj", "{A1E35C61-799D-4826-84E9-3ED38E0888D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1EE147F1-1A68-49B5-90B5-2104231A8BE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1EE147F1-1A68-49B5-90B5-2104231A8BE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTextIndexer", "FullTextIndexer\FullTextIndexer.csproj", "{89DE6C08-FABB-4217-8788-77160BE2872D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer", "FullTextIndexer\FullTextIndexer.csproj", "{89DE6C08-FABB-4217-8788-77160BE2872D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -72,5 +72,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9434F5F0-3C10-477E-924C-640172F98528}
 	EndGlobalSection
 EndGlobal
