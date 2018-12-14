@@ -9,6 +9,7 @@
     <PackageProjectUrl>https://bitbucket.org/DanRoberts/full-text-indexer</PackageProjectUrl>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
