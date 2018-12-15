@@ -206,14 +206,46 @@ namespace FullTextIndexer.Helpers
 						}
 						return nestedTypeValues;
 					};
-					propertyValueRetrievers = propertyValueRetrievers.AddRange(
-						GenerateContentRetrievers(
-							keyRetriever,
-							nestedEnumerableTypeDataRetriever,
-							weightDeterminerGenerator,
-							nestedTypeElementType
-						)
-					);
+					if (nestedTypeElementType == typeof(string))
+					{
+						propertyValueRetrievers = propertyValueRetrievers.Add(
+							new ContentRetrieverWithSourceProperty(
+								new ContentRetriever<TSource, TKey>(
+									source =>
+									{
+										var values = new NonNullOrEmptyStringList();
+										var nestedTypeEnumerableValue = nestedEnumerableTypeDataRetriever(source);
+										if (nestedTypeEnumerableValue != null)
+										{
+											foreach (var entry in nestedTypeEnumerableValue)
+											{
+												var stringValue = entry as string;
+												if (!string.IsNullOrWhiteSpace(stringValue))
+													values = values.Add(stringValue);
+											}
+										}
+										return new PreBrokenContent<TKey>(
+											keyRetriever(source),
+											values
+										);
+									},
+									weightDeterminer
+								),
+								property
+							)
+						);
+					}
+					else
+					{
+						propertyValueRetrievers = propertyValueRetrievers.AddRange(
+							GenerateContentRetrievers(
+								keyRetriever,
+								nestedEnumerableTypeDataRetriever,
+								weightDeterminerGenerator,
+								nestedTypeElementType
+							)
+						);
+					}
 					continue;
 				}
 
