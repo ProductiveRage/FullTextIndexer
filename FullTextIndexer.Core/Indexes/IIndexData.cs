@@ -5,7 +5,7 @@ using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    public interface IIndexData<TKey>
+	public interface IIndexData<TKey>
     {
         /// <summary>
         /// This will throw an exception for null or blank input. It will never return null. If there are no matches then an empty list will be returned.
@@ -20,16 +20,29 @@ namespace FullTextIndexer.Core.Indexes
         /// </summary>
         IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, IndexGenerators.IndexGenerator.WeightedEntryCombiner weightCombiner);
 
-        /// <summary>
-        /// This will return a new instance without any WeightedEntry values whose Keys match the removeIf predicate. If tokens are left without any WeightedEntry
-        /// values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
-        /// </summary>
-        IIndexData<TKey> Remove(Predicate<TKey> removeIf);
+		/// <summary>
+		/// This will return a new instance that combines the source instance's data with additional results - if results are being updated then the Remove method should
+		/// be called first to ensure that duplicate match data entries are not present in the returned index. This will never return null. It will throw an exception for
+		/// a null data reference or one that contains any null references.
+		/// </summary>
+		IIndexData<TKey> Add(IEnumerable<KeyValuePair<string, NonNullImmutableList<WeightedEntry<TKey>>>> data);
 
-        /// <summary>
-        /// This will never return null, the returned dictionary will have this instance's KeyNormaliser as its comparer
-        /// </summary>
-        IDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> ToDictionary();
+		/// <summary>
+		/// This will return a new IndexData instance without any WeightedEntry values whose Keys match the removeIf predicate. If tokens are left without any WeightedEntry
+		/// values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
+		/// </summary>
+		IIndexData<TKey> Remove(Predicate<TKey> removeIf);
+
+		/// <summary>
+		/// This will return a new IndexData instance without any WeightedEntry values whose Keys match thse in the keysToRemove list. If tokens are left without any
+		/// WeightedEntry values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
+		/// </summary>
+		IIndexData<TKey> Remove(ImmutableList<TKey> keysToRemove);
+
+		/// <summary>
+		/// This will never return null, the returned dictionary will have this instance's KeyNormaliser as its comparer
+		/// </summary>
+		IDictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> ToDictionary();
 
         /// <summary>
         /// This will never return null
