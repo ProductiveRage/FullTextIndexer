@@ -46,6 +46,10 @@ namespace FullTextIndexer.Common.Lists
 		{
 			return ToNonNullOrEmptyStringList(base.RemoveRange(removeAtIndex, count));
 		}
+		public new NonNullOrEmptyStringList Remove(Predicate<string> removeIf)
+		{
+			return ToNonNullOrEmptyStringList(base.Remove(removeIf));
+		}
 		public new NonNullOrEmptyStringList Sort()
 		{
 			return ToNonNullOrEmptyStringList(base.Sort());

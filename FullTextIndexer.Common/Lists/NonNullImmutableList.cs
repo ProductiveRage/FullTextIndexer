@@ -73,6 +73,10 @@ namespace FullTextIndexer.Common.Lists
 		{
 			return ToNonNullImmutableList(base.RemoveLast(numberToRemove));
 		}
+		public new NonNullImmutableList<T> Remove(Predicate<T> removeIf)
+		{
+			return ToNonNullImmutableList(base.Remove(removeIf));
+		}
 		public new NonNullImmutableList<T> Sort()
 		{
 			return ToNonNullImmutableList(base.Sort());

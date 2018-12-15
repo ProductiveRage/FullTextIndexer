@@ -28,10 +28,7 @@ namespace FullTextIndexer.Common.Lists
 			{
 				if (optionalValueValidator != null)
 					optionalValueValidator.EnsureValid(value);
-				if (node == null)
-					node = new Node(value, null);
-				else
-					node = new Node(value, node);
+				node = new Node { Value = value, Previous = node, Count = (node?.Count ?? 0) + 1 };
 			}
 			_tail = node;
 			_optionalValueValidator = optionalValueValidator;
@@ -78,8 +75,9 @@ namespace FullTextIndexer.Common.Lists
 			EnsureAllValuesDataIsPopulated();
 			for (var index = 0; index < _allValues.Length; index++)
 			{
-				if (DoValuesMatch(_allValues[index], value, optionalComparer))
+				if (DoValuesMatch(node.Value, value, optionalComparer))
 					return true;
+				node = node.Previous;
 			}
 			return false;
 		}
@@ -90,7 +88,7 @@ namespace FullTextIndexer.Common.Lists
 			if (_optionalValueValidator != null)
 				_optionalValueValidator.EnsureValid(value);
 			return new ImmutableList<T>(
-				new Node(value, _tail),
+				new Node { Value = value, Previous = _tail, Count = (_tail?.Count ?? 0) + 1 },
 				_optionalValueValidator
 			);
 		}
@@ -108,7 +106,7 @@ namespace FullTextIndexer.Common.Lists
 			{
 				if (_optionalValueValidator != null)
 					_optionalValueValidator.EnsureValid(value);
-				node = new Node(value, node);
+				node = new Node { Value = value, Previous = node, Count = (node?.Count ?? 0) + 1 };
 			}
 			return new ImmutableList<T>(node, _optionalValueValidator);
 		}
@@ -155,7 +153,7 @@ namespace FullTextIndexer.Common.Lists
 			{
 				if (_optionalValueValidator != null)
 					_optionalValueValidator.EnsureValid(singleValueToAdd);
-				node = new Node(singleValueToAdd, node);
+				node = new Node { Value = singleValueToAdd, Previous = node, Count = (node?.Count ?? 0) + 1 };
 			}
 			else
 			{
@@ -163,13 +161,13 @@ namespace FullTextIndexer.Common.Lists
 				{
 					if (_optionalValueValidator != null)
 						_optionalValueValidator.EnsureValid(valueToAdd);
-					node = new Node(valueToAdd, node);
+					node = new Node { Value = valueToAdd, Previous = node, Count = (node?.Count ?? 0) + 1 };
 				}
 			}
 
 			// Finally, add back the values we walked through before to complete the chain
 			for (var index = valuesBeforeInsertionPoint.Length - 1; index >= 0; index--)
-				node = new Node(valuesBeforeInsertionPoint[index], node);
+				node = new Node { Value = valuesBeforeInsertionPoint[index], Previous = node, Count = (node?.Count ?? 0) + 1 };
 			return new ImmutableList<T>(node, _optionalValueValidator);
 		}
 
@@ -212,7 +210,7 @@ namespace FullTextIndexer.Common.Lists
 			// Now build a new chain by taking the content before the value-to-remove and adding back the values that were stepped through
 			node = lastNodeThatMatched.Previous;
 			for (var index = lastNodeIndexThatMatched.Value - 1; index >= 0; index--)
-				node = new Node(valuesBeforeRemoval[index], node);
+				node = new Node { Value = valuesBeforeRemoval[index], Previous = node, Count = (node?.Count ?? 0) + 1 };
 			return new ImmutableList<T>(node, _optionalValueValidator);
 		}
 
@@ -279,7 +277,7 @@ namespace FullTextIndexer.Common.Lists
 
 			// Now add back the values we walked through above to the part of the chain that can be persisted
 			for (var index = valuesBeforeRemovalRange.Length - 1; index >= 0; index--)
-				node = new Node(valuesBeforeRemovalRange[index], node);
+				node = new Node { Value = valuesBeforeRemovalRange[index], Previous = node, Count = (node?.Count ?? 0) + 1 };
 			return new ImmutableList<T>(node, _optionalValueValidator);
 		}
 
@@ -299,6 +297,43 @@ namespace FullTextIndexer.Common.Lists
 			for (var index = 0; index < numberToRemove; index++)
 				node = node.Previous;
 			return new ImmutableList<T>(node, _optionalValueValidator);
+		}
+
+		public ImmutableList<T> Remove(Predicate<T> removeIf)
+		{
+			if (removeIf == null)
+				throw new ArgumentNullException(nameof(removeIf));
+
+			if (_tail == null)
+				return this;
+
+			var sourceNode = _tail;
+			Node newNode = null;
+			Node newTail = null;
+			var countInNewList = 0;
+			while (sourceNode != null)
+			{
+				if (!removeIf(sourceNode.Value))
+				{
+					var nextNewNode = new Node { Value = sourceNode.Value };
+					if (newNode != null)
+						newNode.Previous = nextNewNode;
+					newNode = nextNewNode;
+					if (newTail == null)
+						newTail = newNode;
+					countInNewList++;
+				}
+				sourceNode = sourceNode.Previous;
+			}
+			if (countInNewList == Count)
+				return this;
+			newNode = newTail;
+			for (var i = 0; i < countInNewList; i++)
+			{
+				newNode.Count = countInNewList - i;
+				newNode = newNode.Previous;
+			}
+			return new ImmutableList<T>(newTail, _optionalValueValidator);
 		}
 
 		public IEnumerator<T> GetEnumerator()
@@ -381,21 +416,14 @@ namespace FullTextIndexer.Common.Lists
 #endif
 		protected class Node
 		{
-			public Node(T value, Node previous)
-			{
-				Value = value;
-				Previous = previous;
-				Count = (previous == null) ? 1 : (previous.Count + 1);
-			}
-
-			public T Value { get; private set; }
+			public T Value { get; set; }
 
 			/// <summary>
 			/// This will be null if there is no previous node (ie. this is the start of the chain, the head)
 			/// </summary>
-			public Node Previous { get; private set; }
+			public Node Previous { get; set; }
 
-			public int Count { get; private set; }
+			public int Count { get; set; }
 		}
 	}
 }
