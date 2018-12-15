@@ -74,11 +74,8 @@ namespace FullTextIndexer.Common.Lists
 
 		public bool Contains(T value, IEqualityComparer<T> optionalComparer)
 		{
-			if (_tail == null)
-				return false;
-
-			EnsureAllValuesDataIsPopulated();
-			for (var index = 0; index < _allValues.Length; index++)
+			var node = _tail;
+			while (node != null)
 			{
 				if (DoValuesMatch(node.Value, value, optionalComparer))
 					return true;
