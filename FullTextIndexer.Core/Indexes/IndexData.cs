@@ -13,20 +13,25 @@ namespace FullTextIndexer.Core.Indexes
 	{
 		private TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> _data;
 		private IEqualityComparer<TKey> _dataKeyComparer;
-		public IndexData(
-			TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data,
-			IEqualityComparer<TKey> dataKeyComparer)
+		public IndexData(TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data, IEqualityComparer<TKey> dataKeyComparer)
+			: this(data, dataKeyComparer, validate: true) { }
+		private IndexData(TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data, IEqualityComparer<TKey> dataKeyComparer, bool validate)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
 			if (dataKeyComparer == null)
 				throw new ArgumentNullException("dataKeyComparer");
 
-			var allValues = data.GetAllValues();
-			if (allValues.Any(v => v == null))
-				throw new ArgumentException("data may not contain any null WeightedEntry list values");
-			if (allValues.Any(v => v.Count == 0))
-				throw new ArgumentException("data may not contain any empty WeightedEntry list values");
+			// If the constructor is called from a method within this class then the data should be known to be valid but if the constructor call was from
+			// other code then perform some sanity checking on it
+			if (validate)
+			{
+				var allValues = data.GetAllValues();
+				if (allValues.Any(v => v == null))
+					throw new ArgumentException("data may not contain any null WeightedEntry list values");
+				if (allValues.Any(v => v.Count == 0))
+					throw new ArgumentException("data may not contain any empty WeightedEntry list values");
+			}
 
 			_data = data;
 			_dataKeyComparer = dataKeyComparer;
@@ -91,8 +96,26 @@ namespace FullTextIndexer.Core.Indexes
 			// Return a new instance with this combined data
 			return new IndexData<TKey>(
 				new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(combinedContent, _data.KeyNormaliser),
-				_dataKeyComparer
+				_dataKeyComparer,
+				validate: false
 			);
+		}
+
+		/// <summary>
+		/// This will return a new instance that combines the source instance's data with additional results - if results are being updated then the Remove method should
+		/// be called first to ensure that duplicate match data entries are not present in the returned index. This will never return null. It will throw an exception for
+		/// a null data reference or one that contains any null references.
+		/// </summary>
+		public IIndexData<TKey> Add(IEnumerable<KeyValuePair<string, NonNullImmutableList<WeightedEntry<TKey>>>> data)
+		{
+			if (data == null)
+				throw new ArgumentNullException(nameof(data));
+
+			var newIndex = _data.Add(
+				data,
+				(current, toAdd) => ((current != null) && (toAdd != null)) ? current.AddRange(toAdd) : (current ?? toAdd)
+			);
+			return new IndexData<TKey>(newIndex, _dataKeyComparer, validate: false);
 		}
 
 		/// <summary>
@@ -112,18 +135,39 @@ namespace FullTextIndexer.Core.Indexes
 			if (removeIf == null)
 				throw new ArgumentNullException("removeIf");
 
-			var content = _data.ToDictionary();
-			foreach (var token in content.Keys.ToArray()) // Take a copy of Keys since we may manipulate the dictionary content
-			{
-				var trimmedWeightedEntries = content[token].Where(e => !removeIf(e.Key));
-				if (trimmedWeightedEntries.Any())
-					content[token] = trimmedWeightedEntries.ToNonNullImmutableList();
-				else
-					content.Remove(token);
-			}
 			return new IndexData<TKey>(
-				new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(content, _data.KeyNormaliser),
-				_dataKeyComparer
+				_data.Update(weightedEntries =>
+				{
+					// Remove any weighted entries whose keys match the criteria - if this leaves no weighted entries then return null to indicate that the token no longer
+					// has any data associated with it
+					var trimmedWeightEntries = weightedEntries.Remove(weightedEntry => removeIf(weightedEntry.Key));
+					return (trimmedWeightEntries.Count == 0) ? null : trimmedWeightEntries;
+				}),
+				_dataKeyComparer,
+				validate: false
+			);
+		}
+
+		/// <summary>
+		/// This will return a new IndexData instance without any WeightedEntry values whose Keys match thse in the keysToRemove list. If tokens are left without any
+		/// WeightedEntry values then the token will be excluded from the new data. This will never return null. It will throw an exception for a null removeIf.
+		/// </summary>
+		public IIndexData<TKey> Remove(ImmutableList<TKey> keysToRemove)
+		{
+			if (keysToRemove == null)
+				throw new ArgumentNullException("keysToRemove");
+
+			var quickLookup = new HashSet<TKey>(keysToRemove, _dataKeyComparer);
+			return new IndexData<TKey>(
+				_data.Update(weightedEntries =>
+				{
+					// Remove any weighted entries whose keys match the criteria - if this leaves no weighted entries then return null to indicate that the token no longer
+					// has any data associated with it
+					var trimmedWeightEntries = weightedEntries.Remove(weightedEntry => quickLookup.Contains(weightedEntry.Key));
+					return (trimmedWeightEntries.Count == 0) ? null : trimmedWeightEntries;
+				}),
+				_dataKeyComparer,
+				validate: false
 			);
 		}
 
