@@ -48,6 +48,10 @@ namespace UnitTests.Querier.QueryTranslators
 		{
 			throw new NotImplementedException();
 		}
+		public IIndexData<int> Add(IEnumerable<KeyValuePair<string, NonNullImmutableList<WeightedEntry<int>>>> data)
+		{
+			throw new NotImplementedException();
+		}
 		public IIndexData<int> Remove(Predicate<int> removeIf)
 		{
 			throw new NotImplementedException();
