@@ -57,6 +57,11 @@ namespace FullTextIndexer.Common.Lists
 			}
 		}
 
+		public bool Any()
+		{
+			return (_tail != null);
+		}
+
 		public int Count
 		{
 			get { return (_tail == null) ? 0 : _tail.Count; }
