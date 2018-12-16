@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Common.Logging;
@@ -11,7 +10,7 @@ using Xunit;
 
 namespace UnitTests.FullTextIndexer.IndexGenerators
 {
-    public class IndexGeneratorTests
+	public class IndexGeneratorTests
     {
 		[Fact]
 		public void SingleProductWithSingleWordName()
@@ -134,10 +133,40 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 			);
 		}
 
+		[Fact]
+		public void TestRemovalOfResultFromIndex()
+		{
+			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
+				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
+				{
+					new ContentRetriever<ProductWithDescription, int>(
+						p => new PreBrokenContent<int>(p.Key, p.Name),
+						token => 1f
+					),
+					new ContentRetriever<ProductWithDescription, int>(
+						p => new PreBrokenContent<int>(p.Key, p.Description),
+						token => 1f
+					)
+				}),
+				new DefaultEqualityComparer<int>(),
+				new CaseInsensitiveStringNormaliser(),
+				new WhiteSpaceTokenBreaker(),
+				weightedValues => weightedValues.Sum(),
+				new NullLogger()
+			);
+			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
+			{
+				new ProductWithDescription() { Key = 1, Name = "", Description = "Product" },
+				new ProductWithDescription() { Key = 2, Name = "", Description = "Product" }
+			}));
+			Assert.Equal(2, index.GetMatches("Product").Count); // Should get two matches for "Product" at this point
+			Assert.Equal(1, index.Remove(key => key == 2).GetMatches("Product").Count); // Should get only one if remove results for Key 2
+		}
+
 		/// <summary>
-        /// This will throw an exception if the contents of expected do not match that of actual (or if either reference is null)
-        /// </summary>
-        private void EnsureIndexDataMatchesExpectations(NonNullImmutableList<WeightedEntry<int>> expected, NonNullImmutableList<WeightedEntry<int>> actual)
+		/// This will throw an exception if the contents of expected do not match that of actual (or if either reference is null)
+		/// </summary>
+		private void EnsureIndexDataMatchesExpectations(NonNullImmutableList<WeightedEntry<int>> expected, NonNullImmutableList<WeightedEntry<int>> actual)
         {
             if (expected == null)
                 throw new ArgumentNullException("expected");
