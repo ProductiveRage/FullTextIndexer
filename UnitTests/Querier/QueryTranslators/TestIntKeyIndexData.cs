@@ -56,6 +56,10 @@ namespace UnitTests.Querier.QueryTranslators
 		{
 			throw new NotImplementedException();
 		}
+		public IIndexData<int> Remove(ImmutableList<int> keysToRemove)
+		{
+			throw new NotImplementedException();
+		}
 		public IDictionary<string, NonNullImmutableList<WeightedEntry<int>>> ToDictionary()
 		{
 			throw new NotImplementedException();
@@ -64,6 +68,7 @@ namespace UnitTests.Querier.QueryTranslators
 		{
 			throw new NotImplementedException();
 		}
+
 		public IStringNormaliser TokenComparer
 		{
 			get { throw new NotImplementedException(); }

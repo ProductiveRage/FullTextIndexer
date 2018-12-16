@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
@@ -11,23 +10,31 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 #endif
 	public class TernarySearchTreeDictionary<TValue> : IEnumerable<string>
     {
-        private Node _root;
+		/// <summary>
+		/// This delegate is used by the Add method to handle cases where data for a token exists in the current tree and in the data that is to be added to it. It
+		/// will never be called with null current or toAdd references. It may return null if the two data items somehow cancel each other out and the token should
+		/// not be recorded.
+		/// </summary>
+		public delegate TValue Combiner(TValue current, TValue toAdd);
+		private static readonly Combiner _takeNewValue = (current, toAdd) => toAdd;
+
+		private Node _root;
         private IStringNormaliser _keyNormaliser;
-        public TernarySearchTreeDictionary(IEnumerable<KeyValuePair<string, TValue>> data, IStringNormaliser keyNormaliser)
-        {
-            if (data == null)
-                throw new ArgumentNullException("data");
-            if (keyNormaliser == null)
-                throw new ArgumentNullException("keyNormaliser");
+		public TernarySearchTreeDictionary(IEnumerable<KeyValuePair<string, TValue>> data, IStringNormaliser keyNormaliser)
+			: this(Add(root: null, keyNormaliser: keyNormaliser, data: data, combine: _takeNewValue), keyNormaliser) { }
+		private TernarySearchTreeDictionary(Node rootIfAny, IStringNormaliser keyNormaliser)
+		{
+			if (keyNormaliser == null)
+				throw new ArgumentNullException("keyNormaliser");
 
-            _root = Add(null, keyNormaliser, data);
-            _keyNormaliser = keyNormaliser;
-        }
+			_root = rootIfAny;
+			_keyNormaliser = keyNormaliser;
+		}
 
-        /// <summary>
-        /// This will never be null nor contain any nulls, empty strings or duplicate values
-        /// </summary>
-        public IEnumerable<string> GetAllNormalisedKeys()
+		/// <summary>
+		/// This will never be null nor contain any nulls, empty strings or duplicate values
+		/// </summary>
+		public IEnumerable<string> GetAllNormalisedKeys()
         {
             if (_root == null)
                 return new string[0]; // If root is null then there is no data
@@ -129,37 +136,44 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             return false;
         }
 
-        /// <summary>
-        /// This will return a new TernarySearchTreeDictionary the combines the existing data with the new. It willthrow an exception for a null data reference,
-        /// if the set contains any null keys, if any keys are transformed to empty string when passed through the keyNormaliser or if any duplicate keys would
-        /// arise from combining the new data with the existing.
-        /// </summary>
-        public TernarySearchTreeDictionary<TValue> Add(IEnumerable<KeyValuePair<string, TValue>> data)
-        {
-            if (data == null)
-                throw new ArgumentNullException("data");
+		/// <summary>
+		/// This will return a new TernarySearchTreeDictionary the combines the existing data with the new - if any tokens exist in the current tree and in the new
+		/// data then the new data content will replace what was previously recorded, if a different method of combination is desired then call the Add method overload
+		/// that takes a Combiner delegate. It will throw an exception for a null data reference, if the set contains any null keys, if any keys are transformed to empty
+		/// string when passed through the keyNormaliser or if any duplicate keys would arise from combining the new data with the existing.
+		/// </summary>
+		public TernarySearchTreeDictionary<TValue> Add(IEnumerable<KeyValuePair<string, TValue>> data) => Add(data, _takeNewValue);
 
-            if (!data.Any())
+		/// <summary>
+		/// This will return a new TernarySearchTreeDictionary the combines the existing data with the new - if any tokens exist in the current tree and in the new data
+		/// then it will be combined into a single value by calling the provided Combiner delegate. It will throw an exception for a null data reference, if the set contains
+		/// any null keys, if any keys are transformed to empty string when passed through the keyNormaliser or if any duplicate keys would arise from combining the new data
+		/// with the existing.
+		/// </summary>
+		public TernarySearchTreeDictionary<TValue> Add(IEnumerable<KeyValuePair<string, TValue>> data, Combiner combine)
+		{
+			if (data == null)
+                throw new ArgumentNullException("data");
+			if (combine == null)
+				throw new ArgumentNullException(nameof(combine));
+
+			if (!data.Any())
                 return this;
-            return new TernarySearchTreeDictionary<TValue>(new Dictionary<string, TValue>(), _keyNormaliser)
-            {
-                _root = Add(_root, _keyNormaliser, data)
-            };
+
+			var newRoot = Add(_root, _keyNormaliser, data, combine);
+			return new TernarySearchTreeDictionary<TValue>(newRoot, _keyNormaliser);
         }
 
-        /// <summary>
-        /// Combine additional data with an existing root's content, returning a new Node (unless zero data entries were specified, in which case the original
-        /// reference will be returned). This will throw an exception for a null keyNormalised or data (or if any keys in the data return null, empty string
-        /// or duplicates when run through the keyNormaliser). If a null root is specified then a new root will be generated.
-        /// </summary>
-        private static Node Add(Node root, IStringNormaliser keyNormaliser, IEnumerable<KeyValuePair<string, TValue>> data)
+		private static Node Add(Node root, IStringNormaliser keyNormaliser, IEnumerable<KeyValuePair<string, TValue>> data, Combiner combine)
         {
             if (keyNormaliser == null)
                 throw new ArgumentNullException("keyNormaliser");
             if (data == null)
                 throw new ArgumentNullException("keys");
+			if (combine == null)
+				throw new ArgumentNullException(nameof(combine));
 
-            if (!data.Any())
+			if (!data.Any())
                 return root;
 
             if (root != null)
@@ -185,9 +199,11 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                         index++;
                         if (index == normalisedKey.Length)
                         {
-                            node.Key = normalisedKey;
-                            node.Value = entry.Value;
-                            break;
+							node.Value = ((node.Value != null) && (entry.Value != null))
+								? combine(node.Value, entry.Value)
+								: ((node.Value != null) ? node.Value : entry.Value);
+							node.Key = (node.Value == null) ? null : normalisedKey; // If we ended up with a null Value then the Combiner may have removed it, in which case we should set the Key to null as well
+							break;
                         }
                         if (node.MiddleChild == null)
                             node.MiddleChild = new Node() { Character = normalisedKey[index], Parent = node };
@@ -268,17 +284,32 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 
             // Otherwise we need to prune out any dead Nodes (Nodes that have don't lead to any key) and return a new instance with this data
             Prune(newRoot);
-            return new TernarySearchTreeDictionary<TValue>(new Dictionary<string, TValue>(), _keyNormaliser)
-            {
-                _root = newRoot,
-            };
+			return new TernarySearchTreeDictionary<TValue>(newRoot, _keyNormaliser);
         }
 
-        /// <summary>
-        /// This will set to null any descendant Nodes that don't contain values (either within themselves or within any further descendant). It will return true if
-        /// any pruning was performed and false if not.
-        /// </summary>
-        private bool Prune(Node node)
+		/// <summary>
+		/// This will return a new TernarySearchTreeDictionary where every value is transformed using the specified delegate. If the delegate returns null then the
+		/// value will be removed. It will throw an exception for a null transformer reference.
+		/// </summary>
+		public TernarySearchTreeDictionary<TValue> Update(Func<TValue, TValue> transformer)
+		{
+			if (transformer == null)
+				throw new ArgumentNullException(nameof(transformer));
+
+			if (_root == null)
+				return this;
+
+			var newRoot = _root.Clone();
+			newRoot.Update(transformer);
+			//Prune(newRoot); // 2018-12-15: Disabling this for now because this method is too slow already and other methods will pick up Prune calls!
+			return new TernarySearchTreeDictionary<TValue>(newRoot, _keyNormaliser);
+		}
+
+		/// <summary>
+		/// This will set to null any descendant Nodes that don't contain values (either within themselves or within any further descendant). It will return true if
+		/// any pruning was performed and false if not.
+		/// </summary>
+		private bool Prune(Node node)
         {
             if (node == null)
                 throw new ArgumentNullException("node");
@@ -386,32 +417,52 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 return depth;
             }
 
-            /// <summary>
-            /// Returns a cloned copy of the node, deep-cloning all data. This will throw an exception for a null node.
-            /// </summary>
-            public Node Clone()
-            {
-                // To clone it, we copy Character, Parent, Key and Value onto a new instance and then clone the child nodes (if non-null). After this the
-                // Parents on the child nodes will have to be set to the new instance so that a new chain can be formed. This should be called against
-                // the root node such that an entirely new tree is formed.
-                var newNode = new Node()
-                {
-                    Character = Character,
-                    LeftChild = (LeftChild == null) ? null : LeftChild.Clone(),
-                    MiddleChild = (MiddleChild == null) ? null : MiddleChild.Clone(),
-                    RightChild = (RightChild == null) ? null : RightChild.Clone(),
-                    Parent = Parent,
-                    Key = Key,
-                    Value = Value
-                };
-                if (newNode.LeftChild != null)
-                    newNode.LeftChild.Parent = newNode;
-                if (newNode.MiddleChild != null)
-                    newNode.MiddleChild.Parent = newNode;
-                if (newNode.RightChild != null)
-                    newNode.RightChild.Parent = newNode;
-                return newNode;
-            }
-        }
-    }
+			public Node Clone()
+			{
+				var newNode = new Node()
+				{
+					Character = Character,
+					LeftChild = LeftChild?.Clone(),
+					MiddleChild = MiddleChild?.Clone(),
+					RightChild = RightChild?.Clone(),
+					Parent = Parent,
+					Key = Key,
+					Value = Value
+				};
+				if (newNode.LeftChild != null)
+					newNode.LeftChild.Parent = newNode;
+				if (newNode.MiddleChild != null)
+					newNode.MiddleChild.Parent = newNode;
+				if (newNode.RightChild != null)
+					newNode.RightChild.Parent = newNode;
+				return newNode;
+			}
+
+			public void Update(Func<TValue, TValue> transformer)
+			{
+				if (transformer == null)
+					throw new ArgumentNullException(nameof(transformer));
+
+				bool removedItem;
+				TValue newValue;
+				if (Key == null)
+				{
+					// If the Key is null then it means that this node is part of a chain but doesn't have its own Key and Value, in which case leave
+					// Value as whatever it currently is on the cloned node (should be default(T))
+					newValue = Value;
+					removedItem = false; // This node doesn't represent a value and so we haven't removed anything
+				}
+				else
+				{
+					newValue = transformer(Value);
+					removedItem = (newValue == null);
+				}
+				Key = removedItem ? null : Key;
+				Value = newValue;
+				LeftChild?.Update(transformer);
+				MiddleChild?.Update(transformer);
+				RightChild?.Update(transformer);
+			}
+		}
+	}
 }
