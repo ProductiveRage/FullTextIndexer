@@ -186,7 +186,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 				.Select(group => new WeightedEntry<TKey>(
 					group.Key,
 					_matchCombiner(group.Select(e => e.Weight).ToImmutableList(), querySegments),
-					group.SelectMany(e => e.SourceLocations).ToNonNullImmutableList()
+					group.Any(e => e.SourceLocationsIfRecorded == null) ? null : group.SelectMany(e => e.SourceLocationsIfRecorded).ToNonNullImmutableList()
 				))
 				.ToNonNullImmutableList();
 		}

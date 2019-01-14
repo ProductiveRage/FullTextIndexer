@@ -5,7 +5,7 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.Indexes
 {
-    public static class WeightedEntry_Extensions
+	public static class WeightedEntry_Extensions
     {
         /// <summary>
         /// Combine multiple sets of WeighedEntries together based upon the specified matchCombiner. This will throw an exception for any null argument.
@@ -47,7 +47,7 @@ namespace FullTextIndexer.Core.Indexes
                 combinedData.Add(new WeightedEntry<TKey>(
 					match.Key,
 					weight,
-					match.Value.SelectMany(v => v.SourceLocations).ToNonNullImmutableList()
+					match.Value.Any(v => v.SourceLocationsIfRecorded == null) ? null : match.Value.SelectMany(v => v.SourceLocationsIfRecorded).ToNonNullImmutableList()
 				));
             }
             return combinedData.ToNonNullImmutableList();
