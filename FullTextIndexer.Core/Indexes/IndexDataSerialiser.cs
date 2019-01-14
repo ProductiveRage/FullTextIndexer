@@ -148,26 +148,31 @@ namespace FullTextIndexer.Core.Indexes
 					var matchWeight = reader.ReadSingle();
 
 					var numberOfSourceLocations = reader.ReadInt32();
-					var sourceLocations = new NonNullImmutableList<SourceFieldLocation>();
-
-					for (var sourceLocationIndex = 0; sourceLocationIndex < numberOfSourceLocations; sourceLocationIndex++)
+					NonNullImmutableList<SourceFieldLocation> sourceLocationsIfRecorded;
+					if (numberOfSourceLocations == 0)
+						sourceLocationsIfRecorded = null;
+					else
 					{
-						sourceLocations = sourceLocations.Add(
-							new SourceFieldLocation(
-								reader.ReadInt32(),
-								reader.ReadInt32(),
-								reader.ReadInt32(),
-								reader.ReadInt32(),
-								reader.ReadSingle()
-							)
-						);
+						sourceLocationsIfRecorded = new NonNullImmutableList<SourceFieldLocation>();
+						for (var sourceLocationIndex = 0; sourceLocationIndex < numberOfSourceLocations; sourceLocationIndex++)
+						{
+							sourceLocationsIfRecorded = sourceLocationsIfRecorded.Add(
+								new SourceFieldLocation(
+									reader.ReadInt32(),
+									reader.ReadInt32(),
+									reader.ReadInt32(),
+									reader.ReadInt32(),
+									reader.ReadSingle()
+								)
+							);
+						}
 					}
 
 					matches = matches.Add(
 						new WeightedEntry<TKey>(
 							keys[keyIndex],
 							matchWeight,
-							sourceLocations
+							sourceLocationsIfRecorded
 						)
 					);
 				}
@@ -214,14 +219,19 @@ namespace FullTextIndexer.Core.Indexes
 
 					writer.Write(keyIndex);
 					writer.Write(match.Weight);
-					writer.Write(match.SourceLocations.Count);
-					foreach (var sourceLocation in match.SourceLocations)
+					if (match.SourceLocationsIfRecorded == null)
+						writer.Write(0);
+					else
 					{
-						writer.Write(sourceLocation.SourceFieldIndex);
-						writer.Write(sourceLocation.TokenIndex);
-						writer.Write(sourceLocation.SourceIndex);
-						writer.Write(sourceLocation.SourceTokenLength);
-						writer.Write(sourceLocation.MatchWeightContribution);
+						writer.Write(match.SourceLocationsIfRecorded.Count);
+						foreach (var sourceLocation in match.SourceLocationsIfRecorded)
+						{
+							writer.Write(sourceLocation.SourceFieldIndex);
+							writer.Write(sourceLocation.TokenIndex);
+							writer.Write(sourceLocation.SourceIndex);
+							writer.Write(sourceLocation.SourceTokenLength);
+							writer.Write(sourceLocation.MatchWeightContribution);
+						}
 					}
 				}
 			}

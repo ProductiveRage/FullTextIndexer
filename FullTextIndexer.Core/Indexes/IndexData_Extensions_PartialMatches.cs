@@ -45,19 +45,21 @@ namespace FullTextIndexer.Core.Indexes
 						new WeightedEntryWithTerm<TKey>(
 							match.Key,
 							match.Weight * weightAdjustedToken.WeightMultiplier,
-							match.SourceLocations.Select(
-								l => new SourceFieldLocationWithTerm(
-									l.SourceFieldIndex,
-									l.TokenIndex,
-									l.SourceIndex,
-									l.SourceTokenLength,
-									l.MatchWeightContribution,
-									new SourceFieldLocationWithTerm.SearchTermDetails(
-										tokenIndex,
-										weightAdjustedToken.Token
+							(match.SourceLocationsIfRecorded == null)
+								? null
+								: match.SourceLocationsIfRecorded.Select(
+									l => new SourceFieldLocationWithTerm(
+										l.SourceFieldIndex,
+										l.TokenIndex,
+										l.SourceIndex,
+										l.SourceTokenLength,
+										l.MatchWeightContribution,
+										new SourceFieldLocationWithTerm.SearchTermDetails(
+											tokenIndex,
+											weightAdjustedToken.Token
+										)
 									)
-								)
-							).ToNonNullImmutableList()
+								).ToNonNullImmutableList()
 						)
 					)
 				);
@@ -74,7 +76,7 @@ namespace FullTextIndexer.Core.Indexes
 					matchesGroupedByKey
 						.Select(m => new MatchWeightWithSourceFieldLocations(
 							m.Weight,
-							m.SourceLocations
+							m.SourceLocationsIfRecorded
 						)).ToNonNullImmutableList(),
 					searchTerms
 				);
@@ -86,7 +88,7 @@ namespace FullTextIndexer.Core.Indexes
 						new WeightedEntryWithTerm<TKey>(
 							matchesGroupedByKey.First().Key,
 							combinedWeight,
-							matchesGroupedByKey.SelectMany(m => m.SourceLocations).ToNonNullImmutableList()
+							matchesGroupedByKey.Any(m => m.SourceLocationsIfRecorded == null) ? null : matchesGroupedByKey.SelectMany(m => m.SourceLocationsIfRecorded).ToNonNullImmutableList()
 						)
 					);
 				}
@@ -208,16 +210,16 @@ namespace FullTextIndexer.Core.Indexes
 		{
 			// We can use rely on covariance allowing the sourceLocations to be used to generate a NonNullImmutableList<SourceFieldLocation> using the constructor with the
 			// IEnumerable argument, but NonNullImmutableList doesn't support covariance so we can't pass the sourceLocations references straight to the base constructor
-			public WeightedEntryWithTerm(TKey key, float weight, NonNullImmutableList<SourceFieldLocationWithTerm> sourceLocations)
-				: base(key, weight, new NonNullImmutableList<SourceFieldLocation>(sourceLocations))
+			public WeightedEntryWithTerm(TKey key, float weight, NonNullImmutableList<SourceFieldLocationWithTerm> sourceLocationsIfRecorded)
+				: base(key, weight, (sourceLocationsIfRecorded == null) ? null : new NonNullImmutableList<SourceFieldLocation>(sourceLocationsIfRecorded))
 			{
-				SourceLocations = sourceLocations;
+				SourceLocationsIfRecorded = sourceLocationsIfRecorded;
 			}
 
 			/// <summary>
-			/// This will never be null or empty
+			/// This will be null if the source location data is not recorded by the index generator but it will never be an empty list if it is not null
 			/// </summary>
-			public new NonNullImmutableList<SourceFieldLocationWithTerm> SourceLocations { get; private set; }
+			public new NonNullImmutableList<SourceFieldLocationWithTerm> SourceLocationsIfRecorded { get; private set; }
 		}
 
 		/// <summary>

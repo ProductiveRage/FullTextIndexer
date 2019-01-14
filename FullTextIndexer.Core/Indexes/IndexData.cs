@@ -84,11 +84,17 @@ namespace FullTextIndexer.Core.Indexes
 					combinedContent[entry.Key] = combinedContent[entry.Key]
 						.Concat(entry.Value)
 						.GroupBy(weightedEntries => weightedEntries.Key, _dataKeyComparer)
-						.Select(g => new WeightedEntry<TKey>(
-							g.Key,
-							weightCombiner(g.Select(e => e.Weight).ToImmutableList()),
-							g.SelectMany(e => e.SourceLocations).ToNonNullImmutableList()
-						))
+						.Select(g =>
+						{
+							if (g.Count() == 1)
+								return g.First();
+
+							return new WeightedEntry<TKey>(
+								g.Key,
+								weightCombiner(g.Select(e => e.Weight).ToImmutableList()),
+								g.Any(e => e.SourceLocationsIfRecorded == null) ? null : g.SelectMany(e => e.SourceLocationsIfRecorded).ToNonNullImmutableList()
+							);
+						})
 						.ToNonNullImmutableList();
 				}
 			}

@@ -5,8 +5,8 @@ using System.Linq;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Common.Logging;
 using FullTextIndexer.Core.Indexes;
-using FullTextIndexer.Core.TokenBreaking;
 using FullTextIndexer.Core.Indexes.TernarySearchTree;
+using FullTextIndexer.Core.TokenBreaking;
 
 namespace FullTextIndexer.Core.IndexGenerators
 {
@@ -177,7 +177,7 @@ namespace FullTextIndexer.Core.IndexGenerators
 						new WeightedEntry<TKey>(
 							key,
 							_weightedEntryCombiner(matches.Select(m => m.Weight).ToImmutableList()),
-							matches.SelectMany(m => m.SourceLocations).ToNonNullImmutableList()
+							matches.Any(m => m.SourceLocationsIfRecorded == null) ? null : matches.SelectMany(m => m.SourceLocationsIfRecorded).ToNonNullImmutableList()
 						)
 					);
 				}
