@@ -25,6 +25,7 @@ namespace FullTextIndexer.Helpers
 		private readonly NonNullImmutableList<IModifyMatchWeights> _propertyWeightAppliers;
 		private readonly AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator _tokenWeightDeterminerGeneratorOverride;
 		private readonly PropertyInfo _optionalPropertyForFirstContentRetriever;
+		private readonly bool _captureSourceLocations;
 		private readonly ILogger _loggerOverride;
 		private AutomatedIndexGeneratorFactoryBuilder(
 			Func<TSource, TKey> keyRetrieverOverride,
@@ -35,24 +36,21 @@ namespace FullTextIndexer.Helpers
 			NonNullImmutableList<IModifyMatchWeights> propertyWeightAppliers,
 			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator tokenWeightDeterminerGeneratorOverride,
 			PropertyInfo optionalPropertyForFirstContentRetriever,
+			bool captureSourceLocations,
 			ILogger loggerOverride)
 		{
-			if (propertyWeightAppliers == null)
-				throw new ArgumentNullException("propertyWeightAppliers");
-			if (tokenBreaker == null)
-				throw new ArgumentNullException(nameof(tokenBreaker));
-
 			_keyRetrieverOverride = keyRetrieverOverride;
 			_keyComparerOverride = keyComparerOverride;
 			_stringNormaliserOverride = stringNormaliserOverride;
-			_tokenBreaker = tokenBreaker;
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
 			_weightedEntryCombinerOverride = weightedEntryCombinerOverride;
-			_propertyWeightAppliers = propertyWeightAppliers;
+			_propertyWeightAppliers = propertyWeightAppliers ?? throw new ArgumentNullException(nameof(propertyWeightAppliers));
 			_tokenWeightDeterminerGeneratorOverride = tokenWeightDeterminerGeneratorOverride;
 			_optionalPropertyForFirstContentRetriever = optionalPropertyForFirstContentRetriever;
+			_captureSourceLocations = captureSourceLocations;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, GetDefaultTokenBreaker(), null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, GetDefaultTokenBreaker(), null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, captureSourceLocations: true, loggerOverride: null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -68,6 +66,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -86,6 +85,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -104,6 +104,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -122,6 +123,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -145,6 +147,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -163,6 +166,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -185,6 +189,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				weightDeterminerGenerator,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -212,6 +217,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				property,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -234,6 +240,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -261,7 +268,30 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, 0)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
+			);
+		}
+
+		/// <summary>
+		/// If the source location data is not important then the index generator can be configured to not capture it - this will make some functionality impossible,
+		/// such as knowing precisely where in the original data matches were found (which may be used for displaying a snippet of the original content where the
+		/// first match is found, for example) or using the GetConsecutiveMatches extension method (since that needs to know where each token was matched in content
+		/// in order to identify when words in a phrase appear next to each other).
+		/// </summary>
+		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> DisableSourceLocationCapture(bool disable = true)
+		{
+			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
+				_keyRetrieverOverride,
+				_keyComparerOverride,
+				_stringNormaliserOverride,
+				_tokenBreaker,
+				_weightedEntryCombinerOverride,
+				_propertyWeightAppliers,
+				_tokenWeightDeterminerGeneratorOverride,
+				_optionalPropertyForFirstContentRetriever,
+				captureSourceLocations: !disable,
+				loggerOverride: _loggerOverride
 			);
 		}
 
@@ -285,6 +315,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers.Add(new SpecificPropertyWeightApplier(property, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -314,6 +345,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers.Add(new SpecificNamedPropertyWeightApplier(typeAndPropertyName, weightMultiplier)),
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride
 			);
 		}
@@ -332,6 +364,7 @@ namespace FullTextIndexer.Helpers
 				_propertyWeightAppliers,
 				_tokenWeightDeterminerGeneratorOverride,
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				logger
 			);
 		}
@@ -347,6 +380,7 @@ namespace FullTextIndexer.Helpers
 				_weightedEntryCombinerOverride ?? (weightedValues => weightedValues.Sum()),
 				_tokenWeightDeterminerGeneratorOverride ?? GetDefaultTokenWeightDeterminerGenerator(stringNormaliser),
 				_optionalPropertyForFirstContentRetriever,
+				_captureSourceLocations,
 				_loggerOverride ?? new NullLogger()
 			);
 		}

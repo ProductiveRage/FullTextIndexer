@@ -27,7 +27,8 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
 				weightedValues => weightedValues.Sum(),
-				new NullLogger()
+				captureSourceLocations: true,
+				logger: new NullLogger()
 			);
 			var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
             {
@@ -63,7 +64,8 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
 				weightedValues => weightedValues.Sum(),
-				new NullLogger()
+				captureSourceLocations: true,
+				logger: new NullLogger()
 			);
 			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
             {
@@ -110,7 +112,8 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
 				weightedValues => weightedValues.Sum(),
-				new NullLogger()
+				captureSourceLocations: true,
+				logger: new NullLogger()
 			);
 			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
             {
@@ -152,7 +155,8 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
 				weightedValues => weightedValues.Sum(),
-				new NullLogger()
+				captureSourceLocations: true,
+				logger: new NullLogger()
 			);
 			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
 			{

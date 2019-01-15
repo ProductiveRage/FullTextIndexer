@@ -23,6 +23,9 @@ namespace FullTextIndexer.Querier.QueryTranslators
 	/// MatchCombiner implementation, to give lower weight to results the deeper nested that the originating query segments are (query segments are said
 	/// to be nested if they are among the query segments found in a CombiningQuerySegment). There is a method signature where this matchCombiner need not
 	/// be specified, in which case a default will be applied that combines weighted entries by summing their weights.
+	///
+	/// Note: This requires the preciseMatchIndexData to have been built with source location data recorded - if its SourceLocationsAvailable property returns
+	/// false then an ArgumentException will be thrown.
 	/// </summary>
 	public class QueryTranslator<TKey> : IQueryTranslator<TKey>
 	{
@@ -44,6 +47,9 @@ namespace FullTextIndexer.Querier.QueryTranslators
 				throw new ArgumentNullException("preciseMatchIndexData");
 			if (matchCombiner == null)
 				throw new ArgumentNullException("matchCombiner");
+
+			if (!preciseMatchIndexData.SourceLocationsAvailable)
+				throw new ArgumentException($"The {nameof(preciseMatchIndexData)} must include source location data in order to use the Query Translator");
 
 			// Can't actually determine for sure that the KeyComparer of the standardMatchIndexData is equivalent to that of the preciseMatchIndexData
 			// (can't do an instance comparison since they may be different instances of the same implementation, they could even feasibly be different

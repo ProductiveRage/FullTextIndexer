@@ -16,39 +16,29 @@ namespace FullTextIndexer.Core.IndexGenerators
 		/// Note: The sourceStringComparer will be used when GetMatches requests are made against the index data, the other references are used only while the index
 		/// data is initially generated.
 		/// </summary>
-		private NonNullImmutableList<ContentRetriever<TSource, TKey>> _contentRetrievers;
-		private IEqualityComparer<TKey> _dataKeyComparer;
-		private IStringNormaliser _sourceStringComparer;
-		private ITokenBreaker _tokenBreaker;
-		private IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
-		private ILogger _logger;
+		private readonly NonNullImmutableList<ContentRetriever<TSource, TKey>> _contentRetrievers;
+		private readonly IEqualityComparer<TKey> _dataKeyComparer;
+		private readonly IStringNormaliser _sourceStringComparer;
+		private readonly ITokenBreaker _tokenBreaker;
+		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
+		private readonly bool _captureSourceLocations;
+		private readonly ILogger _logger;
 		public IndexGenerator(
 			NonNullImmutableList<ContentRetriever<TSource, TKey>> contentRetrievers,
 			IEqualityComparer<TKey> dataKeyComparer,
 			IStringNormaliser sourceStringComparer,
 			ITokenBreaker tokenBreaker,
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombiner,
+			bool captureSourceLocations,
 			ILogger logger)
 		{
-			if (contentRetrievers == null)
-				throw new ArgumentNullException("contentRetrievers");
-			if (dataKeyComparer == null)
-				throw new ArgumentNullException("dataKeyComparer");
-			if (sourceStringComparer == null)
-				throw new ArgumentNullException("sourceStringComparer");
-			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
-			if (weightedEntryCombiner == null)
-				throw new ArgumentNullException("weightedEntryCombiner");
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-
-			_contentRetrievers = contentRetrievers;
-			_dataKeyComparer = dataKeyComparer;
-			_sourceStringComparer = sourceStringComparer;
-			_tokenBreaker = tokenBreaker;
-			_weightedEntryCombiner = weightedEntryCombiner;
-			_logger = logger;
+			_contentRetrievers = contentRetrievers ?? throw new ArgumentNullException(nameof(contentRetrievers));
+			_dataKeyComparer = dataKeyComparer ?? throw new ArgumentNullException(nameof(dataKeyComparer));
+			_sourceStringComparer = sourceStringComparer ?? throw new ArgumentNullException(nameof(sourceStringComparer));
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
+			_weightedEntryCombiner = weightedEntryCombiner ?? throw new ArgumentNullException(nameof(weightedEntryCombiner));
+			_captureSourceLocations = captureSourceLocations;
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
 		// The IIndexGenerator interface returns the less-specified IIndexData<TKey> from its Generate method and so that contract must be satisfied by this class.
@@ -127,16 +117,18 @@ namespace FullTextIndexer.Core.IndexGenerators
 								new WeightedEntry<TKey>(
 									preBrokenContent.Key,
 									matchWeight,
-									(new[]
-									{
-										new SourceFieldLocation(
-											sourceFieldIndex,
-											weightedTokenMatch.SourceLocation.TokenIndex,
-											weightedTokenMatch.SourceLocation.SourceIndex,
-											weightedTokenMatch.SourceLocation.SourceTokenLength,
-											matchWeight
-										)
-									}).ToNonNullImmutableList()
+									_captureSourceLocations
+										? (new[]
+											{
+												new SourceFieldLocation(
+													sourceFieldIndex,
+													weightedTokenMatch.SourceLocation.TokenIndex,
+													weightedTokenMatch.SourceLocation.SourceIndex,
+													weightedTokenMatch.SourceLocation.SourceTokenLength,
+													matchWeight
+												)
+											}).ToNonNullImmutableList()
+										: null
 								)
 							);
 						}
