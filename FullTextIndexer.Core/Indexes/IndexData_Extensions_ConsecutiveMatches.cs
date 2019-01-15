@@ -21,7 +21,8 @@ namespace FullTextIndexer.Core.Indexes
 		/// down into three words by the tokenBreaker then the weightCombinerForConsecutiveRuns will always be called with sets of three weights. The second weight combination
 		/// is performed when multiple matches for a particular result must be combined to give a final match weight for that result.
 		/// 
-		/// TODO: Require source locations
+		/// Note: This requires the index to have been built with source location data recorded - if the index's SourceLocationsAvailable property returns false then an ArgumentException
+		/// will be thrown.
 		/// </summary>
 		public static NonNullImmutableList<WeightedEntry<TKey>> GetConsecutiveMatches<TKey>(
 			this IIndexData<TKey> index,
@@ -40,6 +41,9 @@ namespace FullTextIndexer.Core.Indexes
 				throw new ArgumentNullException("weightCombinerForConsecutiveRuns");
 			if (weightCombinerForFinalMatches == null)
 				throw new ArgumentNullException("weightCombinerForFinalMatches");
+
+			if (!index.SourceLocationsAvailable)
+				throw new ArgumentException($"The {nameof(index)} must include source location data in order to use identify Consecutive token matches");
 
 			// If the token breaker won't actually translate the source value into multiple words then we can avoid all of the below work and just call index.GetMatches directly
 			var weightAdjustedTokens = tokenBreaker.Break(source);
@@ -69,11 +73,12 @@ namespace FullTextIndexer.Core.Indexes
 				matchesForEntireTerm = matchesForEntireTerm.Add(firstTermMatch);
 				for (var termIndex = 1; termIndex < weightAdjustedTokens.Count; termIndex++)
 				{
+					// Note: SourceLocationsIfRecorded should never be null because we checked that the index reported that SourceLocationsAvailable was true (so not checking for null
+					// source locations here)
 					var nTermMatch = matchesForSearchTerms[termIndex]
 						.SelectMany(m => BreakWeightedEntryIntoIndividualSourceLocations<TKey>(m))
 						.FirstOrDefault(m =>
 							index.KeyComparer.Equals(m.Key, firstTermMatch.Key) &&
-							(m.SourceLocationsIfRecorded != null) &&
 							(m.SourceLocationsIfRecorded.First().SourceFieldIndex == firstTermMatch.SourceLocationsIfRecorded.First().SourceFieldIndex) &&
 							(m.SourceLocationsIfRecorded.First().TokenIndex == firstTermMatch.SourceLocationsIfRecorded.First().TokenIndex + termIndex)
 						);
@@ -89,8 +94,8 @@ namespace FullTextIndexer.Core.Indexes
 
 				// Combine the WeightedEntry instances that represent a run of individual matches (one for each word in the "source" argument) into a single WeightedEntry that represents
 				// the entirety of the search term (each of the matchesForEntireTerm WeightedEntry instances will have only a single Source Location since the match data was split up
-				// above by calling BreakWeightedEntryIntoIndividualSourceLocations before trying to find the consecutive matches)
-				// TODO: Explain that we know SourceLocationsIfRecorded will never be null cos we wouldn't have got here without source location data
+				// above by calling BreakWeightedEntryIntoIndividualSourceLocations before trying to find the consecutive matches). See notes above about not checking whether
+				// SourceLocationsIfRecorded is null (it shouldn't be because we index.SourceLocationsAvailable at the top of this method)
 				var sourceLocationOfFirstTerm = matchesForEntireTerm.First().SourceLocationsIfRecorded.Single();
 				var sourceLocationOfLastTerm = matchesForEntireTerm.Last().SourceLocationsIfRecorded.Single();
 				var matchWeightForConsecutiveRunEntry = weightCombinerForConsecutiveRuns(
@@ -119,7 +124,6 @@ namespace FullTextIndexer.Core.Indexes
 			}
 
 			// The matches need grouping by key before returning
-			// TODO: Explain that we know SourceLocationsIfRecorded will never be null cos we wouldn't have got here without source location data
 			return consecutiveMatches
 				.GroupBy(m => m.Key, index.KeyComparer)
 				.Cast<IEnumerable<WeightedEntry<TKey>>>()
@@ -203,9 +207,9 @@ namespace FullTextIndexer.Core.Indexes
 			if (match == null)
 				throw new ArgumentNullException("match");
 
+			// Note: match.SourceLocationsIfRecorded should never be null because we checked that the index reported that SourceLocationsAvailable was true (so not
+			// checking for null source locations here)
 			var splitMatches = new NonNullImmutableList<WeightedEntry<TKey>>();
-			if (match.SourceLocationsIfRecorded == null)
-				return splitMatches;
 			if (match.SourceLocationsIfRecorded.Count == 1)
 			{
 				splitMatches = splitMatches.Add(match);

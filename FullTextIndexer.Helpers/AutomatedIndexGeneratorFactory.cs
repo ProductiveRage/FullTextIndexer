@@ -25,6 +25,7 @@ namespace FullTextIndexer.Helpers
 		private readonly IndexGenerator.WeightedEntryCombiner _weightedEntryCombiner;
 		private readonly WeightDeterminerGenerator _brokenTokenWeightDeterminerGenerator;
 		private readonly PropertyInfo _optionalPropertyForFirstContentRetriever;
+		private readonly bool _captureSourceLocations;
 		private readonly ILogger _logger;
 		public AutomatedIndexGeneratorFactory(
 			Func<TSource, TKey> keyRetriever,
@@ -34,31 +35,18 @@ namespace FullTextIndexer.Helpers
 			IndexGenerator.WeightedEntryCombiner weightedEntryCombiner,
 			WeightDeterminerGenerator brokenTokenWeightDeterminerGenerator,
 			PropertyInfo optionalPropertyForFirstContentRetriever,
+			bool captureSourceLocations,
 			ILogger logger)
 		{
-			if (keyRetriever == null)
-				throw new ArgumentNullException("keyRetriever");
-			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
-			if (stringNormaliser == null)
-				throw new ArgumentNullException("stringNormaliser");
-			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
-			if (weightedEntryCombiner == null)
-				throw new ArgumentNullException("weightedEntryCombiner");
-			if (brokenTokenWeightDeterminerGenerator == null)
-				throw new ArgumentNullException("brokenTokenWeightDeterminerGenerator");
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-
-			_keyRetriever = keyRetriever;
-			_keyComparer = keyComparer;
-			_stringNormaliser = stringNormaliser;
-			_tokenBreaker = tokenBreaker;
-			_weightedEntryCombiner = weightedEntryCombiner;
-			_brokenTokenWeightDeterminerGenerator = brokenTokenWeightDeterminerGenerator;
+			_keyRetriever = keyRetriever ?? throw new ArgumentNullException(nameof(keyRetriever));
+			_keyComparer = keyComparer ?? throw new ArgumentNullException(nameof(keyComparer));
+			_stringNormaliser = stringNormaliser ?? throw new ArgumentNullException(nameof(stringNormaliser));
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
+			_weightedEntryCombiner = weightedEntryCombiner ?? throw new ArgumentNullException(nameof(weightedEntryCombiner));
+			_brokenTokenWeightDeterminerGenerator = brokenTokenWeightDeterminerGenerator ?? throw new ArgumentNullException(nameof(brokenTokenWeightDeterminerGenerator));
 			_optionalPropertyForFirstContentRetriever = optionalPropertyForFirstContentRetriever;
-			_logger = logger;
+			_captureSourceLocations = captureSourceLocations;
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
 		/// <summary>
@@ -95,6 +83,7 @@ namespace FullTextIndexer.Helpers
 				_stringNormaliser,
 				_tokenBreaker,
 				_weightedEntryCombiner,
+				_captureSourceLocations,
 				_logger
 			);
 		}

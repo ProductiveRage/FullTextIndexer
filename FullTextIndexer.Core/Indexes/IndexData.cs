@@ -11,16 +11,14 @@ namespace FullTextIndexer.Core.Indexes
 #endif
 	public class IndexData<TKey> : IIndexData<TKey>
 	{
-		private TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> _data;
-		private IEqualityComparer<TKey> _dataKeyComparer;
+		private readonly TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> _data;
+		private readonly Lazy<bool> _sourceLocationsAvailable;
 		public IndexData(TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data, IEqualityComparer<TKey> dataKeyComparer)
 			: this(data, dataKeyComparer, validate: true) { }
 		private IndexData(TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data, IEqualityComparer<TKey> dataKeyComparer, bool validate)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
-			if (dataKeyComparer == null)
-				throw new ArgumentNullException("dataKeyComparer");
 
 			// If the constructor is called from a method within this class then the data should be known to be valid but if the constructor call was from
 			// other code then perform some sanity checking on it
@@ -34,8 +32,21 @@ namespace FullTextIndexer.Core.Indexes
 			}
 
 			_data = data;
-			_dataKeyComparer = dataKeyComparer;
+			_sourceLocationsAvailable = new Lazy<bool>(() =>
+			{
+				var atLeastOneEntryIsMissingSourceLocations = _data.GetAllValues().Any(entries => entries.Any(entry => entry.SourceLocationsIfRecorded == null));
+				return !atLeastOneEntryIsMissingSourceLocations;
+			});
+			KeyComparer = dataKeyComparer ?? throw new ArgumentNullException("dataKeyComparer");
 		}
+
+		/// <summary>
+		/// If the Index was built such that source locations are available for every token match then this will return true (if the Index was constructed by an
+		/// Index generator that did not record source locations or if this Index was created by combining other Indexes where at least one did not contain source
+		/// locations then this will be false - recording source locations requires more memory but is essential for some functionality, such as the extension
+		/// method GetConsecutiveMatches)
+		/// </summary>
+		public bool SourceLocationsAvailable { get { return _sourceLocationsAvailable.Value; } }
 
 		/// <summary>
 		/// This will throw an exception for null or blank input. It will never return null. If there are no matches then an empty list will be returned.
@@ -83,7 +94,7 @@ namespace FullTextIndexer.Core.Indexes
 					// Note: There will never any WeightEntry lists in index data that are null or empty as there are constructor checks preventing this
 					combinedContent[entry.Key] = combinedContent[entry.Key]
 						.Concat(entry.Value)
-						.GroupBy(weightedEntries => weightedEntries.Key, _dataKeyComparer)
+						.GroupBy(weightedEntries => weightedEntries.Key, KeyComparer)
 						.Select(g =>
 						{
 							if (g.Count() == 1)
@@ -102,7 +113,7 @@ namespace FullTextIndexer.Core.Indexes
 			// Return a new instance with this combined data
 			return new IndexData<TKey>(
 				new TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>>(combinedContent, _data.KeyNormaliser),
-				_dataKeyComparer,
+				KeyComparer,
 				validate: false
 			);
 		}
@@ -121,7 +132,7 @@ namespace FullTextIndexer.Core.Indexes
 				data,
 				(current, toAdd) => ((current != null) && (toAdd != null)) ? current.AddRange(toAdd) : (current ?? toAdd)
 			);
-			return new IndexData<TKey>(newIndex, _dataKeyComparer, validate: false);
+			return new IndexData<TKey>(newIndex, KeyComparer, validate: false);
 		}
 
 		/// <summary>
@@ -149,7 +160,7 @@ namespace FullTextIndexer.Core.Indexes
 					var trimmedWeightEntries = weightedEntries.Remove(weightedEntry => removeIf(weightedEntry.Key));
 					return (trimmedWeightEntries.Count == 0) ? null : trimmedWeightEntries;
 				}),
-				_dataKeyComparer,
+				KeyComparer,
 				validate: false
 			);
 		}
@@ -163,7 +174,7 @@ namespace FullTextIndexer.Core.Indexes
 			if (keysToRemove == null)
 				throw new ArgumentNullException("keysToRemove");
 
-			var quickLookup = new HashSet<TKey>(keysToRemove, _dataKeyComparer);
+			var quickLookup = new HashSet<TKey>(keysToRemove, KeyComparer);
 			return new IndexData<TKey>(
 				_data.Update(weightedEntries =>
 				{
@@ -172,7 +183,7 @@ namespace FullTextIndexer.Core.Indexes
 					var trimmedWeightEntries = weightedEntries.Remove(weightedEntry => quickLookup.Contains(weightedEntry.Key));
 					return (trimmedWeightEntries.Count == 0) ? null : trimmedWeightEntries;
 				}),
-				_dataKeyComparer,
+				KeyComparer,
 				validate: false
 			);
 		}
@@ -196,9 +207,6 @@ namespace FullTextIndexer.Core.Indexes
 		/// <summary>
 		/// This will never return null
 		/// </summary>
-		public IEqualityComparer<TKey> KeyComparer
-		{
-			get { return _dataKeyComparer; }
-		}
+		public IEqualityComparer<TKey> KeyComparer { get; private set; }
 	}
 }

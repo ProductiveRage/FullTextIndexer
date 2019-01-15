@@ -69,7 +69,8 @@ namespace Tester
 					_sourceStringComparer,
 					_tokenBreaker,
 					weightedValues => weightedValues.Sum(),
-					_logger
+					captureSourceLocations: true,
+					logger: _logger
 				)
 				.Generate(data);
 		}

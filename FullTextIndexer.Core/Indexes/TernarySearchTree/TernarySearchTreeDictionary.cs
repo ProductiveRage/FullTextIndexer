@@ -396,14 +396,16 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             /// </summary>
             public IEnumerable<Node> GetAllNodes()
             {
-                var nodes = new List<Node> { this };
-                foreach (var childNode in new[] { LeftChild, MiddleChild, RightChild })
+                foreach (var node in new[] { LeftChild, MiddleChild, RightChild })
                 {
-                    if (childNode != null)
-                        nodes.AddRange(childNode.GetAllNodes());
-                }
-                return nodes;
-            }
+					if (node == null)
+						continue;
+
+					yield return node;
+					foreach (var childNode in node.GetAllNodes())
+						yield return childNode;
+				}
+			}
 
             public int GetDepth()
             {
