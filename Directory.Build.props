@@ -1,7 +1,7 @@
 ﻿<Project>
 
   <PropertyGroup>
-    <PackageVersion>1.5.0</PackageVersion>
+    <PackageVersion>2.0.0</PackageVersion>
     <Authors>ProductiveRage</Authors>
     <Copyright>Copyright 2017 Productive Rage</Copyright>
     <PackageTags>C# full text index search</PackageTags>
