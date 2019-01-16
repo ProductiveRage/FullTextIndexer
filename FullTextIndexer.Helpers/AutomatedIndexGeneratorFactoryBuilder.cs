@@ -50,7 +50,7 @@ namespace FullTextIndexer.Helpers
 			_captureSourceLocations = captureSourceLocations;
 			_loggerOverride = loggerOverride;
 		}
-		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, GetDefaultTokenBreaker(), null, new NonNullImmutableList<IModifyMatchWeights>(), null, null, captureSourceLocations: true, loggerOverride: null) { }
+		public AutomatedIndexGeneratorFactoryBuilder() : this(null, null, null, GetDefaultTokenBreaker(), null, NonNullImmutableList<IModifyMatchWeights>.Empty, null, null, captureSourceLocations: true, loggerOverride: null) { }
 
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
@@ -409,7 +409,7 @@ namespace FullTextIndexer.Helpers
 		private static IStringNormaliser GetDefaultStringNormaliser()
 		{
 			return new EnglishPluralityStringNormaliser(
-				new DefaultStringNormaliser(),
+				DefaultStringNormaliser.Instance,
 				EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases | EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims
 			);
 		}

@@ -22,7 +22,7 @@ namespace Tester
 					tokenBreaker: new WhiteSpaceTokenBreaker()
 				),
 				sourceStringComparer: new EnglishPluralityStringNormaliser(
-					optionalPreNormaliser: new DefaultStringNormaliser(),
+					optionalPreNormaliser: DefaultStringNormaliser.Instance,
 					preNormaliserWork:
 						EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases |
 						EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims

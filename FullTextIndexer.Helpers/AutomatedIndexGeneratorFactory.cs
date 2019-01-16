@@ -117,7 +117,7 @@ namespace FullTextIndexer.Helpers
 				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
 				.Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0));
 
-			var propertyValueRetrievers = new NonNullImmutableList<ContentRetrieverWithSourceProperty>();
+			var propertyValueRetrievers = NonNullImmutableList<ContentRetrieverWithSourceProperty>.Empty;
 			foreach (var property in propertiesToConsider)
 			{
 				var weightDeterminer = weightDeterminerGenerator(property);
@@ -132,7 +132,7 @@ namespace FullTextIndexer.Helpers
 							new ContentRetriever<TSource, TKey>(
 								source =>
 								{
-									var values = new NonNullOrEmptyStringList();
+									var values = NonNullOrEmptyStringList.Empty;
 									foreach (var entry in nestedDataAccessor(source))
 									{
 										if (entry == null)
@@ -202,7 +202,7 @@ namespace FullTextIndexer.Helpers
 								new ContentRetriever<TSource, TKey>(
 									source =>
 									{
-										var values = new NonNullOrEmptyStringList();
+										var values = NonNullOrEmptyStringList.Empty;
 										var nestedTypeEnumerableValue = nestedEnumerableTypeDataRetriever(source);
 										if (nestedTypeEnumerableValue != null)
 										{

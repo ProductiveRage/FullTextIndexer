@@ -24,13 +24,5 @@ namespace FullTextIndexer.Common.Lists
 		{
 			return new NonNullImmutableList<T>(data);
 		}
-
-		/// <summary>
-		/// This will throw an exception if any of the values are null, valueValidator is optional (may be null)
-		/// </summary>
-		public static NonNullImmutableList<T> ToNonNullImmutableList<T>(this IEnumerable<T> data, IValueValidator<T> valueValidator) where T : class
-		{
-			return new NonNullImmutableList<T>(data, valueValidator);
-		}
 	}
 }

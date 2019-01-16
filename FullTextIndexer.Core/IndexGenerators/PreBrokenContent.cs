@@ -3,10 +3,10 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.IndexGenerators
 {
-    /// <summary>
-    /// This is content extracted from a source item for a particular key, before it is broken down into tokens
-    /// </summary>
-    public class PreBrokenContent<TKey>
+	/// <summary>
+	/// This is content extracted from a source item for a particular key, before it is broken down into tokens
+	/// </summary>
+	public class PreBrokenContent<TKey>
     {
         public PreBrokenContent(TKey key, NonNullOrEmptyStringList content)
         {
@@ -23,8 +23,8 @@ namespace FullTextIndexer.Core.IndexGenerators
 		private static NonNullOrEmptyStringList GetContentSections(string contentIfAny)
 		{
 			if (string.IsNullOrWhiteSpace(contentIfAny))
-				return new NonNullOrEmptyStringList();
-			return new NonNullOrEmptyStringList(new[] { contentIfAny });
+				return NonNullOrEmptyStringList.Empty;
+			return new NonNullOrEmptyStringList(contentIfAny);
 		}
 
         /// <summary>

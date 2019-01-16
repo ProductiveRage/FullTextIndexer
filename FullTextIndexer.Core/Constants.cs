@@ -3,7 +3,7 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core
 {
-    public static class Constants
+	public static class Constants
     {
         public static NonNullOrEmptyStringList GetStopWords(string languageCode)
         {
@@ -13,7 +13,7 @@ namespace FullTextIndexer.Core
             // Currently only support English stopwords
             if (languageCode.Equals("en", StringComparison.OrdinalIgnoreCase))
                 return EnglishStopWords;
-            return new NonNullOrEmptyStringList();
+            return NonNullOrEmptyStringList.Empty;
         }
             
         // "Borrowed" these from Lucene.Net

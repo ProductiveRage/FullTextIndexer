@@ -32,7 +32,22 @@ namespace UnitTests.Querier.QueryTranslators
 
 			if (_data.ContainsKey(source))
 				return _data[source];
-			return new NonNullImmutableList<WeightedEntry<int>>();
+			return NonNullImmutableList<WeightedEntry<int>>.Empty;
+		}
+
+		/// <summary>
+		/// If the Index was built such that source locations are available for every token match then this will return true (if the Index was constructed by an
+		/// Index generator that did not record source locations or if this Index was created by combining other Indexes where at least one did not contain source
+		/// locations then this will be false - recording source locations requires more memory but is essential for some functionality, such as the extension
+		/// method GetConsecutiveMatches)
+		/// </summary>
+		public bool SourceLocationsAvailable
+		{
+			get
+			{
+				var atLeastOneEntryIsMissingSourceLocations = _data.Values.Any(entries => entries.Any(entry => entry.SourceLocationsIfRecorded == null));
+				return !atLeastOneEntryIsMissingSourceLocations;
+			}
 		}
 
 		/// <summary>

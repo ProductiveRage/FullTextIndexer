@@ -60,7 +60,7 @@ namespace FullTextIndexer.Core.Indexes
 			// was specified, for example, then the casing of the "source" value here will be irrelevant)
 			NonNullImmutableList<WeightedEntry<TKey>> matches;
 			if (!_data.TryGetValue(source, out matches))
-				return new NonNullImmutableList<WeightedEntry<TKey>>();
+				return NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 			return matches;
 		}
 

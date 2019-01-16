@@ -29,7 +29,7 @@ namespace UnitTests.Querier.QueryTranslators
 			var newMatch = new WeightedEntry<int>(key, weight, sourceLocations.ToNonNullImmutableList());
 			var newData = new Dictionary<string, NonNullImmutableList<WeightedEntry<int>>>(_data);
 			if (!newData.ContainsKey(source))
-				newData.Add(source, new NonNullImmutableList<WeightedEntry<int>>());
+				newData.Add(source, NonNullImmutableList<WeightedEntry<int>>.Empty);
 			newData[source] = newData[source].Add(newMatch);
 			return new TestIntKeyIndexDataBuilder(newData);
 		}

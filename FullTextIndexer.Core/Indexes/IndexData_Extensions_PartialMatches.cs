@@ -68,7 +68,7 @@ namespace FullTextIndexer.Core.Indexes
 			// Combine per-search-term results, grouping by result key and calculating the match weight for each token using the specified weightCombiner (this may also be
 			// used to filter out results; if a match weight of zero is returned then the match will be ignored - this may used to filter out results that only match two
 			// out of three of the search terms, for example)
-			var finalResults = new NonNullImmutableList<WeightedEntryWithTerm<TKey>>();
+			var finalResults = NonNullImmutableList<WeightedEntryWithTerm<TKey>>.Empty;
 			var searchTerms = new NonNullOrEmptyStringList(weightAdjustedTokens.Select(w => w.Token));
 			foreach (var matchesGroupedByKey in matches.GroupBy(m => m.Key, index.KeyComparer).Cast<IEnumerable<WeightedEntryWithTerm<TKey>>>())
 			{
