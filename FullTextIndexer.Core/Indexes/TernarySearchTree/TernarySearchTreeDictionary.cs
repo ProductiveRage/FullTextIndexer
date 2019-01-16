@@ -391,23 +391,25 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 );
             }
 
-            /// <summary>
-            /// Returns a set containing the current node and all of its descendants (if any). It will never return null nor a set with any null entries.
-            /// </summary>
-            public IEnumerable<Node> GetAllNodes()
-            {
-                foreach (var node in new[] { LeftChild, MiddleChild, RightChild })
-                {
-					if (node == null)
-						continue;
+			/// <summary>
+			/// Returns a set containing the current node and all of its descendants (if any). It will never return null nor a set with any null entries.
+			/// </summary>
+			public IEnumerable<Node> GetAllNodes() => GetAllNodes(this);
 
-					yield return node;
-					foreach (var childNode in node.GetAllNodes())
-						yield return childNode;
+			private static IEnumerable<Node> GetAllNodes(Node node)
+			{
+				yield return node;
+				foreach (var childNode in new[] { node.LeftChild, node.MiddleChild, node.RightChild })
+				{
+					if (childNode != null)
+					{
+						foreach (var childNodeNode in GetAllNodes(childNode))
+							yield return childNodeNode;
+					}
 				}
 			}
 
-            public int GetDepth()
+			public int GetDepth()
             {
                 var depth = 1;
                 var node = this;
