@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Core.Indexes;
@@ -54,7 +53,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 				throw new ArgumentNullException("value");
 
 			var initialTokens = _tokenBreaker.Break(value);
-			var extendedTokens = new NonNullImmutableList<WeightAdjustingToken>();
+			var extendedTokens = NonNullImmutableList<WeightAdjustingToken>.Empty;
 			for (var combineLength = 1; combineLength <= _maxNumberOfTokens; combineLength++)
 			{
 				for (var index = 0; index < initialTokens.Count - (combineLength - 1); index++)

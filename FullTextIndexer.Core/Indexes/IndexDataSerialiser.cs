@@ -138,7 +138,7 @@ namespace FullTextIndexer.Core.Indexes
 			{
 				var token = reader.ReadString();
 				var numberOfMatchesForToken = reader.ReadInt32();
-				var matches = new NonNullImmutableList<WeightedEntry<TKey>>();
+				var matches = NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 				for (var matchIndex = 0; matchIndex < numberOfMatchesForToken; matchIndex++)
 				{
 					var keyIndex = reader.ReadInt32();
@@ -153,7 +153,7 @@ namespace FullTextIndexer.Core.Indexes
 						sourceLocationsIfRecorded = null;
 					else
 					{
-						sourceLocationsIfRecorded = new NonNullImmutableList<SourceFieldLocation>();
+						sourceLocationsIfRecorded = NonNullImmutableList<SourceFieldLocation>.Empty;
 						for (var sourceLocationIndex = 0; sourceLocationIndex < numberOfSourceLocations; sourceLocationIndex++)
 						{
 							sourceLocationsIfRecorded = sourceLocationsIfRecorded.Add(

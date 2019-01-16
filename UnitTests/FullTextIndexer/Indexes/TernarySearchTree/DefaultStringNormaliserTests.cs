@@ -11,7 +11,7 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                (new DefaultStringNormaliser()).GetNormalisedString(null);
+                DefaultStringNormaliser.Instance.GetNormalisedString(null);
             });
         }
 
@@ -36,7 +36,7 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
 
             Assert.Equal(
                 expected,
-                (new DefaultStringNormaliser()).GetNormalisedString(valueToNormalise)
+                (DefaultStringNormaliser.Instance).GetNormalisedString(valueToNormalise)
             );
         }
     }

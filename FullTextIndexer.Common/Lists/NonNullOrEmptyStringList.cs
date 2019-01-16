@@ -6,13 +6,13 @@ namespace FullTextIndexer.Common.Lists
 #if NET45
     [Serializable]
 #endif
-	public class NonNullOrEmptyStringList : ImmutableList<string>
+	public sealed class NonNullOrEmptyStringList : ImmutableList<string>
 	{
-		private readonly static Validator _validator = new Validator();
+		public static NonNullOrEmptyStringList Empty { get; } = new NonNullOrEmptyStringList(new string[0]);
 
-		public NonNullOrEmptyStringList() : this((Node)null) { }
-		public NonNullOrEmptyStringList(IEnumerable<string> values) : base(values, _validator) { }
-		private NonNullOrEmptyStringList(Node tail) : base(tail, _validator) { }
+		public NonNullOrEmptyStringList(IEnumerable<string> values) : base(values, Validator.Instance) { }
+		public NonNullOrEmptyStringList(string value) : this(new Node { Value = value, Count = 1, Previous = null }) => Validator.Instance.EnsureValid(value);
+		private NonNullOrEmptyStringList(Node tail) : base(tail, Validator.Instance) { }
 
 		public new NonNullOrEmptyStringList Add(string value)
 		{
@@ -77,15 +77,18 @@ namespace FullTextIndexer.Common.Lists
 #if NET45
     [Serializable]
 #endif
-		private class Validator : IValueValidator<string>
+		private sealed class Validator : IValueValidator<string>
 		{
+			public static Validator Instance { get; } = new Validator();
+			private Validator() { }
+
 			/// <summary>
 			/// This will throw an exception for a value that does pass validation requirements
 			/// </summary>
 			public void EnsureValid(string value)
 			{
 				if (string.IsNullOrWhiteSpace(value))
-					throw new ArgumentException("Null/blank value specified");
+					throw new ArgumentException($"Null/blank {nameof(value)} specified");
 			}
 		}
 	}

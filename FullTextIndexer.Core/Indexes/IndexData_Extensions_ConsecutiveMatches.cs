@@ -69,7 +69,7 @@ namespace FullTextIndexer.Core.Indexes
 			var searchTerms = new NonNullOrEmptyStringList(weightAdjustedTokens.Select(w => w.Token));
 			foreach (var firstTermMatch in matchesForSearchTerms.First().SelectMany(m => BreakWeightedEntryIntoIndividualSourceLocations(m)))
 			{
-				var matchesForEntireTerm = new NonNullImmutableList<WeightedEntry<TKey>>();
+				var matchesForEntireTerm = NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 				matchesForEntireTerm = matchesForEntireTerm.Add(firstTermMatch);
 				for (var termIndex = 1; termIndex < weightAdjustedTokens.Count; termIndex++)
 				{
@@ -209,7 +209,7 @@ namespace FullTextIndexer.Core.Indexes
 
 			// Note: match.SourceLocationsIfRecorded should never be null because we checked that the index reported that SourceLocationsAvailable was true (so not
 			// checking for null source locations here)
-			var splitMatches = new NonNullImmutableList<WeightedEntry<TKey>>();
+			var splitMatches = NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 			if (match.SourceLocationsIfRecorded.Count == 1)
 			{
 				splitMatches = splitMatches.Add(match);

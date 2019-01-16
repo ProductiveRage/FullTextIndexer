@@ -87,7 +87,7 @@ namespace UnitTests.Querier
 						weightMultipliersOfCombinedTokens => 1
 					)
 				)
-				.SetStringNormaliser(new DefaultStringNormaliser())
+				.SetStringNormaliser(DefaultStringNormaliser.Instance)
 				.Get()
 				.Get();
 

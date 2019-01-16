@@ -59,7 +59,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 			if (stringNavigator == null)
 				throw new ArgumentNullException("stringNavigator");
 
-			var querySegments = new NonNullImmutableList<IQuerySegment>();
+			var querySegments = NonNullImmutableList<IQuerySegment>.Empty;
 			var processNextCharacterStrictlyAsContent = false;
 			while (stringNavigator.CurrentCharacter != null)
 			{

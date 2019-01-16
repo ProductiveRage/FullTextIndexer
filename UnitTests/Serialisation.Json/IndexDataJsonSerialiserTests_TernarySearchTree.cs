@@ -31,7 +31,7 @@ namespace UnitTests.Serialisation.Json
 				IndexDataJsonSerialiser.GenericSerialiser.Serialise(
 					new TernarySearchTreeDictionary<int>(
 						data,
-						new DefaultStringNormaliser()
+						DefaultStringNormaliser.Instance
 					)
 				)
 			);

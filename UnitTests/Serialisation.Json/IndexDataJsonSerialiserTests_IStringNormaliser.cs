@@ -20,7 +20,7 @@ namespace UnitTests.Serialisation.Json
 		{
 			var clone = IndexDataJsonSerialiser.GenericSerialiser.Deserialise<IStringNormaliser>(
 				IndexDataJsonSerialiser.GenericSerialiser.Serialise<IStringNormaliser>(
-					new DefaultStringNormaliser()
+					DefaultStringNormaliser.Instance
 				)
 			);
 			Assert.Equal(typeof(DefaultStringNormaliser), clone.GetType());

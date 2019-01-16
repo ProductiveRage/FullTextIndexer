@@ -19,7 +19,10 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
             Enumerable.Range(char.MinValue, char.MaxValue).Select(c => (char)c).Where(c => char.IsPunctuation(c))
         );
 
-        public override string GetNormalisedString(string value)
+		public static DefaultStringNormaliser Instance { get; } = new DefaultStringNormaliser();
+		private DefaultStringNormaliser() { }
+
+		public override string GetNormalisedString(string value)
         {
                 if (value == null)
                 throw new ArgumentNullException("value");
