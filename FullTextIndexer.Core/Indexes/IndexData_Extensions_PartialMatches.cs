@@ -12,9 +12,9 @@ namespace FullTextIndexer.Core.Indexes
 		/// This will break a given source string and return results based upon the combination of partial matches (so results that only match part of the source string may be included
 		/// in the returned data). The token breaker and the match combiner must be specified by the caller - if the match combiner returns zero then the result will not be included in
 		/// the final data. To require that all tokens in the source content be present for any returned results, the following matchCombiner could be specified:
-		///  (tokenMatches, allTokens) => (tokenMatches.Count &lt; allTokens.Count) ? 0 : tokenMatches.SelectMany(m => m.Weights).Sum()
+		///  (tokenMatches, allTokens) => (tokenMatches.Count &lt; allTokens.Count) ? 0 : tokenMatches.Sum(m => m.Weight)
 		/// </summary>
-		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(
+		public static NonNullImmutableList<WeightedEntry<TKey>> GetPartialMatches<TKey>(
 			this IIndexData<TKey> index,
 			string source,
 			ITokenBreaker tokenBreaker,
@@ -34,61 +34,45 @@ namespace FullTextIndexer.Core.Indexes
 			// - The Source Locations are annotated with additional data; the source segment string and what token index that is (so if the "source" value is broken into three, then
 			//   each Source Location will have a SearchTerm property whose TokenIndex will be between 0 and 2, inclusive). This allows for a weightCombiner to be specified that
 			//   ensures that every token that was extract from the source value can be matched against a given result, if so desired.
-			var matches = new List<WeightedEntryWithTerm<TKey>>();
+			var matches = new List<Tuple<WeightedEntry<TKey>, SearchTermDetails>>();
 			var weightAdjustedTokens = tokenBreaker.Break(source);
 			for (var tokenIndex = 0; tokenIndex < weightAdjustedTokens.Count; tokenIndex++)
 			{
 				var weightAdjustedToken = weightAdjustedTokens[tokenIndex];
 				matches.AddRange(
-					index.GetMatches(weightAdjustedToken.Token)
-					.Select(match =>
-						new WeightedEntryWithTerm<TKey>(
-							match.Key,
-							match.Weight * weightAdjustedToken.WeightMultiplier,
-							(match.SourceLocationsIfRecorded == null)
-								? null
-								: match.SourceLocationsIfRecorded.Select(
-									l => new SourceFieldLocationWithTerm(
-										l.SourceFieldIndex,
-										l.TokenIndex,
-										l.SourceIndex,
-										l.SourceTokenLength,
-										l.MatchWeightContribution,
-										new SourceFieldLocationWithTerm.SearchTermDetails(
-											tokenIndex,
-											weightAdjustedToken.Token
-										)
-									)
-								).ToNonNullImmutableList()
-						)
-					)
+					index
+						.GetMatches(weightAdjustedToken.Token)
+						.Select(match => Tuple.Create(match, new SearchTermDetails(tokenIndex, weightAdjustedToken.Token)))
 				);
 			}
 
 			// Combine per-search-term results, grouping by result key and calculating the match weight for each token using the specified weightCombiner (this may also be
 			// used to filter out results; if a match weight of zero is returned then the match will be ignored - this may used to filter out results that only match two
 			// out of three of the search terms, for example)
-			var finalResults = NonNullImmutableList<WeightedEntryWithTerm<TKey>>.Empty;
+			var finalResults = NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 			var searchTerms = new NonNullOrEmptyStringList(weightAdjustedTokens.Select(w => w.Token));
-			foreach (var matchesGroupedByKey in matches.GroupBy(m => m.Key, index.KeyComparer).Cast<IEnumerable<WeightedEntryWithTerm<TKey>>>())
+			foreach (var matchesGroupedByKey in matches.GroupBy(m => m.Item1.Key, index.KeyComparer).Cast<IEnumerable<Tuple<WeightedEntry<TKey>, SearchTermDetails>>>())
 			{
 				var combinedWeight = weightCombiner(
 					matchesGroupedByKey
 						.Select(m => new MatchWeightWithSourceFieldLocations(
-							m.Weight,
-							m.SourceLocationsIfRecorded
+							m.Item1.Weight,
+							m.Item2,
+							m.Item1.SourceLocationsIfRecorded
 						)).ToNonNullImmutableList(),
 					searchTerms
 				);
 				if (combinedWeight < 0)
-					throw new ArgumentException("weightCombined returned a negative value - invalid");
+					throw new ArgumentException("weightCombiner returned a negative value - invalid");
 				else if (combinedWeight > 0)
 				{
 					finalResults = finalResults.Add(
-						new WeightedEntryWithTerm<TKey>(
-							matchesGroupedByKey.First().Key,
+						new WeightedEntry<TKey>(
+							matchesGroupedByKey.First().Item1.Key,
 							combinedWeight,
-							matchesGroupedByKey.Any(m => m.SourceLocationsIfRecorded == null) ? null : matchesGroupedByKey.SelectMany(m => m.SourceLocationsIfRecorded).ToNonNullImmutableList()
+							matchesGroupedByKey.Any(m => m.Item1.SourceLocationsIfRecorded == null)
+								? null
+								: matchesGroupedByKey.SelectMany(m => m.Item1.SourceLocationsIfRecorded).ToNonNullImmutableList()
 						)
 					);
 				}
@@ -99,7 +83,7 @@ namespace FullTextIndexer.Core.Indexes
 		/// <summary>
 		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument
 		/// </summary>
-		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source, ITokenBreaker tokenBreaker)
+		public static NonNullImmutableList<WeightedEntry<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source, ITokenBreaker tokenBreaker)
 		{
 			return GetPartialMatches(index, source, tokenBreaker, DefaultWeightCombiner);
 		}
@@ -108,7 +92,7 @@ namespace FullTextIndexer.Core.Indexes
 		/// This GetPartialMatches signature will call GetPartialMatches specifying the DefaultWeightCombiner for the weightCombiner argument and the DefaultTokenBreaker
 		/// for the tokenBreaker
 		/// </summary>
-		public static NonNullImmutableList<WeightedEntryWithTerm<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source)
+		public static NonNullImmutableList<WeightedEntry<TKey>> GetPartialMatches<TKey>(this IIndexData<TKey> index, string source)
 		{
 			return GetPartialMatches(index, source, DefaultTokenBreaker);
 		}
@@ -140,8 +124,8 @@ namespace FullTextIndexer.Core.Indexes
 						throw new ArgumentNullException("searchTerms");
 
 					// Ensure that all of the search terms are present for the current result (take all of the SearchTerm.TokenIndex values for the source
-					// locations and then ensure that all of 0.. (searchTerms.Count-1) are present in that set0
-					var searchTermTokenIndexes = matchSourceLocations.SelectMany(m => m.SourceLocations).Select(s => s.SearchTerm.TokenIndex).ToArray();
+					// locations and then ensure that all of 0.. (searchTerms.Count-1) are present in that set
+					var searchTermTokenIndexes = matchSourceLocations.Select(s => s.SearchTerm.TokenIndex).ToArray();
 					for (var tokenIndex = 0; tokenIndex < searchTerms.Count; tokenIndex++)
 					{
 						if (!searchTermTokenIndexes.Contains(tokenIndex))
@@ -175,97 +159,59 @@ namespace FullTextIndexer.Core.Indexes
 		/// <summary>
 		/// This represents some of the match data for a particular token (extracted from the "source" argument passed to the GetPartialMatches method) for a particular result)
 		/// </summary>
-		public class MatchWeightWithSourceFieldLocations
+		public sealed class MatchWeightWithSourceFieldLocations
 		{
-			public MatchWeightWithSourceFieldLocations(float weight, NonNullImmutableList<SourceFieldLocationWithTerm> sourceLocations)
+			public MatchWeightWithSourceFieldLocations(float weight, SearchTermDetails searchTerm, NonNullImmutableList<SourceFieldLocation> sourceLocationsIfRecorded)
 			{
 				if (weight <= 0)
-					throw new ArgumentOutOfRangeException("weight", "must be greater than zero");
-				if (sourceLocations == null)
-					throw new ArgumentNullException("SourceLocation");
-				if (!sourceLocations.Any())
-					throw new ArgumentException("may not be empty", "sourceLocations");
+					throw new ArgumentOutOfRangeException(nameof(weight), "must be greater than zero");
+				if ((sourceLocationsIfRecorded != null) && !sourceLocationsIfRecorded.Any())
+					throw new ArgumentException("must not be empty if it is non-null", nameof(sourceLocationsIfRecorded));
 
 				Weight = weight;
-				SourceLocations = sourceLocations;
+				SearchTerm = searchTerm ?? throw new ArgumentNullException(nameof(searchTerm));
+				SourceLocationsIfRecorded = sourceLocationsIfRecorded;
 			}
 
 			/// <summary>
 			/// This will always be greater than zero
 			/// </summary>
-			public float Weight { get; private set; }
-
-			/// <summary>
-			/// This will never be null nor empty
-			/// </summary>
-			public NonNullImmutableList<SourceFieldLocationWithTerm> SourceLocations { get; private set; }
-		}
-
-		/// <summary>
-		/// This extends the WeightedEntry class with the search term, it won't be recorded in the Index both in the interests of space and because the index only knows what
-		/// tokens COULD match to it, the actual searchTerm value here should be that which was queried for. This may be of particular interest where a multi-word query has
-		/// been performed using the GetPartialMatches extension method.
-		/// </summary>
-		public class WeightedEntryWithTerm<TKey> : WeightedEntry<TKey>
-		{
-			// We can use rely on covariance allowing the sourceLocations to be used to generate a NonNullImmutableList<SourceFieldLocation> using the constructor with the
-			// IEnumerable argument, but NonNullImmutableList doesn't support covariance so we can't pass the sourceLocations references straight to the base constructor
-			public WeightedEntryWithTerm(TKey key, float weight, NonNullImmutableList<SourceFieldLocationWithTerm> sourceLocationsIfRecorded)
-				: base(key, weight, (sourceLocationsIfRecorded == null) ? null : new NonNullImmutableList<SourceFieldLocation>(sourceLocationsIfRecorded))
-			{
-				SourceLocationsIfRecorded = sourceLocationsIfRecorded;
-			}
-
-			/// <summary>
-			/// This will be null if the source location data is not recorded by the index generator but it will never be an empty list if it is not null
-			/// </summary>
-			public new NonNullImmutableList<SourceFieldLocationWithTerm> SourceLocationsIfRecorded { get; private set; }
-		}
-
-		/// <summary>
-		/// This SourceFieldLocation derivation annotates the data with the search term that was matched - this is included in the data that is returned from the
-		/// GetPartialMatches extension method but would not be recorded in an index
-		/// </summary>
-		public class SourceFieldLocationWithTerm : SourceFieldLocation
-		{
-			public SourceFieldLocationWithTerm(int sourceFieldIndex, int tokenIndex, int sourceIndex, int sourceTokenLength, float matchWeightContribution, SearchTermDetails searchTerm)
-				: base(sourceFieldIndex, tokenIndex, sourceIndex, sourceTokenLength, matchWeightContribution)
-			{
-				if (searchTerm == null)
-					throw new ArgumentNullException("searchTerm");
-
-				SearchTerm = searchTerm;
-			}
+			public float Weight { get; }
 
 			/// <summary>
 			/// This will never be null
 			/// </summary>
 			public SearchTermDetails SearchTerm { get; private set; }
 
-			public class SearchTermDetails
+			/// <summary>
+			/// This will be null if the source location data is not recorded by the index generator but it will never be an empty list if it is not null
+			/// </summary>
+			public NonNullImmutableList<SourceFieldLocation> SourceLocationsIfRecorded { get; }
+		}
+
+		public sealed class SearchTermDetails
+		{
+			public SearchTermDetails(int tokenIndex, string searchTerm)
 			{
-				public SearchTermDetails(int tokenIndex, string searchTerm)
-				{
-					if (tokenIndex < 0)
-						throw new ArgumentOutOfRangeException("tokenIndex", "must be zero or greater");
-					if (string.IsNullOrWhiteSpace(searchTerm))
-						throw new ArgumentException("Null/blank searchTerm specified");
+				if (tokenIndex < 0)
+					throw new ArgumentOutOfRangeException("tokenIndex", "must be zero or greater");
+				if (string.IsNullOrWhiteSpace(searchTerm))
+					throw new ArgumentException("Null/blank searchTerm specified");
 
-					TokenIndex = tokenIndex;
-					SearchTerm = searchTerm;
-				}
-
-				/// <summary>
-				/// Where this search term was the result of breaking down a longer search term, this is the index of the token from the source term. It will
-				/// will always be zero or greater.
-				/// </summary>
-				public int TokenIndex { get; private set; }
-
-				/// <summary>
-				/// This will never be null or blank
-				/// </summary>
-				public string SearchTerm { get; private set; }
+				TokenIndex = tokenIndex;
+				SearchTerm = searchTerm;
 			}
+
+			/// <summary>
+			/// Where this search term was the result of breaking down a longer search term, this is the index of the token from the source term. It will will always be
+			/// zero or greater.
+			/// </summary>
+			public int TokenIndex { get; private set; }
+
+			/// <summary>
+			/// This will never be null or blank
+			/// </summary>
+			public string SearchTerm { get; private set; }
 		}
 	}
 }
