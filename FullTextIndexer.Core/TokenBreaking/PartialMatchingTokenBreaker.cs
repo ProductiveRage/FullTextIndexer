@@ -159,9 +159,17 @@ namespace FullTextIndexer.Core.TokenBreaking
 			{
 				for (var length = _minLengthOfPartialMatches; length <= Math.Min(token.Token.Length - index, _maxLengthOfPartialMatches); length++)
 				{
+					// 2019-03-13 Dion: Because this partial matching may split a string in the middle of a sequence of UTF-16 code units that make up a single
+					// Unicode code point (e.g. emoji require multiple UTf-16 code units to make up the code point), we discard any strings that form broken
+					// Unicode code points here. This is done by checking if the end of the string is a "lead surrogate" (aka "high surrogate").
+					// Not doing this results in problems later on when string.Normalize() is called on these tokens and finds corrupt Unicode text.
+					var partialString = token.Token.Substring(index, length);
+					if (char.IsHighSurrogate(partialString, partialString.Length - 1))
+						continue;
+
 					// The token's SourceLocation is being maintained for the same reason as they are in GetTokensForPartialMatchGeneration
 					partialMatches.Add(new WeightAdjustingToken(
-						token.Token.Substring(index, length),
+						partialString,
 						token.WeightMultiplier,
 						token.SourceLocation
 					));
