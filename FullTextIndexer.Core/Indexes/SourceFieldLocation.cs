@@ -2,16 +2,14 @@
 
 namespace FullTextIndexer.Core.Indexes
 {
-	/// <summary>
-	/// This extends the SourceLocation class with additional data - the index of the field that the content was extracted from and the match weight contribution of the extracted
-	/// content. The weight contribution may depend on multiple factors, one of which is the field that it is extracted from (some properties on a source object may be given a
-	/// weight multiplier to give them greater or lesser match weights). The weight contribution may also depend upon the content extracted (the Index Generator may be
-	/// configured to give lower weight to stop words, for example). A WeightedEntry may have multiple SourceFieldLocation instances, its Weight value represents a
-	/// combined value that is calculated from the MatchWeightContribution values of its Source Locations.
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// This extends the SourceLocation class with additional data - the index of the field that the content was extracted from and the match weight contribution of the extracted
+    /// content. The weight contribution may depend on multiple factors, one of which is the field that it is extracted from (some properties on a source object may be given a
+    /// weight multiplier to give them greater or lesser match weights). The weight contribution may also depend upon the content extracted (the Index Generator may be
+    /// configured to give lower weight to stop words, for example). A WeightedEntry may have multiple SourceFieldLocation instances, its Weight value represents a
+    /// combined value that is calculated from the MatchWeightContribution values of its Source Locations.
+    /// </summary>
     [Serializable]
-#endif
 	public class SourceFieldLocation : SourceLocation
 	{
 		public SourceFieldLocation(int sourceFieldIndex, int tokenIndex, int sourceIndex, int sourceTokenLength, float matchWeightContribution) : base(tokenIndex, sourceIndex, sourceTokenLength)

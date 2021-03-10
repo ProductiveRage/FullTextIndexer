@@ -3,14 +3,12 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
-	/// <summary>
-	/// This will replace specified characters with whitespace. This can be useful for parsing content with code examples which separate keywords and variable names
-	/// with various brackets or other operators. It may also be useful if there is text content without consistently including spaces after commas or full stops.
-	/// The expected tokenBreaker specified in the constructor would be the WhiteSpaceTokenBreaker since this effectively works as the step before that.
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// This will replace specified characters with whitespace. This can be useful for parsing content with code examples which separate keywords and variable names
+    /// with various brackets or other operators. It may also be useful if there is text content without consistently including spaces after commas or full stops.
+    /// The expected tokenBreaker specified in the constructor would be the WhiteSpaceTokenBreaker since this effectively works as the step before that.
+    /// </summary>
     [Serializable]
-#endif
 	public class WhiteSpaceExtendingTokenBreaker : ITokenBreaker
     {
         private ImmutableList<char> _charsToTreatAsWhitespace;

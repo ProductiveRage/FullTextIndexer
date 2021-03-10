@@ -1,13 +1,13 @@
-﻿<Project>
+<Project>
 
   <PropertyGroup>
-    <PackageVersion>2.2.0</PackageVersion>
+    <PackageVersion>3.1.0</PackageVersion>
     <Authors>ProductiveRage</Authors>
-    <Copyright>Copyright 2017 Productive Rage</Copyright>
+    <Copyright>Copyright 2021 Productive Rage</Copyright>
     <PackageTags>C# full text index search</PackageTags>
     <PackageIconUrl>https://secure.gravatar.com/avatar/6a1f781d4d5e2d50dcff04f8f049767a?s=200</PackageIconUrl>
-    <PackageProjectUrl>https://bitbucket.org/DanRoberts/full-text-indexer</PackageProjectUrl>
-    <PackageLicenseUrl>https://bitbucket.org/DanRoberts/full-text-indexer/src/b77a50d81258d215589b39b5beaf66621c56aeb7/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/ProductiveRage/FullTextIndexer</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

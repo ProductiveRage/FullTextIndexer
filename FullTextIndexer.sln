@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.3
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Common", "FullTextIndexer.Common\FullTextIndexer.Common.csproj", "{5FFFA463-D4E0-4540-BF1F-9F4FC46DF6CA}"
 EndProject
@@ -13,10 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Serialisati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer.Querier", "FullTextIndexer.Querier\FullTextIndexer.Querier.csproj", "{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TesterShared", "TesterShared\TesterShared.shproj", "{F92962FD-908F-4CD6-8FB8-9C30B55938D4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterNET452", "TesterNET452\TesterNET452.csproj", "{75334017-483E-4098-921C-6FD8F3704D7E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "Tester\Tester.csproj", "{A1E35C61-799D-4826-84E9-3ED38E0888D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1EE147F1-1A68-49B5-90B5-2104231A8BE2}"
@@ -24,10 +20,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FullTextIndexer", "FullTextIndexer\FullTextIndexer.csproj", "{89DE6C08-FABB-4217-8788-77160BE2872D}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		TesterShared\TesterShared.projitems*{75334017-483e-4098-921c-6fd8f3704d7e}*SharedItemsImports = 4
-		TesterShared\TesterShared.projitems*{f92962fd-908f-4cd6-8fb8-9c30b55938d4}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -53,10 +45,6 @@ Global
 		{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CCC86FD-2D54-4644-8B45-8B0AD51531AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75334017-483E-4098-921C-6FD8F3704D7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75334017-483E-4098-921C-6FD8F3704D7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75334017-483E-4098-921C-6FD8F3704D7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75334017-483E-4098-921C-6FD8F3704D7E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A1E35C61-799D-4826-84E9-3ED38E0888D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1E35C61-799D-4826-84E9-3ED38E0888D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1E35C61-799D-4826-84E9-3ED38E0888D4}.Release|Any CPU.ActiveCfg = Release|Any CPU

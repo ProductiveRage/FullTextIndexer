@@ -4,24 +4,17 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-#if NET45
 using System.Runtime.Serialization;
 using System.Security;
-#endif
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
-	/// <summary>
-	/// This will match common strings where one is the plural and the other the singular version of the same word. It not intended to be perfect and may
-	/// match a few false positives, but it should catch most of the most common cases.
-	/// </summary>
-#if NET45
-	[Serializable]
-#endif
-	public class EnglishPluralityStringNormaliser : StringNormaliser
-#if NET45
-		, ISerializable
-#endif
+    /// <summary>
+    /// This will match common strings where one is the plural and the other the singular version of the same word. It not intended to be perfect and may
+    /// match a few false positives, but it should catch most of the most common cases.
+    /// </summary>
+    [Serializable]
+	public class EnglishPluralityStringNormaliser : StringNormaliser, ISerializable
 	{
 		private readonly List<PluralEntry> _plurals;
 		private readonly Func<string, string> _normaliser; // Note: Don't try to serialise this, it's probably not possible (not via ISerializable nor JSON.Net)
@@ -58,7 +51,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 
 		public EnglishPluralityStringNormaliser() : this(null, PreNormaliserWorkOptions.PreNormaliserDoesNothing) { }
 
-#if NET45
 		protected EnglishPluralityStringNormaliser(SerializationInfo info, StreamingContext context)
 			: this(
 				(IEnumerable<PluralEntry>)info.GetValue("_plurals", typeof(IEnumerable<PluralEntry>)),
@@ -76,11 +68,8 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			info.AddValue("_optionalPreNormaliser", _optionalPreNormaliser);
 			info.AddValue("_preNormaliserWork", _preNormaliserWork);
 		}
-#endif
 
-#if NET45
-	[Serializable]
-#endif
+		[Serializable]
 		[Flags]
 		public enum PreNormaliserWorkOptions
 		{
@@ -384,9 +373,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			new PluralEntry(new[] { "woman", "women" }, MatchTypeOptions.WholeWord)
 		};
 
-#if NET45
-	[Serializable]
-#endif
+		[Serializable]
 		public class PluralEntry
 		{
 			public PluralEntry(IEnumerable<string> values, MatchTypeOptions matchType)
@@ -412,9 +399,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			public MatchTypeOptions MatchType { get; private set; }
 		}
 
-#if NET45
-	[Serializable]
-#endif
+		[Serializable]
 		public enum MatchTypeOptions
 		{
 			SuffixOnly,

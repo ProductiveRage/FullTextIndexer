@@ -6,13 +6,11 @@ using System.Text;
 
 namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 {
-	/// <summary>
-	/// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
-	/// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// This will perform string comparisons where the values have any accented characters replaced with non-accented versions, all whitespace converted to spaces and runs of
+    /// whitespace replaced with a single space, all punctuation removed and the content then lowercased.
+    /// </summary>
     [Serializable]
-#endif
 	public sealed class DefaultStringNormaliser : StringNormaliser
     {
         private readonly static HashSet<Char> PunctuationCharacters = new HashSet<char>(

@@ -5,16 +5,14 @@ using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
-	/// <summary>
-	/// This will extend a token set by combinining strings of consecutive tokens (eg. maxNumberOfTokens is 3 and the tokens returned by the internal break are "this", "is",
-	/// "a", "test" then "this", "is", "a", "test", "this is", "is a", "a test", "this is a", "is a test" will be returned). This should now be considered obsolete and searches
-	/// for consecutive tokens be performed with the GetConsecutiveMatches IIndexData extension method - use of this token breaker can greatly increase the time to generate an
-	/// index and it puts a cap on the length of runs of consecutive tokens that can be searched for (see the maxNumberOfTokens constructor argument). The GetConsecutiveMatches
-	/// method has no such limit and can operate much more efficiently now that Source Location data is included with the match content.
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// This will extend a token set by combinining strings of consecutive tokens (eg. maxNumberOfTokens is 3 and the tokens returned by the internal break are "this", "is",
+    /// "a", "test" then "this", "is", "a", "test", "this is", "is a", "a test", "this is a", "is a test" will be returned). This should now be considered obsolete and searches
+    /// for consecutive tokens be performed with the GetConsecutiveMatches IIndexData extension method - use of this token breaker can greatly increase the time to generate an
+    /// index and it puts a cap on the length of runs of consecutive tokens that can be searched for (see the maxNumberOfTokens constructor argument). The GetConsecutiveMatches
+    /// method has no such limit and can operate much more efficiently now that Source Location data is included with the match content.
+    /// </summary>
     [Serializable]
-#endif
 	public class ConsecutiveTokenCombiningTokenBreaker : ITokenBreaker
 	{
 		private readonly ITokenBreaker _tokenBreaker;

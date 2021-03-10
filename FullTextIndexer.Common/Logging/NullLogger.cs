@@ -2,12 +2,10 @@
 
 namespace FullTextIndexer.Common.Logging
 {
-	/// <summary>
-	/// This logger does nothing, it doesn't even validate parameters
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// This logger does nothing, it doesn't even validate parameters
+    /// </summary>
     [Serializable]
-#endif
 	public class NullLogger : ILogger
 	{
 		public void Log(LogLevel logLevel, DateTime logDate, Func<string> contentGenerator, Exception exception) { }

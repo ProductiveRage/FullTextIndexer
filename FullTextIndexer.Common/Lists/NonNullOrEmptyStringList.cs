@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-#if NET45
     [Serializable]
-#endif
 	public sealed class NonNullOrEmptyStringList : ImmutableList<string>
 	{
 		public static NonNullOrEmptyStringList Empty { get; } = new NonNullOrEmptyStringList(new string[0]);
@@ -74,9 +72,7 @@ namespace FullTextIndexer.Common.Lists
 			);
 		}
 
-#if NET45
-    [Serializable]
-#endif
+	    [Serializable]
 		private sealed class Validator : IValueValidator<string>
 		{
 			public static Validator Instance { get; } = new Validator();

@@ -2,12 +2,10 @@
 
 namespace FullTextIndexer.Common.Logging
 {
-	/// <summary>
-	/// These are listed in order of increasing severity
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// These are listed in order of increasing severity
+    /// </summary>
     [Serializable]
-#endif
 	public enum LogLevel
 	{
 		Debug,

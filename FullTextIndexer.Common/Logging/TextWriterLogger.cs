@@ -3,12 +3,10 @@ using System.Text;
 
 namespace FullTextIndexer.Common.Logging
 {
-	/// <summary>
-	/// Write log messages to a text output, formatted to include log level, date, time and exception details (message and stack trace) if non-null
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// Write log messages to a text output, formatted to include log level, date, time and exception details (message and stack trace) if non-null
+    /// </summary>
     [Serializable]
-#endif
 	public abstract class TextWriterLogger : ILogger
 	{
 		private Action<string> _writer;

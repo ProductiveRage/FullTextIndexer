@@ -6,18 +6,16 @@ using FullTextIndexer.Core.Indexes;
 
 namespace FullTextIndexer.Core.TokenBreaking
 {
-	/// <summary>
-	/// Extract tokens from an input string using a specified Token Breaker and then generate partial match tokens for each entry by taking substrings
-	/// from each token. The partialMatchWeightDeterminer may be used to specify a weight adjustment for partial matches or to exclude particular
-	/// partial matches by reporting a zero weight for them. The optionalPrePartialMatchTokenBreaker may apply additional processing before additional
-	/// tokens are generated - eg. a Token Breaker which splits on whitespace may be specified as the tokenBreaker and will split the value "this string
-	/// is all lower-cased" into five tokens while an optionalPrePartialMatchTokenBreaker that breaks on punctuation would break "lower-cased" into
-	/// "lower" and "cased" before partial matches are generated for it; potentially returning "lower", "cased", "low", "owe", "ower" and "case" if a
-	/// partial match weight determiner was used that returned zero for any non-English words.
-	/// </summary>
-#if NET45
-	[Serializable]
-#endif
+    /// <summary>
+    /// Extract tokens from an input string using a specified Token Breaker and then generate partial match tokens for each entry by taking substrings
+    /// from each token. The partialMatchWeightDeterminer may be used to specify a weight adjustment for partial matches or to exclude particular
+    /// partial matches by reporting a zero weight for them. The optionalPrePartialMatchTokenBreaker may apply additional processing before additional
+    /// tokens are generated - eg. a Token Breaker which splits on whitespace may be specified as the tokenBreaker and will split the value "this string
+    /// is all lower-cased" into five tokens while an optionalPrePartialMatchTokenBreaker that breaks on punctuation would break "lower-cased" into
+    /// "lower" and "cased" before partial matches are generated for it; potentially returning "lower", "cased", "low", "owe", "ower" and "case" if a
+    /// partial match weight determiner was used that returned zero for any non-English words.
+    /// </summary>
+    [Serializable]
 	public class PartialMatchingTokenBreaker : ITokenBreaker
 	{
 		private readonly int _minLengthOfPartialMatches, _maxLengthOfPartialMatches;

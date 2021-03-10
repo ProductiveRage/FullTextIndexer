@@ -3,12 +3,10 @@ using FullTextIndexer.Common.Lists;
 
 namespace FullTextIndexer.Common.Logging
 {
-	/// <summary>
-	/// Write log messages to trace, including additional content such as date, time and thread id
-	/// </summary>
-#if NET45
+    /// <summary>
+    /// Write log messages to trace, including additional content such as date, time and thread id
+    /// </summary>
     [Serializable]
-#endif
 	public class FilteredLogger : ILogger
 	{
 		private ILogger _logger;

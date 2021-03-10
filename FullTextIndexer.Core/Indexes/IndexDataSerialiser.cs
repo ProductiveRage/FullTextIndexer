@@ -1,5 +1,4 @@
-﻿#if NET45
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,10 +9,10 @@ using FullTextIndexer.Core.Indexes.TernarySearchTree;
 
 namespace FullTextIndexer.Core.Indexes
 {
-	/// <summary>
-	/// The methods in this class can serialise and deserialise an IndexData instance in much less space than using the .Net BinaryFormatter (approx 1/12 the space in preliminary testing)
-	/// </summary>
-	public static class IndexDataSerialiser<TKey>
+    /// <summary>
+    /// The methods in this class can serialise and deserialise an IndexData instance in much less space than using the .Net BinaryFormatter (approx 1/12 the space in preliminary testing)
+    /// </summary>
+    public static class IndexDataSerialiser<TKey>
 	{
 		/// <summary>
 		/// This will throw an ArgumentNullException for null source or stream references or an IndexDataSerialisationException if the data read from the stream is invalid
@@ -277,4 +276,3 @@ namespace FullTextIndexer.Core.Indexes
 		}
 	}
 }
-#endif

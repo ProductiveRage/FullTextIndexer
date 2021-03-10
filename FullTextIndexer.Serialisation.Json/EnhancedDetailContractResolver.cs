@@ -7,12 +7,12 @@ using Newtonsoft.Json.Serialization;
 
 namespace FullTextIndexer.Serialisation.Json
 {
-	/// <summary>
-	/// For applicable types, this will serialise a property with the full type name of the instance being serialised and will include all private properties and fields
-	/// instead of just the public properties (note that some data can not be serialised and so will NOT be included - properties and fields that are delegates will be
-	/// skipped over)
-	/// </summary>
-	public sealed class EnhancedDetailContractResolver : DefaultContractResolver
+    /// <summary>
+    /// For applicable types, this will serialise a property with the full type name of the instance being serialised and will include all private properties and fields
+    /// instead of just the public properties (note that some data can not be serialised and so will NOT be included - properties and fields that are delegates will be
+    /// skipped over)
+    /// </summary>
+    public sealed class EnhancedDetailContractResolver : DefaultContractResolver
 	{
 		private readonly string _typeNameProperty;
 		private readonly Predicate<Type> _typeFilter;
@@ -29,10 +29,8 @@ namespace FullTextIndexer.Serialisation.Json
 			// Ignore anything to do with [Serializable] or ISerializable, all serialisation should be handled explicitly by JSON.NET (in particular, it's important that
 			// the ISerializable GetObjectData implementation of the EnglishPluralityStringNormaliser be ignored since that will write away the private data itself and
 			// the CreateProperties method below won't be called - which means that the type name property won't be injected)
-#if NET45
 			IgnoreSerializableAttribute = true;
 			IgnoreSerializableInterface = true;
-#endif
 		}
 
 		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)

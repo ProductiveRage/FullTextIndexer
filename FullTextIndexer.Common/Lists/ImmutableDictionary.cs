@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace FullTextIndexer.Common.Lists
 {
-#if NET45
-	[Serializable]
-#endif
+    [Serializable]
 	public class ImmutableDictionary<TKey, TValue>
 	{
 		private Dictionary<TKey, TValue> _data;
