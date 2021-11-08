@@ -135,7 +135,7 @@ More information about this project - some of its approaches, some of the implem
 
 ## The example: Trimmed using Automated Index Generation
 
-The above code illustrates how to configure all of the options for Index Generation but there is a class in the FullTextIndexer.Helpers namespace that can do a lot of the hard work but examining the source type with reflection and liberally applying defaults. The resulting code (which anables generation of a searchable index in just a few lines) is:
+The above code illustrates how to configure all of the options for Index Generation but there is a class in the FullTextIndexer.Helpers namespace that can do a lot of the hard work by examining the source type with reflection and liberally applying defaults. The resulting code (which enables generation of a searchable index in just a few lines) is:
 
     using System;
     using System.Linq;
