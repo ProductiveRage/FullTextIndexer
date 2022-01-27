@@ -105,8 +105,7 @@ namespace FullTextIndexer.Core.Indexes
 					new WeightedEntry<TKey>(
 						matchesForEntireTerm.First().Key,
 						matchWeightForConsecutiveRunEntry,
-						new NonNullImmutableList<SourceFieldLocation>(new[]
-						{
+						NonNullImmutableList.Create(
 							// Since we're creating a new SourceFieldLocation instance that is derived from a run of multiple tokens, the TokenIndex is going to be an approximation -
 							// taking the TokenIndex from the first search term probably makes the most sense. The SourceIndex and SourceTokenLength will be taken such that the entire
 							// run is covered (from the start of the first search term to the end of the last). Since this is the only Source Location instance for the WeightedEntry,
@@ -118,7 +117,7 @@ namespace FullTextIndexer.Core.Indexes
 								(sourceLocationOfLastTerm.SourceIndex + sourceLocationOfLastTerm.SourceTokenLength) - sourceLocationOfFirstTerm.SourceIndex,
 								matchWeightForConsecutiveRunEntry
 							)
-						})
+						)
 					)
 				);
 			}
@@ -223,7 +222,7 @@ namespace FullTextIndexer.Core.Indexes
 					new WeightedEntry<TKey>(
 						match.Key,
 						sourceLocation.MatchWeightContribution,
-						new NonNullImmutableList<SourceFieldLocation>(new[] { sourceLocation })
+						NonNullImmutableList.Create(sourceLocation)
 					)
 				);
 			}

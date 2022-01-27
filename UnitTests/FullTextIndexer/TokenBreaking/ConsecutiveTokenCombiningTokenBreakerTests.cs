@@ -17,22 +17,20 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 		public void CombinedTokensShouldTakeTheIndexOfTheFirstTokenAndTheLengthOfTheEntireSourceSegment()
 		{
 			var content = "one two three";
-			var whiteSpaceBrokenTokens = new NonNullImmutableList<WeightAdjustingToken>(new[]
-			{
+			var whiteSpaceBrokenTokens = NonNullImmutableList.Create(
 				new WeightAdjustingToken("one", 1, new SourceLocation(0, 0, 3)),
 				new WeightAdjustingToken("two", 1, new SourceLocation(1, 4, 3)),
 				new WeightAdjustingToken("three", 1, new SourceLocation(2, 8, 5))
-			});
+			);
 
-			var expected = new NonNullImmutableList<WeightAdjustingToken>(new[]
-			{
+			var expected = NonNullImmutableList.Create(
 				new WeightAdjustingToken("one", 1, new SourceLocation(0, 0, 3)),
 				new WeightAdjustingToken("two", 1, new SourceLocation(1, 4, 3)),
 				new WeightAdjustingToken("three", 1, new SourceLocation(2, 8, 5)),
 				new WeightAdjustingToken("one two", 1, new SourceLocation(0, 0, 7)),
 				new WeightAdjustingToken("two three", 1, new SourceLocation(1, 4, 9)),
 				new WeightAdjustingToken("one two three", 1, new SourceLocation(0, 0, 13))
-			});
+			);
 			
 			Assert.Equal<WeightAdjustingToken>(
 				expected,
@@ -51,13 +49,8 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			private readonly NonNullImmutableList<WeightAdjustingToken> _results;
 			public FixedContentTokenBreaker(string expectedValue, NonNullImmutableList<WeightAdjustingToken> results)
 			{
-				if (expectedValue == null)
-					throw new ArgumentNullException("expectedValue");
-				if (results == null)
-					throw new ArgumentNullException("results");
-
-				_expectedValue = expectedValue;
-				_results = results;
+                _expectedValue = expectedValue ?? throw new ArgumentNullException("expectedValue");
+				_results = results ?? throw new ArgumentNullException("results");
 
 			}
 

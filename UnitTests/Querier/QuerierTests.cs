@@ -48,8 +48,7 @@ namespace UnitTests.Querier
 			Assert.Equal(3, matchesFor_Generator[0].Weight); // The match weight is three since "Adding" appears once and "TSource" appears twice
 		}
 
-		private static NonNullImmutableList<Post> TestData => new NonNullImmutableList<Post>(new[]
-		{
+		private static NonNullImmutableList<Post> TestData => NonNullImmutableList.Create(
 			new Post(30, "The Full Text Indexer", "I started out on a journey a few months ago being " +
 				"frustrated by the Lucene.net integration we had with one of our products at work (I'm not " +
 				"badmouthing the Lucene project, I'm wholeheartedly blaming the integration I inherited!)"),
@@ -59,7 +58,7 @@ namespace UnitTests.Querier
 			new Post(32, "The Full Text Indexer - Going International!", "Pushing on with the Full Text " +
 				"Indexer series I'm been posting about (see Full Text Indexer and Full Text Indexer - Adding " +
 				"and Subtracting) I want to demonstrate how it can work with multi-lingual content")
-		});
+		);
 
 		private static Querier<int> GetQuerier(NonNullImmutableList<Post> posts)
 		{

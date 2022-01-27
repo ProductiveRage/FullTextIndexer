@@ -13,10 +13,10 @@ namespace UnitTests.Serialisation.Json
 		[Fact]
 		public void NonNullImmutableListIdAndNameItems()
 		{
-			var list = new NonNullImmutableList<IdAndName>(new[] {
+			var list = NonNullImmutableList.Create(
 				new IdAndName(1, "Test1"),
 				new IdAndName(2, "Test2")
-			});
+			);
 			var json = IndexDataJsonSerialiser.GenericSerialiser.Serialise(list);
 
 			var expectedJson = @"

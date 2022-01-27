@@ -16,13 +16,12 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		public void SingleProductWithSingleWordName()
 		{
 			var indexGenerator = new IndexGenerator<Product, int>(
-				new NonNullImmutableList<ContentRetriever<Product, int>>(new[]
-                {
+				NonNullImmutableList.Create(
                     new ContentRetriever<Product, int>(
                         p => new PreBrokenContent<int>(p.Key, p.Name),
                         token => 1f
                     )                        
-                }),
+                ),
 				new DefaultEqualityComparer<int>(),
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
@@ -30,15 +29,13 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				captureSourceLocations: true,
 				logger: new NullLogger()
 			);
-			var index = indexGenerator.Generate(new NonNullImmutableList<Product>(new[]
-            {
+			var index = indexGenerator.Generate(NonNullImmutableList.Create(
                 new Product() { Key = 1, Name = "Product" }
-            }));
+            ));
 
-			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
-            {
+			var expected = NonNullImmutableList.Create(
                 new WeightedEntry<int>(1, 1f, (new[] { new SourceFieldLocation(0, 0, 0, 7, 1f) }).ToNonNullImmutableList())
-            });
+            );
 			EnsureIndexDataMatchesExpectations(
 				expected,
 				index.GetMatches("Product")
@@ -49,8 +46,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		public void SingleProductWithSingleWordNameAndSameSingleWordDescription()
 		{
 			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
-				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
-                {
+				NonNullImmutableList.Create(
                     new ContentRetriever<ProductWithDescription, int>(
                         p => new PreBrokenContent<int>(p.Key, p.Name),
                         token => 1f
@@ -59,7 +55,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
                         p => new PreBrokenContent<int>(p.Key, p.Description),
                         token => 1f
                     )                        
-                }),
+                ),
 				new DefaultEqualityComparer<int>(),
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
@@ -67,13 +63,11 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				captureSourceLocations: true,
 				logger: new NullLogger()
 			);
-			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
-            {
+			var index = indexGenerator.Generate(NonNullImmutableList.Create(
                 new ProductWithDescription() { Key = 1, Name = "Product", Description = "Product" }
-            }));
+            ));
 
-			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
-            {
+			var expected = NonNullImmutableList.Create(
                 new WeightedEntry<int>(
 					1,
 					2f,
@@ -82,7 +76,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 						new SourceFieldLocation(0, 0, 0, 7, 1f), // Match in Name field (source field index 0)
 						new SourceFieldLocation(1, 0, 0, 7, 1f)  // Match in Description field (source field index 1)
 					}).ToNonNullImmutableList())
-            });
+            );
 			EnsureIndexDataMatchesExpectations(
 				expected,
 				index.GetMatches("Product")
@@ -97,8 +91,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		public void IfTheFirstContentRetrieverReturnsNoContentThenNoSourceFieldIndexZeroSourceLocationsAreReturned()
 		{
 			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
-				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
-                {
+				NonNullImmutableList.Create(
                     new ContentRetriever<ProductWithDescription, int>(
                         p => new PreBrokenContent<int>(p.Key, p.Name),
                         token => 1f
@@ -107,7 +100,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
                         p => new PreBrokenContent<int>(p.Key, p.Description),
                         token => 1f
                     )                        
-                }),
+                ),
 				new DefaultEqualityComparer<int>(),
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
@@ -115,21 +108,17 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				captureSourceLocations: true,
 				logger: new NullLogger()
 			);
-			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
-            {
+			var index = indexGenerator.Generate(NonNullImmutableList.Create(
                 new ProductWithDescription() { Key = 1, Name = "", Description = "Product" }
-            }));
+            ));
 
-			var expected = new NonNullImmutableList<WeightedEntry<int>>(new[]
-            {
+			var expected = NonNullImmutableList.Create(
                 new WeightedEntry<int>(
 					1,
 					1f,
-					(new[]
-					{
-						new SourceFieldLocation(1, 0, 0, 7, 1f)  // Match in Description field (source field index 1)
-					}).ToNonNullImmutableList())
-            });
+					NonNullImmutableList.Create(new SourceFieldLocation(1, 0, 0, 7, 1f))  // Match in Description field (source field index 1)
+				)
+            );
 			EnsureIndexDataMatchesExpectations(
 				expected,
 				index.GetMatches("Product")
@@ -140,8 +129,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		public void TestRemovalOfResultFromIndex()
 		{
 			var indexGenerator = new IndexGenerator<ProductWithDescription, int>(
-				new NonNullImmutableList<ContentRetriever<ProductWithDescription, int>>(new[]
-				{
+				NonNullImmutableList.Create(
 					new ContentRetriever<ProductWithDescription, int>(
 						p => new PreBrokenContent<int>(p.Key, p.Name),
 						token => 1f
@@ -150,7 +138,7 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 						p => new PreBrokenContent<int>(p.Key, p.Description),
 						token => 1f
 					)
-				}),
+				),
 				new DefaultEqualityComparer<int>(),
 				new CaseInsensitiveStringNormaliser(),
 				new WhiteSpaceTokenBreaker(),
@@ -158,11 +146,10 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 				captureSourceLocations: true,
 				logger: new NullLogger()
 			);
-			var index = indexGenerator.Generate(new NonNullImmutableList<ProductWithDescription>(new[]
-			{
+			var index = indexGenerator.Generate(NonNullImmutableList.Create(
 				new ProductWithDescription() { Key = 1, Name = "", Description = "Product" },
 				new ProductWithDescription() { Key = 2, Name = "", Description = "Product" }
-			}));
+			));
 			Assert.Equal(2, index.GetMatches("Product").Count); // Should get two matches for "Product" at this point
 			Assert.Equal(1, index.Remove(key => key == 2).GetMatches("Product").Count); // Should get only one if remove results for Key 2
 		}
@@ -180,22 +167,23 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
             if (expected.Count != actual.Count)
                 throw new ArgumentException("expected.Count does not match actual.Count");
 
-            Comparison<WeightedEntry<int>> sorter = (x, y) =>
-            {
-                var keyComparison = x.Key.CompareTo(y.Key);
-                if (keyComparison != 0)
-                    return keyComparison;
-                return x.Weight.CompareTo(y.Weight);
-            };
-            expected = expected.Sort(sorter);
-            actual = actual.Sort(sorter);
+            expected = expected.Sort(Sort);
+            actual = actual.Sort(Sort);
             
             for (var index = 0; index < expected.Count; index++)
             {
                 if ((expected[index].Key != actual[index].Key) || (expected[index].Weight != actual[index].Weight))
                     throw new ArgumentException("expected's content do not match actual's");
             }
-        }
+
+			int Sort(WeightedEntry<int> x, WeightedEntry<int> y)
+			{
+				var keyComparison = x.Key.CompareTo(y.Key);
+				if (keyComparison != 0)
+					return keyComparison;
+				return x.Weight.CompareTo(y.Weight);
+			}
+		}
 
 		private class Product
 		{

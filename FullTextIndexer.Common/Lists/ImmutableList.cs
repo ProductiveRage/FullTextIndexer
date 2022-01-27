@@ -116,7 +116,7 @@ namespace FullTextIndexer.Common.Lists
 			if (values == null)
 				throw new ArgumentNullException("values");
 
-			return Insert(values, default(T), insertAtIndex);
+			return Insert(values, default, insertAtIndex);
 		}
 
 		public ImmutableList<T> Insert(T value, int insertAtIndex)
@@ -396,19 +396,10 @@ namespace FullTextIndexer.Common.Lists
 		/// </summary>
 		private class SortComparisonWrapper : IComparer<T>
 		{
-			private Comparison<T> _comparison;
-			public SortComparisonWrapper(Comparison<T> comparison)
-			{
-				if (comparison == null)
-					throw new ArgumentNullException("comparison");
+			private readonly Comparison<T> _comparison;
+			public SortComparisonWrapper(Comparison<T> comparison) => _comparison = comparison ?? throw new ArgumentNullException("comparison");
 
-				_comparison = comparison;
-			}
-
-			public int Compare(T x, T y)
-			{
-				return _comparison(x, y);
-			}
+			public int Compare(T x, T y) => _comparison(x, y);
 		}
 
 		[Serializable]

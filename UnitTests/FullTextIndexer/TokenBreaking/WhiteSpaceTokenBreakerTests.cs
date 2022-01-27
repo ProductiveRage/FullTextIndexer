@@ -54,11 +54,10 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 					throw new ArgumentNullException("value");
 
 				var splitPoint = value.Select((c, index) => new { Character = c, Index = index }).Where(c => c.Character == '-').Select(c => c.Index).Single();
-				return new NonNullImmutableList<WeightAdjustingToken>(new[]
-				{
+				return NonNullImmutableList.Create(
 					new WeightAdjustingToken(value.Substring(0, splitPoint), 1, new SourceLocation(0, 0, splitPoint)),
 					new WeightAdjustingToken(value.Substring(splitPoint + 1), 1, new SourceLocation(1, splitPoint + 1, value.Length - (splitPoint + 1)))
-				});
+				);
 			}
 		}
 	}

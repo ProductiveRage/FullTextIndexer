@@ -99,14 +99,13 @@ namespace FullTextIndexer.Core.IndexGenerators
 							if (normalisedToken == "")
 								continue;
 
-							Dictionary<TKey, List<WeightedEntry<TKey>>> allDataForToken;
-							if (!indexContent.TryGetValue(normalisedToken, out allDataForToken))
-							{
-								allDataForToken = new Dictionary<TKey, List<WeightedEntry<TKey>>>(_dataKeyComparer);
-								indexContent.Add(normalisedToken, allDataForToken);
-							}
+                            if (!indexContent.TryGetValue(normalisedToken, out var allDataForToken))
+                            {
+                                allDataForToken = new Dictionary<TKey, List<WeightedEntry<TKey>>>(_dataKeyComparer);
+                                indexContent.Add(normalisedToken, allDataForToken);
+                            }
 
-							if (!allDataForToken.ContainsKey(preBrokenContent.Key))
+                            if (!allDataForToken.ContainsKey(preBrokenContent.Key))
 								allDataForToken.Add(preBrokenContent.Key, new List<WeightedEntry<TKey>>());
 
 							// Each WeightedEntry requires a sourceLocation set which specifies a location in a content field - the SourceLocation

@@ -108,11 +108,10 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			if (querySegment == null)
 				throw new ArgumentNullException("querySegment");
 
-			var combiningQuerySegment = querySegment as CombiningQuerySegment;
-			if (combiningQuerySegment != null)
-				return Reduce(combiningQuerySegment.Segments);
+            if (querySegment is CombiningQuerySegment combiningQuerySegment)
+                return Reduce(combiningQuerySegment.Segments);
 
-			return Reduce(new NonNullImmutableList<IQuerySegment>(new IQuerySegment[] { querySegment }));
+            return Reduce(NonNullImmutableList.Create(querySegment));
 		}
 
 		private NonNullImmutableList<WeightedEntry<TKey>> Reduce(NonNullImmutableList<IQuerySegment> querySegments)
@@ -125,60 +124,55 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			var allInclusiveWeighedMatches = new List<WeightedEntry<TKey>>();
 			foreach (var querySegment in querySegments)
 			{
-				var combiningQuerySegment = querySegment as CombiningQuerySegment;
-				if (combiningQuerySegment != null)
-				{
-					allInclusiveWeighedMatches.AddRange(
-						Reduce(combiningQuerySegment.Segments)
-					);
-					continue;
-				}
+                if (querySegment is CombiningQuerySegment combiningQuerySegment)
+                {
+                    allInclusiveWeighedMatches.AddRange(
+                        Reduce(combiningQuerySegment.Segments)
+                    );
+                    continue;
+                }
 
-				var compulsoryQuerySegment = querySegment as CompulsoryQuerySegment;
-				if (compulsoryQuerySegment != null)
-				{
-					var compulsoryQuerySegmentKeys = GetMatches(compulsoryQuerySegment.Segment);
-					var keysForCurrentSegment = compulsoryQuerySegmentKeys.Select(e => e.Key);
-					if (compulsoryKeys == null)
-						compulsoryKeys = new HashSet<TKey>(keysForCurrentSegment, _keyComparer);
-					else
-						compulsoryKeys.IntersectWith(keysForCurrentSegment);
-					allInclusiveWeighedMatches.AddRange(compulsoryQuerySegmentKeys);
-					continue;
-				}
+                if (querySegment is CompulsoryQuerySegment compulsoryQuerySegment)
+                {
+                    var compulsoryQuerySegmentKeys = GetMatches(compulsoryQuerySegment.Segment);
+                    var keysForCurrentSegment = compulsoryQuerySegmentKeys.Select(e => e.Key);
+                    if (compulsoryKeys == null)
+                        compulsoryKeys = new HashSet<TKey>(keysForCurrentSegment, _keyComparer);
+                    else
+                        compulsoryKeys.IntersectWith(keysForCurrentSegment);
+                    allInclusiveWeighedMatches.AddRange(compulsoryQuerySegmentKeys);
+                    continue;
+                }
 
-				var excludingQuerySegment = querySegment as ExcludingQuerySegment;
-				if (excludingQuerySegment != null)
-				{
-					exclusionKeys.AddRange(
-						GetMatches(excludingQuerySegment.Segment).Select(e => e.Key)
-					);
-					continue;
-				}
+                if (querySegment is ExcludingQuerySegment excludingQuerySegment)
+                {
+                    exclusionKeys.AddRange(
+                        GetMatches(excludingQuerySegment.Segment).Select(e => e.Key)
+                    );
+                    continue;
+                }
 
-				if (querySegment is NoMatchContentQuerySegment)
+                if (querySegment is NoMatchContentQuerySegment)
 					continue;
 
-				var preciseMatchQuerySegment = querySegment as PreciseMatchQuerySegment;
-				if (preciseMatchQuerySegment != null)
-				{
-					// Since the quoted value could contain multiple terms we'll need to call 
-					allInclusiveWeighedMatches.AddRange(
-						_preciseMatcher.GetMatches(preciseMatchQuerySegment.Value)
-					);
-					continue;
-				}
+                if (querySegment is PreciseMatchQuerySegment preciseMatchQuerySegment)
+                {
+                    // Since the quoted value could contain multiple terms we'll need to call 
+                    allInclusiveWeighedMatches.AddRange(
+                        _preciseMatcher.GetMatches(preciseMatchQuerySegment.Value)
+                    );
+                    continue;
+                }
 
-				var standardMatchQuerySegment = querySegment as StandardMatchQuerySegment;
-				if (standardMatchQuerySegment != null)
-				{
-					allInclusiveWeighedMatches.AddRange(
-						_standardMatcher.GetMatches(standardMatchQuerySegment.Value)
-					);
-					continue;
-				}
+                if (querySegment is StandardMatchQuerySegment standardMatchQuerySegment)
+                {
+                    allInclusiveWeighedMatches.AddRange(
+                        _standardMatcher.GetMatches(standardMatchQuerySegment.Value)
+                    );
+                    continue;
+                }
 
-				throw new NotSupportedException("Unsupported IQuerySegment type: " + querySegment.GetType());
+                throw new NotSupportedException("Unsupported IQuerySegment type: " + querySegment.GetType());
 			}
 
 			// Filter the matches to respect the exclusionKeys (remove them entirely) and compulsoryKeys (remove any not specified) data
@@ -203,10 +197,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			private readonly Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _cache;
 			public CachingResultMatcher(Func<string, NonNullImmutableList<WeightedEntry<TKey>>> matchRetriever)
 			{
-				if (matchRetriever == null)
-					throw new ArgumentNullException("matchRetriever");
-
-				_matchRetriever = matchRetriever;
+                _matchRetriever = matchRetriever ?? throw new ArgumentNullException("matchRetriever");
 				_cache = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>();
 			}
 
@@ -217,8 +208,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 
 				lock (_cache)
 				{
-					NonNullImmutableList<WeightedEntry<TKey>> cachedData;
-					if (_cache.TryGetValue(source, out cachedData))
+					if (_cache.TryGetValue(source, out var cachedData))
 						return cachedData;
 				}
 
