@@ -44,8 +44,8 @@ Some simple data is pushed through the generator and then a query performed on t
                         "cat posts",
                         GetTokenBreaker(),
                         (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
-							? 0
-							: tokenMatches.Sum(m => m.Weight))
+                            ? 0
+                            : tokenMatches.Sum(m => m.Weight))
                     .OrderByDescending(match => match.Weight);
 
                 Console.WriteLine("Results:");
@@ -117,11 +117,11 @@ Some simple data is pushed through the generator and then a query performed on t
                 {
                     Id = id;
                     Title = string.IsNullOrWhiteSpace(title)
-						? throw new ArgumentException($"Null/blank {nameof(title)} specified")
-						: title.Trim();
+                        ? throw new ArgumentException($"Null/blank {nameof(title)} specified")
+                        : title.Trim();
                     Content = string.IsNullOrWhiteSpace(content)
-						? throw new ArgumentException($"Null/blank {nameof(content)} specified")
-						: content.Trim();
+                        ? throw new ArgumentException($"Null/blank {nameof(content)} specified")
+                        : content.Trim();
                 }
                 public int Id { get; }
                 public string Title { get; }
@@ -173,11 +173,11 @@ The above code illustrates how to configure all of the options for Index Generat
                 {
                     Id = id;
                     Title = string.IsNullOrWhiteSpace(title)
-						? throw new ArgumentException($"Null/blank {nameof(title)} specified")
-						: title.Trim();
+                        ? throw new ArgumentException($"Null/blank {nameof(title)} specified")
+                        : title.Trim();
                     Content = string.IsNullOrWhiteSpace(content)
-						? throw new ArgumentException($"Null/blank {nameof(content)} specified")
-						: content.Trim();
+                        ? throw new ArgumentException($"Null/blank {nameof(content)} specified")
+                        : content.Trim();
                 }
                 public int Id { get; }
                 public string Title { get; }
