@@ -116,8 +116,12 @@ Some simple data is pushed through the generator and then a query performed on t
                 public Post(int id, string title, string content)
                 {
                     Id = id;
-                    Title = string.IsNullOrWhiteSpace(title) ? throw new ArgumentException("Null/blank title specified") : title.Trim();
-                    Content = string.IsNullOrWhiteSpace(content) ? throw new ArgumentException("Null/blank content specified") : content.Trim();
+                    Title = string.IsNullOrWhiteSpace(title)
+						? throw new ArgumentException($"Null/blank {nameof(title)} specified")
+						: title.Trim();
+                    Content = string.IsNullOrWhiteSpace(content)
+						? throw new ArgumentException($"Null/blank {nameof(content)} specified")
+						: content.Trim();
                 }
                 public int Id { get; }
                 public string Title { get; }
@@ -168,8 +172,12 @@ The above code illustrates how to configure all of the options for Index Generat
                 public Post(int id, string title, string content)
                 {
                     Id = id;
-                    Title = string.IsNullOrWhiteSpace(title) ? throw new ArgumentException("Null/blank title specified") : title.Trim();
-                    Content = string.IsNullOrWhiteSpace(content) ? throw new ArgumentException("Null/blank content specified") : content.Trim();
+                    Title = string.IsNullOrWhiteSpace(title)
+						? throw new ArgumentException($"Null/blank {nameof(title)} specified")
+						: title.Trim();
+                    Content = string.IsNullOrWhiteSpace(content)
+						? throw new ArgumentException($"Null/blank {nameof(content)} specified")
+						: content.Trim();
                 }
                 public int Id { get; }
                 public string Title { get; }
