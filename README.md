@@ -19,7 +19,6 @@ The following will generate an index from a list of Posts. The manner in which t
 Some simple data is pushed through the generator and then a query performed on that index. Using the "GetPartialMatches" method breaks the query term "cat posts" into separate searches for "cat" and "posts" and combines the results - the third argument to GetPartialMatches (the "matchCombiner" lambda) specifies that only Posts that match all of the separate terms (both "cat" *and* "post") may be elligible to be returned in the results. In the example, both Posts are both found to match though Post 2 gets a higher weight as it matches "cat" twice (to "cats" and "Cats") and "posts" once (to "post") while Post 1 matches "cat" once and "posts" once.
 
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using FullTextIndexer.Common.Lists;
     using FullTextIndexer.Common.Logging;
@@ -30,106 +29,102 @@ Some simple data is pushed through the generator and then a query performed on t
 
     namespace Tester
     {
-      class Program
-      {
-        static void Main(string[] args)
+        class Program
         {
-          var indexGenerator = GetPostIndexGenerator();
-          var index = indexGenerator.Generate(new NonNullImmutableList<Post>(new[] {
-            new Post(1, "One", "This is a post about a cat."),
-            new Post(2, "Two", "A follow-up post, also about cats. Cats are the best.")
-          }));
-          var catPosts =
-            index.GetPartialMatches<int>(
-              "cat posts",
-              GetTokenBreaker(),
-              (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
-                ? 0
-                : tokenMatches.Sum(m => m.Weight)
-            )
-            .OrderByDescending(match => match.Weight);
+            static void Main()
+            {
+                var indexGenerator = GetPostIndexGenerator();
+                var index = indexGenerator.Generate(NonNullImmutableList.Create(
+                    new Post(1, "One", "This is a post about a cat."),
+                    new Post(2, "Two", "A follow-up post, also about cats. Cats are the best."),
+                    new Post(3, "Three", "Today I talk about dogs.")));
+
+                var catPosts = index
+                    .GetPartialMatches(
+                        "cat posts",
+                        GetTokenBreaker(),
+                        (tokenMatches, allTokens) => (tokenMatches.Count < allTokens.Count)
+							? 0
+							: tokenMatches.Sum(m => m.Weight))
+                    .OrderByDescending(match => match.Weight);
+
+                Console.WriteLine("Results:");
+                Console.WriteLine();
+                foreach (var searchResult in catPosts)
+                    Console.WriteLine($" Post id {searchResult.Key}, match weight {searchResult.Weight}");
+            }
+
+            private static IndexGenerator<Post, int> GetPostIndexGenerator()
+            {
+                var sourceStringComparer = new EnglishPluralityStringNormaliser(
+                    DefaultStringNormaliser.Instance,
+                    EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases
+                        | EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims);
+
+                // Define the manner in which the raw content is retrieved from Post
+                // title and body
+                // - English stop words will only receive 1% the weight when match
+                //     qualities are determined than other words will receive
+                // - Words in the title will be given 5x the weight of words found
+                //     in body content
+                var stopWords = FullTextIndexer.Core.Constants.GetStopWords("en");
+                var contentRetrievers = NonNullImmutableList.Create(
+                    new ContentRetriever<Post, int>(
+                        p => new PreBrokenContent<int>(p.Id, p.Title),
+                        token => (stopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f) * 5f),
+                    new ContentRetriever<Post, int>(
+                        p => new PreBrokenContent<int>(p.Id, p.Content),
+                        token => stopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f));
+
+                // Generate an index using the specified StringNormaliser, 
+                // - The Post class has an integer Id so the DefaultEqualityComparer will
+                //     do the job just fine for the dataKeyComparer
+                // - If the search term is matched multiple times in a Post then combine
+                //     the match weight in a simple additive manner (hence the
+                //     weightedValues.Sum() call)
+                // Note: When "captureSourceLocations" is enabled, data about where tokens
+                // were matched in the source data is returned, which allows highlighting
+                // of matched terms (this code doesn't demonstrate that but it is possible!)
+                return new IndexGenerator<Post, int>(
+                    contentRetrievers,
+                    new DefaultEqualityComparer<int>(),
+                    sourceStringComparer,
+                    GetTokenBreaker(),
+                    weightedValues => weightedValues.Sum(),
+                    captureSourceLocations: true,
+                    new NullLogger());
+            }
+
+            private static ITokenBreaker GetTokenBreaker()
+            {
+                // Specify the token breaker
+                // - English content will generally break on "." and "," (unlike "'" or
+                //     "-" which are commonly part of words). Also break on round brackets
+                //     for written content but also the other bracket types and other
+                //     common characters that might represent word breaks in code
+                return new WhiteSpaceExtendingTokenBreaker(
+                    ImmutableList.Create(
+                        '<', '>', '[', ']', '(', ')', '{', '}',
+                        '.', ',', ':', ';', '"', '?', '!',
+                        '/', '\\',
+                        '@', '+', '|', '='),
+                    new WhiteSpaceTokenBreaker());
+            }
+
+            public class Post
+            {
+                public Post(int id, string title, string content)
+                {
+                    Id = id;
+                    Title = string.IsNullOrWhiteSpace(title) ? throw new ArgumentException("Null/blank title specified") : title.Trim();
+                    Content = string.IsNullOrWhiteSpace(content) ? throw new ArgumentException("Null/blank content specified") : content.Trim();
+                }
+                public int Id { get; }
+                public string Title { get; }
+                public string Content { get; }
+            }
         }
-
-        private static IndexGenerator<Post, int> GetPostIndexGenerator()
-        {
-          var sourceStringComparer = new EnglishPluralityStringNormaliser(
-            new DefaultStringNormaliser(),
-            EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserLowerCases
-            | EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserTrims
-          );
-
-          // Define the manner in which the raw content is retrieved from Post
-          // title and body
-          // - English stop words will only receive 1% the weight when match
-          //   qualities are determined than other words will receive
-          // - Words in the title will be given 5x the weight of words found
-          //   in body content
-          var stopWords = FullTextIndexer.Core.Constants.GetStopWords("en");
-          var contentRetrievers = new List<ContentRetriever<Post, int>>();
-          contentRetrievers.Add(new ContentRetriever<Post, int>(
-            p => new PreBrokenContent<int>(p.Id, p.Title),
-            token => (stopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f) * 5f
-          ));
-          contentRetrievers.Add(new ContentRetriever<Post, int>(
-            p => new PreBrokenContent<int>(p.Id, p.Content),
-            token => stopWords.Contains(token, sourceStringComparer) ? 0.01f : 1f
-          ));
-
-          // Generate an index using the specified StringNormaliser, 
-          // - The Post class has an integer Id so the DefaultEqualityComparer will
-          //   do the job just fine for the dataKeyComparer
-          // - If the search term is matched multiple times in a Post then combine
-          //   the match weight in a simple additive manner (hence the
-          //   weightedValues.Sum() call)
-          return new IndexGenerator<Post, int>(
-            contentRetrievers.ToNonNullImmutableList(),
-            new DefaultEqualityComparer<int>(),
-            sourceStringComparer,
-            GetTokenBreaker(),
-            weightedValues => weightedValues.Sum(),
-            new NullLogger()
-          );
-        }
-
-        private static ITokenBreaker GetTokenBreaker()
-        {
-          // Specify the token breaker
-          // - English content will generally break on "." and "," (unlike "'" or
-          //   "-" which are commonly part of words). Also break on round brackets
-          //   for written content but also the other bracket types and other
-          //   common characters that might represent word breaks in code
-          return new WhiteSpaceExtendingTokenBreaker(
-            new ImmutableList<char>(new[] {
-              '<', '>', '[', ']', '(', ')', '{', '}',
-              '.', ',', ':', ';', '"', '?', '!',
-              '/', '\\',
-              '@', '+', '|', '='
-            }),
-            new WhiteSpaceTokenBreaker()
-          );
-        }
-
-        public class Post
-        {
-          public Post(int id, string title, string content)
-          {
-            if (string.IsNullOrWhiteSpace(title))
-              throw new ArgumentException("Null/blank title specified");
-            if (string.IsNullOrWhiteSpace(content))
-              throw new ArgumentException("Null/blank content specified");
-
-            Id = id;
-            Title = title.Trim();
-            Content = content.Trim();
-          }
-
-          public int Id { get; private set; }
-          public string Title { get; private set; }
-          public string Content { get; private set; }
-        }
-      }
     }
-    
 
 More information about this project - some of its approaches, some of the implementation details, some alternate ways to configure the IndexGenerator and somewhere it's actually used! - can be found at my [Full Text Indexer Round-up](http://www.productiverage.com/Read/40) blog post.
 
@@ -141,45 +136,46 @@ The above code illustrates how to configure all of the options for Index Generat
     using System.Linq;
     using FullTextIndexer.Common.Lists;
     using FullTextIndexer.Core.Indexes;
-    using FullTextIndexer.Helpers;
 
     namespace Tester
     {
-      class Program
-      {
-        static void Main(string[] args)
+        class Program
         {
-          var indexGenerator = new AutomatedIndexGeneratorFactoryBuilder<Post, int>()
-            .SetWeightMultiplier(typeof(Post).GetProperty("Title"), 5)
-            .Get()
-            .Get();
-          var index = indexGenerator.Generate(new NonNullImmutableList<Post>(new[] {
-            new Post(1, "One", "This is a post about a cat."),
-            new Post(2, "Two", "A follow-up post, also about cats. Cats are the best.")
-          }));
-          var catPosts = index.GetPartialMatches<int>("one cat posts")
-            .OrderByDescending(match => match.Weight);
+            static void Main(string[] args)
+            {
+                var indexGenerator = new AutomatedIndexGeneratorFactoryBuilder<Post, int>()
+                    .SetWeightMultiplier(typeof(Post).GetProperty("Title"), 5)
+                    .Get()
+                    .Get();
+
+                var index = indexGenerator.Generate(NonNullImmutableList.Create(
+                    new Post(1, "One", "This is a post about a cat."),
+                    new Post(2, "Two", "A follow-up post, also about cats. Cats are the best."),
+                    new Post(3, "Three", "Today I talk about dogs.")));
+
+                var catPosts = index
+                    .GetPartialMatches("cat posts")
+                    .OrderByDescending(match => match.Weight);
+
+                Console.WriteLine("Results:");
+                Console.WriteLine();
+                foreach (var searchResult in catPosts)
+                    Console.WriteLine($" Post id {searchResult.Key}, match weight {searchResult.Weight}");
+            }
+
+            public class Post
+            {
+                public Post(int id, string title, string content)
+                {
+                    Id = id;
+                    Title = string.IsNullOrWhiteSpace(title) ? throw new ArgumentException("Null/blank title specified") : title.Trim();
+                    Content = string.IsNullOrWhiteSpace(content) ? throw new ArgumentException("Null/blank content specified") : content.Trim();
+                }
+                public int Id { get; }
+                public string Title { get; }
+                public string Content { get; }
+            }
         }
-
-        public class Post
-        {
-          public Post(int id, string title, string content)
-          {
-            if (string.IsNullOrWhiteSpace(title))
-              throw new ArgumentException("Null/blank title specified");
-            if (string.IsNullOrWhiteSpace(content))
-              throw new ArgumentException("Null/blank content specified");
-
-            Id = id;
-            Title = title.Trim();
-            Content = content.Trim();
-          }
-
-          public int Id { get; private set; }
-          public string Title { get; private set; }
-          public string Content { get; private set; }
-        }
-      }
     }
 
 More information can be found about this in the Post [The Full Text Indexer - Automating Index Generation](http://www.productiverage.com/Read/48).

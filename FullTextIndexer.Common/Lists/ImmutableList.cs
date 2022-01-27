@@ -5,7 +5,12 @@ using System.Linq;
 
 namespace FullTextIndexer.Common.Lists
 {
-    [Serializable]
+	public static class ImmutableList
+	{
+		public static ImmutableList<T> Create<T>(params T[] values) => new ImmutableList<T>(values);
+	}
+
+	[Serializable]
 	public class ImmutableList<T> : IEnumerable<T>
 	{
 		private readonly Node _tail;
