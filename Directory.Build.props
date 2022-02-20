@@ -1,16 +1,20 @@
 <Project>
 
   <PropertyGroup>
-    <PackageVersion>3.1.0</PackageVersion>
+    <PackageVersion>3.2.1</PackageVersion>
     <Authors>ProductiveRage</Authors>
-    <Copyright>Copyright 2021 Productive Rage</Copyright>
+    <Copyright>Copyright 2012 Productive Rage</Copyright>
     <PackageTags>C# full text index search</PackageTags>
-    <PackageIconUrl>https://secure.gravatar.com/avatar/6a1f781d4d5e2d50dcff04f8f049767a?s=200</PackageIconUrl>
+    <PackageIcon>ProductiveRage.jpg</PackageIcon>
     <PackageProjectUrl>https://github.com/ProductiveRage/FullTextIndexer</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\ProductiveRage.jpg" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
