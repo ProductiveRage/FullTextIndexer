@@ -295,20 +295,6 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			);
 		}
 
-		private static string CreateSuffixExtension(IEnumerable<string> suffixes)
-		{
-			if (suffixes == null)
-				throw new ArgumentNullException("suffixes");
-
-			var suffixesTidied = suffixes.ToList();
-			if (!suffixesTidied.Any())
-				throw new ArgumentException("No entries in suffixes set");
-			if (suffixesTidied.Any(s => string.IsNullOrWhiteSpace(s)))
-				throw new ArgumentException("Null/blank entry encountered in suffixes set");
-
-			return "|" + string.Join("|", suffixesTidied.Select(s => s.Trim()));
-		}
-
 		/// <summary>
 		/// Given a set of values, ensure that none are null and return them de-duplicated after having been pushed through a string manipulation.
 		/// This will throw an exception for null arguments or if any null value is encountered in the values set.
