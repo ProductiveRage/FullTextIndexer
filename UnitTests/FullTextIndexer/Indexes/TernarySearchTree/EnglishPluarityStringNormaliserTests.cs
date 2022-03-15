@@ -91,15 +91,14 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         public void EnsureMatch_vertex_vertices()
         {
             TestMatch("vertex", "vertices");
-
         }
 
         [Fact]
         public void EnsureMatch_datum_data()
         {
             TestMatch("datum", "data");
-
         }
+
         [Fact]
         public void EnsureMatch_man_men()
         {
