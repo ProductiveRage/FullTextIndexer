@@ -1,4 +1,5 @@
 ﻿using System;
+using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Core.Indexes.TernarySearchTree;
 using FullTextIndexer.Serialisation.Json;
 using Newtonsoft.Json;
@@ -48,15 +49,15 @@ namespace UnitTests.Serialisation.Json
 		[Fact]
 		public void EnglishPluralityStringNormaliserWithCustomOptionsAsIStringNormaliser()
 		{
-			var clone = IndexDataJsonSerialiser.GenericSerialiser.Deserialise<IStringNormaliser>(
-				IndexDataJsonSerialiser.GenericSerialiser.Serialise<IStringNormaliser>(
-					new EnglishPluralityStringNormaliser(
-						plurals: new[] { new EnglishPluralityStringNormaliser.PluralEntry(new[] { "eep", "eepzies" }, EnglishPluralityStringNormaliser.MatchTypeOptions.SuffixOnly) },
-						optionalPreNormaliser: null,
-						preNormaliserWork: EnglishPluralityStringNormaliser.PreNormaliserWorkOptions.PreNormaliserDoesNothing
-					)
+			var json = IndexDataJsonSerialiser.GenericSerialiser.Serialise<IStringNormaliser>(
+				new EnglishPluralityStringNormaliser(
+					plurals: NonNullImmutableList.Create(new EnglishPluralityStringNormaliser.PluralEntry(NonNullImmutableList.Create("eep", "eepzies"), EnglishPluralityStringNormaliser.MatchTypeOptions.SuffixOnly)),
+					optionalPreNormaliser: null,
+					preNormaliserWork: StemmingStringNormaliser.PreNormaliserWorkOptions.PreNormaliserDoesNothing
 				)
 			);
+
+			var clone = IndexDataJsonSerialiser.GenericSerialiser.Deserialise<IStringNormaliser>(json);
 			Assert.Equal(typeof(EnglishPluralityStringNormaliser), clone.GetType());
 
 			// To verify the configuration of the cloned string normaliser we could either use reflection to access the private field (yuck) or actually execute its code to ensure that it

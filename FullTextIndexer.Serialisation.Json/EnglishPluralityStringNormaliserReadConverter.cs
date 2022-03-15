@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using FullTextIndexer.Common.Lists;
 using FullTextIndexer.Core.Indexes.TernarySearchTree;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,8 +24,8 @@ namespace FullTextIndexer.Serialisation.Json
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
 			var data = JObject.Load(reader);
-			var plurals = data["_plurals"].ToObject<IEnumerable<EnglishPluralityStringNormaliser.PluralEntry>>();
-			var preNormaliserWork = data["_preNormaliserWork"].ToObject<EnglishPluralityStringNormaliser.PreNormaliserWorkOptions>();
+			var plurals = data["_plurals"].ToObject<NonNullImmutableList<EnglishPluralityStringNormaliser.PluralEntry>>();
+			var preNormaliserWork = data["_preNormaliserWork"].ToObject<StemmingStringNormaliser.PreNormaliserWorkOptions>();
 			var optionalPreNormaliserData = data["_optionalPreNormaliser"];
 			var optionalPreNormaliser = (optionalPreNormaliserData.Type == JTokenType.Null)
 				? null

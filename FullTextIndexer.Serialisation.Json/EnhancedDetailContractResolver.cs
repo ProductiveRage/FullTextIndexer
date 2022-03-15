@@ -38,13 +38,13 @@ namespace FullTextIndexer.Serialisation.Json
 			if (!_typeFilter(type))
 				return base.CreateProperties(type, memberSerialization);
 
-			var props = type
-				.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-				.Select(p => base.CreateProperty(p, memberSerialization))
+			var props = GetTypePlusAnyInheritedTypes()
+				.SelectMany(t => t.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+				.Select(p => CreateProperty(p, memberSerialization))
 				.Union(
-					type
-						.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-						.Select(f => base.CreateProperty(f, memberSerialization))
+					GetTypePlusAnyInheritedTypes()
+						.SelectMany(t => t.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+						.Select(f => CreateProperty(f, memberSerialization))
 				)
 				.ToList();
 			foreach (var prop in props)
@@ -75,6 +75,16 @@ namespace FullTextIndexer.Serialisation.Json
 				Writable = false
 			});
 			return props;
+
+			IEnumerable<Type> GetTypePlusAnyInheritedTypes()
+			{
+				var currentType = type;
+				while (currentType != null)
+				{
+					yield return currentType;
+					currentType = currentType.BaseType;
+				}
+			}
 		}
 
 		private sealed class SimpleTypeNameProvider : IValueProvider

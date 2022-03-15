@@ -103,7 +103,6 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         public void EnsureMatch_man_men()
         {
             TestMatch("man", "men");
-
         }
 
         [Fact]
