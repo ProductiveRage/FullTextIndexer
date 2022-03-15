@@ -42,13 +42,10 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			MatchCombiner matchCombiner)
 		{
 			if (standardMatchIndexData == null)
-				throw new ArgumentNullException("standardMatchIndexData");
+				throw new ArgumentNullException(nameof(standardMatchIndexData));
 			if (preciseMatchIndexData == null)
-				throw new ArgumentNullException("preciseMatchIndexData");
-			if (matchCombiner == null)
-				throw new ArgumentNullException("matchCombiner");
-
-			if (!preciseMatchIndexData.SourceLocationsAvailable)
+				throw new ArgumentNullException(nameof(preciseMatchIndexData));
+            if (!preciseMatchIndexData.SourceLocationsAvailable)
 				throw new ArgumentException($"The {nameof(preciseMatchIndexData)} must include source location data in order to use the Query Translator");
 
 			// Can't actually determine for sure that the KeyComparer of the standardMatchIndexData is equivalent to that of the preciseMatchIndexData
@@ -65,7 +62,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 				)
 			);
 			_keyComparer = standardMatchIndexData.KeyComparer;
-			_matchCombiner = matchCombiner;
+			_matchCombiner = matchCombiner ?? throw new ArgumentNullException(nameof(matchCombiner));
 		}
 		public QueryTranslator(
 			IIndexData<TKey> standardMatchIndexData,
@@ -106,7 +103,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 		public NonNullImmutableList<WeightedEntry<TKey>> GetMatches(IQuerySegment querySegment)
 		{
 			if (querySegment == null)
-				throw new ArgumentNullException("querySegment");
+				throw new ArgumentNullException(nameof(querySegment));
 
             if (querySegment is CombiningQuerySegment combiningQuerySegment)
                 return Reduce(combiningQuerySegment.Segments);
@@ -117,7 +114,7 @@ namespace FullTextIndexer.Querier.QueryTranslators
 		private NonNullImmutableList<WeightedEntry<TKey>> Reduce(NonNullImmutableList<IQuerySegment> querySegments)
 		{
 			if (querySegments == null)
-				throw new ArgumentNullException("querySegments");
+				throw new ArgumentNullException(nameof(querySegments));
 
 			HashSet<TKey> compulsoryKeys = null;
 			var exclusionKeys = new HashSet<TKey>(_keyComparer);
@@ -197,14 +194,14 @@ namespace FullTextIndexer.Querier.QueryTranslators
 			private readonly Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>> _cache;
 			public CachingResultMatcher(Func<string, NonNullImmutableList<WeightedEntry<TKey>>> matchRetriever)
 			{
-                _matchRetriever = matchRetriever ?? throw new ArgumentNullException("matchRetriever");
+                _matchRetriever = matchRetriever ?? throw new ArgumentNullException(nameof(matchRetriever));
 				_cache = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>();
 			}
 
 			public NonNullImmutableList<WeightedEntry<TKey>> GetMatches(string source)
 			{
 				if (source == null)
-					throw new ArgumentNullException("source");
+					throw new ArgumentNullException(nameof(source));
 
 				lock (_cache)
 				{

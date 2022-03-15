@@ -17,9 +17,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         public bool Equals(string x, string y)
         {
             if (x == null)
-                throw new ArgumentNullException("x");
+                throw new ArgumentNullException(nameof(x));
             if (y == null)
-                throw new ArgumentNullException("y");
+                throw new ArgumentNullException(nameof(y));
 
             return GetNormalisedString(x) == GetNormalisedString(y);
         }
@@ -27,7 +27,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         public int GetHashCode(string obj)
         {
             if (obj == null)
-                throw new ArgumentNullException("obj");
+                throw new ArgumentNullException(nameof(obj));
 
             return GetNormalisedString(obj).GetHashCode();
         }

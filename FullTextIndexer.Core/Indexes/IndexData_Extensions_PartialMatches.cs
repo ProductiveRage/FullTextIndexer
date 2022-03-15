@@ -21,13 +21,13 @@ namespace FullTextIndexer.Core.Indexes
 			WeightCombiner weightCombiner)
 		{
 			if (index == null)
-				throw new ArgumentNullException("index");
+				throw new ArgumentNullException(nameof(index));
 			if (source == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
 			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
+				throw new ArgumentNullException(nameof(tokenBreaker));
 			if (weightCombiner == null)
-				throw new ArgumentNullException("weightCombiner");
+				throw new ArgumentNullException(nameof(weightCombiner));
 
 			// Break down the "source" search term and find matches for each token
 			// - Each match maintains the weight multiplier applied to the string segment from the token breaker
@@ -119,9 +119,9 @@ namespace FullTextIndexer.Core.Indexes
 				return (matchSourceLocations, searchTerms) =>
 				{
 					if (matchSourceLocations == null)
-						throw new ArgumentNullException("matchSourceLocations");
+						throw new ArgumentNullException(nameof(matchSourceLocations));
 					if (searchTerms == null)
-						throw new ArgumentNullException("searchTerms");
+						throw new ArgumentNullException(nameof(searchTerms));
 
 					// Ensure that all of the search terms are present for the current result (take all of the SearchTerm.TokenIndex values for the source
 					// locations and then ensure that all of 0.. (searchTerms.Count-1) are present in that set
@@ -194,7 +194,7 @@ namespace FullTextIndexer.Core.Indexes
 			public SearchTermDetails(int tokenIndex, string searchTerm)
 			{
 				if (tokenIndex < 0)
-					throw new ArgumentOutOfRangeException("tokenIndex", "must be zero or greater");
+					throw new ArgumentOutOfRangeException(nameof(tokenIndex), "must be zero or greater");
 				if (string.IsNullOrWhiteSpace(searchTerm))
 					throw new ArgumentException("Null/blank searchTerm specified");
 

@@ -22,9 +22,9 @@ namespace UnitTests.Querier.QueryTranslators
 			if (string.IsNullOrWhiteSpace(source))
 				throw new ArgumentException("Null/blank source specified");
 			if (weight <= 0)
-				throw new ArgumentOutOfRangeException("weight", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(weight), "must be greater than zero");
 			if (sourceLocations == null)
-				throw new ArgumentNullException("sourceLocations");
+				throw new ArgumentNullException(nameof(sourceLocations));
 
 			var newMatch = new WeightedEntry<int>(key, weight, sourceLocations.ToNonNullImmutableList());
 			var newData = new Dictionary<string, NonNullImmutableList<WeightedEntry<int>>>(_data);
@@ -36,7 +36,7 @@ namespace UnitTests.Querier.QueryTranslators
 		public TestIntKeyIndexDataBuilder Add(string source, int key, float weight, SourceFieldLocation sourceLocation)
 		{
 			if (sourceLocation == null)
-				throw new ArgumentNullException("sourceLocation");
+				throw new ArgumentNullException(nameof(sourceLocation));
 
 			return Add(source, key, weight, new[] { sourceLocation });
 		}

@@ -14,14 +14,11 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 		public ContentSectionCharacterAnalyser(ImmutableList<char> terminationCharacters, ContentToQuerySegmentTranslator contentToQuerySegmentTranslator)
 		{
 			if (terminationCharacters == null)
-				throw new ArgumentNullException("terminationCharacters");
+				throw new ArgumentNullException(nameof(terminationCharacters));
 			if (terminationCharacters.Contains('\\'))
-				throw new ArgumentException("may not contain \\ as this is reserved as an escape character", "terminationCharacters");
-			if (contentToQuerySegmentTranslator == null)
-				throw new ArgumentNullException("contentToQuerySegmentTranslator");
-
+				throw new ArgumentException("may not contain \\ as this is reserved as an escape character", nameof(terminationCharacters));
 			_terminationCharacters = new HashSet<char>(terminationCharacters);
-			_contentToQuerySegmentTranslator = contentToQuerySegmentTranslator;
+			_contentToQuerySegmentTranslator = contentToQuerySegmentTranslator ?? throw new ArgumentNullException(nameof(contentToQuerySegmentTranslator));
 		}
 
 		/// <summary>
@@ -32,7 +29,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 		public ProcessedQuerySegment Process(IWalkThroughStrings stringNavigator)
 		{
 			if (stringNavigator == null)
-				throw new ArgumentNullException("stringNavigator");
+				throw new ArgumentNullException(nameof(stringNavigator));
 
 			var contentBuilder = new StringBuilder();
 			var processNextCharacterStrictlyAsContent = false;

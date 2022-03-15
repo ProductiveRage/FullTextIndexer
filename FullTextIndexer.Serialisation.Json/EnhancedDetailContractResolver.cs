@@ -20,11 +20,8 @@ namespace FullTextIndexer.Serialisation.Json
 		{
 			if (string.IsNullOrWhiteSpace(typeNameProperty))
 				throw new ArgumentException($"Null/blank {nameof(typeNameProperty)} specified");
-			if (typeFilter == null)
-				throw new ArgumentNullException(nameof(typeFilter));
-
-			_typeNameProperty = typeNameProperty;
-			_typeFilter = typeFilter;
+            _typeNameProperty = typeNameProperty;
+			_typeFilter = typeFilter ?? throw new ArgumentNullException(nameof(typeFilter));
 
 			// Ignore anything to do with [Serializable] or ISerializable, all serialisation should be handled explicitly by JSON.NET (in particular, it's important that
 			// the ISerializable GetObjectData implementation of the EnglishPluralityStringNormaliser be ignored since that will write away the private data itself and
@@ -89,7 +86,7 @@ namespace FullTextIndexer.Serialisation.Json
 
 		private sealed class SimpleTypeNameProvider : IValueProvider
 		{
-			private static SimpleTypeNameProvider _instance = new SimpleTypeNameProvider();
+			private static readonly SimpleTypeNameProvider _instance = new SimpleTypeNameProvider();
 			public static SimpleTypeNameProvider Instance => _instance;
 			private SimpleTypeNameProvider() { }
 	

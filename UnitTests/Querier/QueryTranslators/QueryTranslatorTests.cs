@@ -42,7 +42,7 @@ namespace UnitTests.Querier.QueryTranslators
 		private NonNullImmutableList<WeightedEntry<TKey>> ToNonNullImmutableList<TKey>(params WeightedEntry<TKey>[] weightedEntries)
 		{
 			if (weightedEntries == null)
-				throw new ArgumentNullException("weightedEntries");
+				throw new ArgumentNullException(nameof(weightedEntries));
 
 			return weightedEntries.ToNonNullImmutableList();
 		}

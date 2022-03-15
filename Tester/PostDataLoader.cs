@@ -26,24 +26,23 @@ namespace Tester
 				DataSource = databaseFile.FullName,
 				Mode = SqliteOpenMode.ReadOnly // Unless the connection is readonly, an empty file will be created if the database file doesn't exist (which is crazy)
 			};
-			using (var connection = new SqliteConnection(connectionString.ToString()))
-			{
-				var tags = connection.Query<MutablePostTagLink>("SELECT PostTags.PostId, Tags.Tag FROM PostTags INNER JOIN Tags ON Tags.Id = PostTags.TagId");
 
-				var markdownTransformer = new Markdown();
-				return connection
-					.Query<MutablePost>("SELECT Posts.Id, Posts.Title, Posts.Markdown, Posts.PublishedAt, Authors.Name FROM Posts INNER JOIN Authors ON Authors.Id = Posts.AuthorId")
-					.Select(post => new Post(
-						post.Id,
-						new NonBlankTrimmedString(post.Title),
-						new NonBlankTrimmedString(markdownTransformer.Transform(post.Markdown)),
-						new NonBlankTrimmedString(post.Name),
-						post.PublishedAt,
-						new NonNullOrEmptyStringList(tags.Where(tag => tag.PostId == post.Id).Select(tag => tag.Tag))
-					))
-					.ToNonNullImmutableList();
-			}
-		}
+            using var connection = new SqliteConnection(connectionString.ToString());
+            var tags = connection.Query<MutablePostTagLink>("SELECT PostTags.PostId, Tags.Tag FROM PostTags INNER JOIN Tags ON Tags.Id = PostTags.TagId");
+
+            var markdownTransformer = new Markdown();
+            return connection
+                .Query<MutablePost>("SELECT Posts.Id, Posts.Title, Posts.Markdown, Posts.PublishedAt, Authors.Name FROM Posts INNER JOIN Authors ON Authors.Id = Posts.AuthorId")
+                .Select(post => new Post(
+                    post.Id,
+                    new NonBlankTrimmedString(post.Title),
+                    new NonBlankTrimmedString(markdownTransformer.Transform(post.Markdown)),
+                    new NonBlankTrimmedString(post.Name),
+                    post.PublishedAt,
+                    new NonNullOrEmptyStringList(tags.Where(tag => tag.PostId == post.Id).Select(tag => tag.Tag))
+                ))
+                .ToNonNullImmutableList();
+        }
 
 		private class MutablePostTagLink
 		{

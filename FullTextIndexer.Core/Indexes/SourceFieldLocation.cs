@@ -15,9 +15,9 @@ namespace FullTextIndexer.Core.Indexes
 		public SourceFieldLocation(int sourceFieldIndex, int tokenIndex, int sourceIndex, int sourceTokenLength, float matchWeightContribution) : base(tokenIndex, sourceIndex, sourceTokenLength)
 		{
 			if (sourceFieldIndex < 0)
-				throw new ArgumentOutOfRangeException("sourceFieldIndex", "must be zero or greater");
+				throw new ArgumentOutOfRangeException(nameof(sourceFieldIndex), "must be zero or greater");
 			if (matchWeightContribution <= 0)
-				throw new ArgumentOutOfRangeException("matchWeightContribution", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(matchWeightContribution), "must be greater than zero");
 
 			MatchWeightContribution = matchWeightContribution;
 			SourceFieldIndex = sourceFieldIndex;

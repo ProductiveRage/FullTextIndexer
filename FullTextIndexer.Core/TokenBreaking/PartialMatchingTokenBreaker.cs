@@ -31,22 +31,17 @@ namespace FullTextIndexer.Core.TokenBreaking
 			PartialMatchWeightDeterminer partialMatchWeightDeterminer)
 		{
 			if (minLengthOfPartialMatches <= 0)
-				throw new ArgumentOutOfRangeException("minLengthOfPartialMatches", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(minLengthOfPartialMatches), "must be greater than zero");
 			if (maxLengthOfPartialMatches <= 0)
-				throw new ArgumentOutOfRangeException("maxLengthOfPartialMatches", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(maxLengthOfPartialMatches), "must be greater than zero");
 			if (maxLengthOfPartialMatches < minLengthOfPartialMatches)
-				throw new ArgumentOutOfRangeException("maxLengthOfPartialMatches", "must be greater than minLengthOfPartialMatches");
-			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
-			if (partialMatchWeightDeterminer == null)
-				throw new ArgumentNullException("partialMatchWeightDeterminer");
-			
+				throw new ArgumentOutOfRangeException(nameof(maxLengthOfPartialMatches), "must be greater than minLengthOfPartialMatches");
 			_minLengthOfPartialMatches = minLengthOfPartialMatches;
 			_maxLengthOfPartialMatches = maxLengthOfPartialMatches;
 			_fromStartOfTokenOnly = fromStartOfTokenOnly;
-			_tokenBreaker = tokenBreaker;
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
 			_optionalPrePartialMatchTokenBreaker = optionalPrePartialMatchTokenBreaker;
-			_partialMatchWeightDeterminer = partialMatchWeightDeterminer;
+			_partialMatchWeightDeterminer = partialMatchWeightDeterminer ?? throw new ArgumentNullException(nameof(partialMatchWeightDeterminer));
 		}
 
 		public PartialMatchingTokenBreaker(
@@ -75,7 +70,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 		public NonNullImmutableList<WeightAdjustingToken> Break(string value)
 		{
 			if (value == null)
-				throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
 
 			var tokens = new List<WeightAdjustingToken>();
 			foreach (var weightAdjustingToken in _tokenBreaker.Break(value))
@@ -123,7 +118,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 		private IEnumerable<WeightAdjustingToken> GetTokensForPartialMatchGeneration(WeightAdjustingToken token)
 		{
 			if (token == null)
-				throw new ArgumentNullException("token");
+				throw new ArgumentNullException(nameof(token));
 
 			if (_optionalPrePartialMatchTokenBreaker == null)
 				return new[] { token };
@@ -147,10 +142,10 @@ namespace FullTextIndexer.Core.TokenBreaking
 		private IEnumerable<WeightAdjustingToken> GenerateAllMatchVariations(WeightAdjustingToken token)
 		{
 			if (token == null)
-				throw new ArgumentNullException("token");
+				throw new ArgumentNullException(nameof(token));
 
 			if (token.Token.Length < _minLengthOfPartialMatches)
-				return new WeightAdjustingToken[0];
+				return Array.Empty<WeightAdjustingToken>();
 
 			var partialMatches = new List<WeightAdjustingToken>();
 			for (var index = 0; index < token.Token.Length; index++)

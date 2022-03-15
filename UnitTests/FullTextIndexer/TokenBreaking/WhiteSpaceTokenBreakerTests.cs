@@ -51,7 +51,7 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			public NonNullImmutableList<WeightAdjustingToken> Break(string value)
 			{
 				if (value == null)
-					throw new ArgumentNullException("value");
+					throw new ArgumentNullException(nameof(value));
 
 				var splitPoint = value.Select((c, index) => new { Character = c, Index = index }).Where(c => c.Character == '-').Select(c => c.Index).Single();
 				return NonNullImmutableList.Create(

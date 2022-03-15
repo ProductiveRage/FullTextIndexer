@@ -8,11 +8,11 @@ namespace FullTextIndexer.Core.Indexes
 		public SourceLocation(int tokenIndex, int sourceIndex, int sourceTokenLength)
 		{
 			if (tokenIndex < 0)
-				throw new ArgumentOutOfRangeException("tokenIndex", "must be zero or greater");
+				throw new ArgumentOutOfRangeException(nameof(tokenIndex), "must be zero or greater");
 			if (sourceIndex < 0)
-				throw new ArgumentOutOfRangeException("sourceIndex", "must be zero or greater");
+				throw new ArgumentOutOfRangeException(nameof(sourceIndex), "must be zero or greater");
 			if (sourceTokenLength <= 0)
-				throw new ArgumentOutOfRangeException("sourceTokenLength", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(sourceTokenLength), "must be greater than zero");
 
 			TokenIndex = tokenIndex;
 			SourceIndex = sourceIndex;

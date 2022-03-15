@@ -11,7 +11,7 @@ namespace FullTextIndexer.Serialisation.Json
 	/// </summary>
 	public sealed class EnglishPluralityStringNormaliserReadConverter : JsonConverter
 	{
-		private static EnglishPluralityStringNormaliserReadConverter _instance = new EnglishPluralityStringNormaliserReadConverter();
+		private static readonly EnglishPluralityStringNormaliserReadConverter _instance = new EnglishPluralityStringNormaliserReadConverter();
 		public static EnglishPluralityStringNormaliserReadConverter Instance => _instance;
 		private EnglishPluralityStringNormaliserReadConverter() { }
 

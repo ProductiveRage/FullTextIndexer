@@ -30,9 +30,9 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 		private BreakPointCharacterAnalyser(int bracketingLevel, SingleSegmentRestrictionOptions singleSegmentRestriction)
 		{
 			if (bracketingLevel < 0)
-				throw new ArgumentOutOfRangeException("bracketingLevel", "must be zero or greater");
+				throw new ArgumentOutOfRangeException(nameof(bracketingLevel), "must be zero or greater");
 			if (!Enum.IsDefined(typeof(SingleSegmentRestrictionOptions), singleSegmentRestriction))
-				throw new ArgumentOutOfRangeException("singleSegmentRestriction");
+				throw new ArgumentOutOfRangeException(nameof(singleSegmentRestriction));
 			
 			// In order to process a single-segment stretch of content, the bracketingLevel must be (re)set to zero otherwise the bracketing count
 			// may fall out of sync since the loop in the Process method may exit before encountering a close brace. (This configuration is used
@@ -57,7 +57,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 		public ProcessedQuerySegment Process(IWalkThroughStrings stringNavigator)
 		{
 			if (stringNavigator == null)
-				throw new ArgumentNullException("stringNavigator");
+				throw new ArgumentNullException(nameof(stringNavigator));
 
 			var querySegments = NonNullImmutableList<IQuerySegment>.Empty;
 			var processNextCharacterStrictlyAsContent = false;

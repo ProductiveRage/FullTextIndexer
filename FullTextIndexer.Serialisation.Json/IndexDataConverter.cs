@@ -11,7 +11,7 @@ namespace FullTextIndexer.Serialisation.Json
 {
 	public sealed class IndexDataConverter : JsonConverter
 	{
-		private static IndexDataConverter _instance = new IndexDataConverter();
+		private static readonly IndexDataConverter _instance = new IndexDataConverter();
 		public static IndexDataConverter Instance => _instance;
 
 		private delegate object Reader(JsonReader reader, JsonSerializer serialiser, Type elementType);

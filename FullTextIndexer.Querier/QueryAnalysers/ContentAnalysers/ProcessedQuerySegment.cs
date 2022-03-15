@@ -8,13 +8,8 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 	{
 		public ProcessedQuerySegment(IWalkThroughStrings stringNavigator, IQuerySegment querySegment)
 		{
-			if (stringNavigator == null)
-				throw new ArgumentNullException("stringNavigator");
-			if (querySegment == null)
-				throw new ArgumentNullException("querySegment");
-
-			StringNavigator = stringNavigator;
-			QuerySegment = querySegment;
+            StringNavigator = stringNavigator ?? throw new ArgumentNullException(nameof(stringNavigator));
+			QuerySegment = querySegment ?? throw new ArgumentNullException(nameof(querySegment));
 		}
 		
 		/// <summary>

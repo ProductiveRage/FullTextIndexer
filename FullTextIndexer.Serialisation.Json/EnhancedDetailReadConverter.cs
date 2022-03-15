@@ -16,11 +16,8 @@ namespace FullTextIndexer.Serialisation.Json
 		{
 			if (string.IsNullOrWhiteSpace(typeNameProperty))
 				throw new ArgumentException($"Null/blank {nameof(typeNameProperty)} specified");
-			if (typeFilter == null)
-				throw new ArgumentNullException(nameof(typeFilter));
-
-			_typeNameProperty = typeNameProperty;
-			_typeFilter = typeFilter;
+            _typeNameProperty = typeNameProperty;
+			_typeFilter = typeFilter ?? throw new ArgumentNullException(nameof(typeFilter));
 		}
 
 		public override bool CanConvert(Type objectType)

@@ -160,9 +160,9 @@ namespace UnitTests.FullTextIndexer.IndexGenerators
 		private void EnsureIndexDataMatchesExpectations(NonNullImmutableList<WeightedEntry<int>> expected, NonNullImmutableList<WeightedEntry<int>> actual)
         {
             if (expected == null)
-                throw new ArgumentNullException("expected");
+                throw new ArgumentNullException(nameof(expected));
             if (actual == null)
-                throw new ArgumentNullException("actual");
+                throw new ArgumentNullException(nameof(actual));
 
             if (expected.Count != actual.Count)
                 throw new ArgumentException("expected.Count does not match actual.Count");

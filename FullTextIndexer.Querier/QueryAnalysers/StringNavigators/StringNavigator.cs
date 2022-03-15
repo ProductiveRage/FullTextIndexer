@@ -11,7 +11,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.StringNavigators
 			if (string.IsNullOrEmpty(value))
 				throw new ArgumentException("Null/empty value specified");
 			if ((index < 0) || (index >= value.Length))
-				throw new ArgumentOutOfRangeException("index");
+				throw new ArgumentOutOfRangeException(nameof(index));
 
 			_value = value;
 			_index = index;
@@ -49,7 +49,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.StringNavigators
 		public string TryToGetCharacterString(int requiredNumberOfCharacters)
 		{
 			if (requiredNumberOfCharacters <= 0)
-				throw new ArgumentOutOfRangeException("requiredNumberOfCharacters", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(requiredNumberOfCharacters), "must be greater than zero");
 
 			if ((_index + requiredNumberOfCharacters) > _value.Length)
 				requiredNumberOfCharacters = _value.Length - _index;

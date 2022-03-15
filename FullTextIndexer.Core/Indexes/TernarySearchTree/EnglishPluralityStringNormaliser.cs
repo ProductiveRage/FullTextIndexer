@@ -20,12 +20,10 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public EnglishPluralityStringNormaliser(NonNullImmutableList<PluralEntry> plurals, IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
 			: base(plurals?.ToNonNullImmutableList<IStemOpportunity>(), optionalPreNormaliser, preNormaliserWork)
 		{
-			if (plurals == null)
-				throw new ArgumentNullException("pluralEntries");
 
 			// Although we don't need the plurals once the normaliser has been generated in normal operation, if the instance is to be serialised then we need to record
 			// them so that the normalier can be re-generated at deserialisation (as the normaliser that is generated can not be serialised - see GetObjectData)
-			_plurals = plurals;
+			_plurals = plurals ?? throw new ArgumentNullException("pluralEntries");
 		}
 
 		public EnglishPluralityStringNormaliser(IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
@@ -90,9 +88,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			public PluralEntry(NonNullImmutableList<string> values, MatchTypeOptions matchType)
 			{
 				if (values == null)
-					throw new ArgumentNullException("values");
+					throw new ArgumentNullException(nameof(values));
 				if (!Enum.IsDefined(typeof(MatchTypeOptions), matchType))
-					throw new ArgumentOutOfRangeException("matchType");
+					throw new ArgumentOutOfRangeException(nameof(matchType));
 
 				var valuesTidied = TidyStringList(values, v => v.Trim().ToLower());
 				if (!valuesTidied.Any())
@@ -117,7 +115,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			public IEnumerable<(BinaryExpression IsMatch, Expression ReduceToIfMatch)> GeneratePredicates(ParameterExpression valueTrimmed)
 			{
 				if (valueTrimmed == null)
-					throw new ArgumentNullException("valueTrimmed");
+					throw new ArgumentNullException(nameof(valueTrimmed));
 
 				var lengthProperty = typeof(string).GetProperty("Length");
 
@@ -174,9 +172,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 			private static Expression GenerateRemoveLastCharactersExpression(Expression value, int length)
 			{
 				if (value == null)
-					throw new ArgumentNullException("value");
+					throw new ArgumentNullException(nameof(value));
 				if (length < 0)
-					throw new ArgumentOutOfRangeException("length");
+					throw new ArgumentOutOfRangeException(nameof(length));
 
 				return Expression.Call(
 					value,

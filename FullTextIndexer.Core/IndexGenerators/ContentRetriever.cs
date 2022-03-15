@@ -10,13 +10,8 @@ namespace FullTextIndexer.Core.IndexGenerators
     {
         public ContentRetriever(PreBrokenTokenContentRetriever initialContentRetriever, BrokenTokenWeightDeterminer tokenWeightDeterminer)
         {
-            if (initialContentRetriever == null)
-                throw new ArgumentNullException("initialContentRetriever");
-            if (tokenWeightDeterminer == null)
-                throw new ArgumentNullException("tokenWeightDeterminer");
-
-            InitialContentRetriever = initialContentRetriever;
-            TokenWeightDeterminer = tokenWeightDeterminer;
+            InitialContentRetriever = initialContentRetriever ?? throw new ArgumentNullException(nameof(initialContentRetriever));
+            TokenWeightDeterminer = tokenWeightDeterminer ?? throw new ArgumentNullException(nameof(tokenWeightDeterminer));
         }
 
         /// <summary>

@@ -144,7 +144,7 @@ namespace UnitTests.Querier.QueryAnalysers.ContentAnalysers
 		private IQuerySegment NewCombiningQuerySegment(params IQuerySegment[] segments)
 		{
 			if (segments == null)
-				throw new ArgumentNullException("segments");
+				throw new ArgumentNullException(nameof(segments));
 
 			return new CombiningQuerySegment(segments.ToNonNullImmutableList());
 		}
@@ -152,7 +152,7 @@ namespace UnitTests.Querier.QueryAnalysers.ContentAnalysers
 		private IQuerySegment Process(string content)
 		{
 			if (content == null)
-				throw new ArgumentNullException("content");
+				throw new ArgumentNullException(nameof(content));
 
 			return (new BreakPointCharacterAnalyser()).Process(new StringNavigator(content)).QuerySegment;
 		}
@@ -162,9 +162,9 @@ namespace UnitTests.Querier.QueryAnalysers.ContentAnalysers
 			public bool Equals(IQuerySegment x, IQuerySegment y)
 			{
 				if (x == null)
-					throw new ArgumentNullException("x");
+					throw new ArgumentNullException(nameof(x));
 				if (y == null)
-					throw new ArgumentNullException("y");
+					throw new ArgumentNullException(nameof(y));
 
 				if (x.GetType() != y.GetType())
 					return false;

@@ -17,7 +17,7 @@ namespace FullTextIndexer.Core
         }
             
         // "Borrowed" these from Lucene.Net
-        private static NonNullOrEmptyStringList EnglishStopWords = new NonNullOrEmptyStringList(
+        private static readonly NonNullOrEmptyStringList EnglishStopWords = new NonNullOrEmptyStringList(
             new[] { "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "no", "not", "of", "on", "or", "such", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with" }
         );
     }

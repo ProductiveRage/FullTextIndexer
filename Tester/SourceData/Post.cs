@@ -7,21 +7,12 @@ namespace Tester.SourceData
 	{
 		public Post(int id, NonBlankTrimmedString title, NonBlankTrimmedString body, NonBlankTrimmedString author, DateTime publishedAt, NonNullOrEmptyStringList tags)
 		{
-			if (title == null)
-				throw new ArgumentNullException(nameof(title));
-			if (body == null)
-				throw new ArgumentNullException(nameof(body));
-			if (author == null)
-				throw new ArgumentNullException(nameof(author));
-			if (tags == null)
-				throw new ArgumentNullException(nameof(tags));
-
-			Id = id;
-			Title = title;
-			Body = body;
-			Author = author;
+            Id = id;
+			Title = title ?? throw new ArgumentNullException(nameof(title));
+			Body = body ?? throw new ArgumentNullException(nameof(body));
+			Author = author ?? throw new ArgumentNullException(nameof(author));
 			PublishedAt = publishedAt;
-			Tags = tags;
+			Tags = tags ?? throw new ArgumentNullException(nameof(tags));
 		}
 
 		public int Id { get; }

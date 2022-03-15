@@ -11,17 +11,12 @@ namespace FullTextIndexer.Core.TokenBreaking
     [Serializable]
 	public class WhiteSpaceExtendingTokenBreaker : ITokenBreaker
     {
-        private ImmutableList<char> _charsToTreatAsWhitespace;
-        private ITokenBreaker _tokenBreaker;
+        private readonly ImmutableList<char> _charsToTreatAsWhitespace;
+        private readonly ITokenBreaker _tokenBreaker;
         public WhiteSpaceExtendingTokenBreaker(ImmutableList<char> charsToTreatAsWhitespace, ITokenBreaker tokenBreaker)
         {
-            if (charsToTreatAsWhitespace == null)
-                throw new ArgumentNullException("charsToTreatAsWhitespace");
-            if (tokenBreaker == null)
-                throw new ArgumentNullException("tokenBreaker");
-
-            _charsToTreatAsWhitespace = charsToTreatAsWhitespace;
-            _tokenBreaker = tokenBreaker;
+            _charsToTreatAsWhitespace = charsToTreatAsWhitespace ?? throw new ArgumentNullException(nameof(charsToTreatAsWhitespace));
+            _tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
         }
 
         /// <summary>
@@ -30,7 +25,7 @@ namespace FullTextIndexer.Core.TokenBreaking
         public NonNullImmutableList<WeightAdjustingToken> Break(string value)
         {
             if (value == null)
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
 
             foreach (var charToReplace in _charsToTreatAsWhitespace)
                 value = value.Replace(charToReplace, ' ');

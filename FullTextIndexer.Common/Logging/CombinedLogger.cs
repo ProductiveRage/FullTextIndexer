@@ -6,11 +6,11 @@ namespace FullTextIndexer.Common.Logging
     [Serializable]
 	public class CombinedLogger : ILogger
 	{
-		private NonNullImmutableList<ILogger> _loggers;
+		private readonly NonNullImmutableList<ILogger> _loggers;
 		public CombinedLogger(params ILogger[] loggers)
 		{
 			if (loggers == null)
-				throw new ArgumentNullException("loggers");
+				throw new ArgumentNullException(nameof(loggers));
 
 			_loggers = loggers.ToNonNullImmutableList();
 		}
@@ -21,9 +21,9 @@ namespace FullTextIndexer.Common.Logging
 		public void Log(LogLevel logLevel, DateTime logDate, Func<string> contentGenerator, Exception exception)
 		{
 			if (!Enum.IsDefined(typeof(LogLevel), logLevel))
-				throw new ArgumentOutOfRangeException("logLevel");
+				throw new ArgumentOutOfRangeException(nameof(logLevel));
 			if (contentGenerator == null)
-				throw new ArgumentNullException("contentGenerator");
+				throw new ArgumentNullException(nameof(contentGenerator));
 
 			foreach (var logger in _loggers)
 				logger.Log(logLevel, logDate, contentGenerator, exception);

@@ -49,15 +49,15 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 			private readonly NonNullImmutableList<WeightAdjustingToken> _results;
 			public FixedContentTokenBreaker(string expectedValue, NonNullImmutableList<WeightAdjustingToken> results)
 			{
-                _expectedValue = expectedValue ?? throw new ArgumentNullException("expectedValue");
-				_results = results ?? throw new ArgumentNullException("results");
+                _expectedValue = expectedValue ?? throw new ArgumentNullException(nameof(expectedValue));
+				_results = results ?? throw new ArgumentNullException(nameof(results));
 
 			}
 
 			public NonNullImmutableList<WeightAdjustingToken> Break(string value)
 			{
 				if (value == null)
-					throw new ArgumentNullException("value");
+					throw new ArgumentNullException(nameof(value));
 				
 				if (value != _expectedValue)
 					throw new ArgumentException("This FixedContentTokenBreaker instance is only configured to Break the value: \"" + _expectedValue + "\"");

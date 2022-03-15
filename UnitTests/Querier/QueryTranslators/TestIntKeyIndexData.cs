@@ -14,7 +14,7 @@ namespace UnitTests.Querier.QueryTranslators
 		public TestIntKeyIndexData(Dictionary<string, NonNullImmutableList<WeightedEntry<int>>> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 			var dataCopy = new Dictionary<string, NonNullImmutableList<WeightedEntry<int>>>(data);
 			if (dataCopy.Values.Any(v => v == null))
 				throw new ArgumentException("Null Value encountered in data");

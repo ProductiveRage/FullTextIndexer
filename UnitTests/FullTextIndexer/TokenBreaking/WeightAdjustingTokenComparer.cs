@@ -9,9 +9,9 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 		public bool Equals(WeightAdjustingToken x, WeightAdjustingToken y)
 		{
 			if (x == null)
-				throw new ArgumentNullException("x");
+				throw new ArgumentNullException(nameof(x));
 			if (y == null)
-				throw new ArgumentNullException("y");
+				throw new ArgumentNullException(nameof(y));
 
 			return (
 				(x.Token == y.Token) &&
@@ -25,7 +25,7 @@ namespace UnitTests.FullTextIndexer.TokenBreaking
 		public int GetHashCode(WeightAdjustingToken obj)
 		{
 			if (obj == null)
-				throw new ArgumentNullException("obj");
+				throw new ArgumentNullException(nameof(obj));
 
 			return 0;
 		}

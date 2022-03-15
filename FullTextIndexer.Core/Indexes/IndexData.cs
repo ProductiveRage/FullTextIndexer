@@ -16,7 +16,7 @@ namespace FullTextIndexer.Core.Indexes
 		private IndexData(TernarySearchTreeDictionary<NonNullImmutableList<WeightedEntry<TKey>>> data, IEqualityComparer<TKey> dataKeyComparer, bool validate)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			// If the constructor is called from a method within this class then the data should be known to be valid but if the constructor call was from
 			// other code then perform some sanity checking on it
@@ -35,7 +35,7 @@ namespace FullTextIndexer.Core.Indexes
 				var atLeastOneEntryIsMissingSourceLocations = _data.GetAllValues().Any(entries => entries.Any(entry => entry.SourceLocationsIfRecorded == null));
 				return !atLeastOneEntryIsMissingSourceLocations;
 			});
-			KeyComparer = dataKeyComparer ?? throw new ArgumentNullException("dataKeyComparer");
+			KeyComparer = dataKeyComparer ?? throw new ArgumentNullException(nameof(dataKeyComparer));
 		}
 
 		/// <summary>
@@ -56,8 +56,7 @@ namespace FullTextIndexer.Core.Indexes
 
 			// Since the data dictionary uses the sourceStringComparer, the lookup here will take that into account (so if a case-insensitive sourceStringComparer
 			// was specified, for example, then the casing of the "source" value here will be irrelevant)
-			NonNullImmutableList<WeightedEntry<TKey>> matches;
-			if (!_data.TryGetValue(source, out matches))
+			if (!_data.TryGetValue(source, out var matches))
 				return NonNullImmutableList<WeightedEntry<TKey>>.Empty;
 			return matches;
 		}
@@ -70,9 +69,9 @@ namespace FullTextIndexer.Core.Indexes
 		public IIndexData<TKey> Combine(NonNullImmutableList<IIndexData<TKey>> indexesToAdd, IndexGenerators.IndexGenerator.WeightedEntryCombiner weightCombiner)
 		{
 			if (indexesToAdd == null)
-				throw new ArgumentNullException("indexesToAdd");
+				throw new ArgumentNullException(nameof(indexesToAdd));
 			if (weightCombiner == null)
-				throw new ArgumentNullException("weightCombiner");
+				throw new ArgumentNullException(nameof(weightCombiner));
 
 			// Start by taking a copy of the data in this instance, stored in a dictionary that we will add the other indexes' data to
 			// - Note: This will inherit the keyNormaliser from this instance's TernarySearchTree
@@ -148,7 +147,7 @@ namespace FullTextIndexer.Core.Indexes
 		public IIndexData<TKey> Remove(Predicate<TKey> removeIf)
 		{
 			if (removeIf == null)
-				throw new ArgumentNullException("removeIf");
+				throw new ArgumentNullException(nameof(removeIf));
 
 			return new IndexData<TKey>(
 				_data.Update(weightedEntries =>
@@ -170,7 +169,7 @@ namespace FullTextIndexer.Core.Indexes
 		public IIndexData<TKey> Remove(ImmutableList<TKey> keysToRemove)
 		{
 			if (keysToRemove == null)
-				throw new ArgumentNullException("keysToRemove");
+				throw new ArgumentNullException(nameof(keysToRemove));
 
 			var quickLookup = new HashSet<TKey>(keysToRemove, KeyComparer);
 			return new IndexData<TKey>(

@@ -12,7 +12,7 @@ namespace FullTextIndexer.Querier.QuerySegments
 		public CombiningQuerySegment(NonNullImmutableList<IQuerySegment> segments)
 		{
 			if (segments == null)
-				throw new ArgumentNullException("segments");
+				throw new ArgumentNullException(nameof(segments));
 			if (segments.Count == 0)
 				throw new ArgumentException("There must be at least one segment specified");
 

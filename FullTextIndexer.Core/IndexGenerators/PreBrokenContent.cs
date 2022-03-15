@@ -11,12 +11,9 @@ namespace FullTextIndexer.Core.IndexGenerators
         public PreBrokenContent(TKey key, NonNullOrEmptyStringList content)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
-			if (content == null)
-				throw new ArgumentNullException("content");
-
+                throw new ArgumentNullException(nameof(key));
             Key = key;
-            Content = content;
+            Content = content ?? throw new ArgumentNullException(nameof(content));
         }
 		public PreBrokenContent(TKey key, string contentIfAny) : this(key, GetContentSections(contentIfAny)) { }
 

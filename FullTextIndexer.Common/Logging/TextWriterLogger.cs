@@ -9,16 +9,14 @@ namespace FullTextIndexer.Common.Logging
     [Serializable]
 	public abstract class TextWriterLogger : ILogger
 	{
-		private Action<string> _writer;
-		private ExceptionStackDisplayOptions _exceptionStackDisplay;
-		public TextWriterLogger(Action<string> writer, ExceptionStackDisplayOptions exceptionStackDisplay)
+		private readonly Action<string> _writer;
+		private readonly ExceptionStackDisplayOptions _exceptionStackDisplay;
+		protected TextWriterLogger(Action<string> writer, ExceptionStackDisplayOptions exceptionStackDisplay)
 		{
-			if (writer == null)
-				throw new ArgumentNullException("writer");
-			if (!Enum.IsDefined(typeof(ExceptionStackDisplayOptions), exceptionStackDisplay))
-				throw new ArgumentOutOfRangeException("exceptionStackDisplay");
+            if (!Enum.IsDefined(typeof(ExceptionStackDisplayOptions), exceptionStackDisplay))
+				throw new ArgumentOutOfRangeException(nameof(exceptionStackDisplay));
 
-			_writer = writer;
+			_writer = writer ?? throw new ArgumentNullException(nameof(writer));
 			_exceptionStackDisplay = exceptionStackDisplay;
 		}
 
@@ -34,9 +32,9 @@ namespace FullTextIndexer.Common.Logging
 		public void Log(LogLevel logLevel, DateTime logDate, Func<string> contentGenerator, Exception exception)
 		{
 			if (!Enum.IsDefined(typeof(LogLevel), logLevel))
-				throw new ArgumentOutOfRangeException("logLevel");
+				throw new ArgumentOutOfRangeException(nameof(logLevel));
 			if (contentGenerator == null)
-				throw new ArgumentNullException("contentGenerator");
+				throw new ArgumentNullException(nameof(contentGenerator));
 			var content = contentGenerator();
 			if (string.IsNullOrWhiteSpace(content))
 				throw new ArgumentException("Null/empty content specified");

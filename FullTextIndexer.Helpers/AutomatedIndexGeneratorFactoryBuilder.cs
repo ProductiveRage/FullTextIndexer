@@ -55,7 +55,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyRetriever(Func<TSource, TKey> keyRetriever)
 		{
 			if (keyRetriever == null)
-				throw new ArgumentNullException("keyRetriever");
+				throw new ArgumentNullException(nameof(keyRetriever));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				keyRetriever,
@@ -74,7 +74,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetKeyComparer(IEqualityComparer<TKey> keyComparer)
 		{
 			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
+				throw new ArgumentNullException(nameof(keyComparer));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -93,7 +93,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetStringNormaliser(IStringNormaliser stringNormaliser)
 		{
 			if (stringNormaliser == null)
-				throw new ArgumentNullException("stringNormaliser");
+				throw new ArgumentNullException(nameof(stringNormaliser));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -112,7 +112,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetTokenBreaker(ITokenBreaker tokenBreaker)
 		{
 			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
+				throw new ArgumentNullException(nameof(tokenBreaker));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -155,7 +155,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightedEntryCombiner(IndexGenerator.WeightedEntryCombiner weightedEntryCombiner)
 		{
 			if (weightedEntryCombiner == null)
-				throw new ArgumentNullException("weightedEntryCombiner");
+				throw new ArgumentNullException(nameof(weightedEntryCombiner));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -178,7 +178,7 @@ namespace FullTextIndexer.Helpers
 			AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator weightDeterminerGenerator)
 		{
 			if (weightDeterminerGenerator == null)
-				throw new ArgumentNullException("weightDeterminerGenerator");
+				throw new ArgumentNullException(nameof(weightDeterminerGenerator));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -206,7 +206,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetPropertyForFirstContentRetriever(PropertyInfo property)
 		{
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException(nameof(property));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -229,7 +229,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> Ignore(PropertyInfo property)
 		{
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException(nameof(property));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -257,7 +257,7 @@ namespace FullTextIndexer.Helpers
 
 			var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
 			if (lastBreakPoint == -1)
-				throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
+				throw new ArgumentException("must be at least two parts (type name and property name)", nameof(typeAndPropertyName));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -302,9 +302,9 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetWeightMultiplier(PropertyInfo property, float weightMultiplier)
 		{
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException(nameof(property));
 			if (weightMultiplier <= 0)
-				throw new ArgumentOutOfRangeException("weightMultiplier", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(weightMultiplier), "must be greater than zero");
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -330,11 +330,11 @@ namespace FullTextIndexer.Helpers
 			if (string.IsNullOrWhiteSpace(typeAndPropertyName))
 				throw new ArgumentException("Null/blank typeAndPropertyName specified");
 			if (weightMultiplier <= 0)
-				throw new ArgumentOutOfRangeException("weightMultiplier", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(weightMultiplier), "must be greater than zero");
 
 			var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
 			if (lastBreakPoint == -1)
-				throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
+				throw new ArgumentException("must be at least two parts (type name and property name)", nameof(typeAndPropertyName));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -353,7 +353,7 @@ namespace FullTextIndexer.Helpers
 		public AutomatedIndexGeneratorFactoryBuilder<TSource, TKey> SetLogger(ILogger logger)
 		{
 			if (logger == null)
-				throw new ArgumentNullException("logger");
+				throw new ArgumentNullException(nameof(logger));
 
 			return new AutomatedIndexGeneratorFactoryBuilder<TSource, TKey>(
 				_keyRetrieverOverride,
@@ -430,7 +430,7 @@ namespace FullTextIndexer.Helpers
 		private AutomatedIndexGeneratorFactory<TSource, TKey>.WeightDeterminerGenerator GetDefaultTokenWeightDeterminerGenerator(IStringNormaliser stringNormaliser)
 		{
 			if (stringNormaliser == null)
-				throw new ArgumentNullException("stringNormaliser");
+				throw new ArgumentNullException(nameof(stringNormaliser));
 
 			// Constructing a HashSet of the normalised versions of the stop words means that looking up whether normalised tokens are stop
 			// words can be a lot faster (as neither the stop words nor the token need to be fed through the normaliser again)
@@ -471,7 +471,7 @@ namespace FullTextIndexer.Helpers
 			public PropertyWeightApplier(float weightMultiplier)
 			{
 				if (weightMultiplier < 0)
-					throw new ArgumentOutOfRangeException("weightMultiplier", "must be zero or greater");
+					throw new ArgumentOutOfRangeException(nameof(weightMultiplier), "must be zero or greater");
 
 				WeightMultiplier = weightMultiplier;
 			}
@@ -492,10 +492,7 @@ namespace FullTextIndexer.Helpers
 			private readonly PropertyInfo _property;
 			public SpecificPropertyWeightApplier(PropertyInfo property, float weightMultiplier) : base(weightMultiplier)
 			{
-				if (property == null)
-					throw new ArgumentNullException("property");
-
-				_property = property;
+                _property = property ?? throw new ArgumentNullException(nameof(property));
 			}
 
 			/// <summary>
@@ -504,7 +501,7 @@ namespace FullTextIndexer.Helpers
 			public override bool AppliesTo(PropertyInfo property)
 			{
 				if (property == null)
-					throw new ArgumentNullException("property");
+					throw new ArgumentNullException(nameof(property));
 
 				return property == _property;
 			}
@@ -520,7 +517,7 @@ namespace FullTextIndexer.Helpers
 
 				var lastBreakPoint = typeAndPropertyName.LastIndexOf(".");
 				if (lastBreakPoint == -1)
-					throw new ArgumentException("must be at least two parts (type name and property name)", "typeAndPropertyName");
+					throw new ArgumentException("must be at least two parts (type name and property name)", nameof(typeAndPropertyName));
 
 				_typeName = typeAndPropertyName.Substring(0, lastBreakPoint);
 				_propertyName = typeAndPropertyName.Substring(lastBreakPoint + 1);
@@ -532,7 +529,7 @@ namespace FullTextIndexer.Helpers
 			public override bool AppliesTo(PropertyInfo property)
 			{
 				if (property == null)
-					throw new ArgumentNullException("property");
+					throw new ArgumentNullException(nameof(property));
 
 				return (property.DeclaringType.FullName == _typeName) && (property.Name == _propertyName);
 			}

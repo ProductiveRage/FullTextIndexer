@@ -9,16 +9,14 @@ namespace FullTextIndexer.Common.Logging
     [Serializable]
 	public class FilteredLogger : ILogger
 	{
-		private ILogger _logger;
-		private ImmutableList<LogLevel> _allowedLogLevels;
+		private readonly ILogger _logger;
+		private readonly ImmutableList<LogLevel> _allowedLogLevels;
 		public FilteredLogger(ILogger logger, params LogLevel[] allowedLogLevels)
 		{
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-			if (allowedLogLevels == null)
-				throw new ArgumentNullException("allowedLogLevels");
+            if (allowedLogLevels == null)
+				throw new ArgumentNullException(nameof(allowedLogLevels));
 
-			_logger = logger;
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			_allowedLogLevels = allowedLogLevels.ToImmutableList(new LogLevelValueValidator());
 		}
 
@@ -27,7 +25,7 @@ namespace FullTextIndexer.Common.Logging
 			public void EnsureValid(LogLevel value)
 			{
 				if (!Enum.IsDefined(typeof(LogLevel), value))
-					throw new ArgumentOutOfRangeException("value", "Specified LogLevel value was invalid");
+					throw new ArgumentOutOfRangeException(nameof(value), "Specified LogLevel value was invalid");
 			}
 		}
 
@@ -37,9 +35,9 @@ namespace FullTextIndexer.Common.Logging
 		public void Log(LogLevel logLevel, DateTime logDate, Func<string> contentGenerator, Exception exception)
 		{
 			if (!Enum.IsDefined(typeof(LogLevel), logLevel))
-				throw new ArgumentOutOfRangeException("logLevel");
+				throw new ArgumentOutOfRangeException(nameof(logLevel));
 			if (contentGenerator == null)
-				throw new ArgumentNullException("contentGenerator");
+				throw new ArgumentNullException(nameof(contentGenerator));
 
 			if (_allowedLogLevels.Contains(logLevel))
 				_logger.Log(logLevel, logDate, contentGenerator, exception);

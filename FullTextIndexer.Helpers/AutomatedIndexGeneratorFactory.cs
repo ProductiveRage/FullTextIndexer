@@ -98,13 +98,13 @@ namespace FullTextIndexer.Helpers
 			Type type)
 		{
 			if (keyRetriever == null)
-				throw new ArgumentNullException("keyRetriever");
+				throw new ArgumentNullException(nameof(keyRetriever));
 			if (nestedDataAccessor == null)
 				throw new ArgumentNullException("dataRetriever");
 			if (weightDeterminerGenerator == null)
-				throw new ArgumentNullException("weightDeterminerGenerator");
+				throw new ArgumentNullException(nameof(weightDeterminerGenerator));
 			if (type == null)
-				throw new ArgumentNullException("type");
+				throw new ArgumentNullException(nameof(type));
 
 			// 2018-03-07 DWR: When looking for properties to interrogate, the easy checks are CanRead (need to be able to read the value to extract content!) and ensuring that it is
 			// not an index property (what index value(s) would we pass whenever we wanted to extract content?) but I also want to consider only instance properties because there is
@@ -115,7 +115,7 @@ namespace FullTextIndexer.Helpers
 			// end up in an infinite loop here.
 			var propertiesToConsider = type
 				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-				.Where(p => p.CanRead && ((p.GetIndexParameters() ?? new ParameterInfo[0]).Length == 0));
+				.Where(p => p.CanRead && ((p.GetIndexParameters() ?? Array.Empty<ParameterInfo>()).Length == 0));
 
 			var propertyValueRetrievers = NonNullImmutableList<ContentRetrieverWithSourceProperty>.Empty;
 			foreach (var property in propertiesToConsider)
@@ -270,13 +270,8 @@ namespace FullTextIndexer.Helpers
 		{
 			public ContentRetrieverWithSourceProperty(ContentRetriever<TSource, TKey> contentRetriever, PropertyInfo property)
 			{
-				if (contentRetriever == null)
-					throw new ArgumentNullException("contentRetriever");
-				if (property == null)
-					throw new ArgumentNullException("property");
-
-				ContentRetriever = contentRetriever;
-				Property = property;
+				ContentRetriever = contentRetriever ?? throw new ArgumentNullException(nameof(contentRetriever));
+				Property = property ?? throw new ArgumentNullException(nameof(property));
 			}
 
 			/// <summary>

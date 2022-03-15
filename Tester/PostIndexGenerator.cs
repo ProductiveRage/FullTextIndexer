@@ -20,23 +20,16 @@ namespace Tester
 		private readonly ILogger _logger;
 		public PostIndexGenerator(ITokenBreaker tokenBreaker, IStringNormaliser sourceStringComparer, ILogger logger)
 		{
-			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
-			if (sourceStringComparer == null)
-				throw new ArgumentNullException("sourceStringComparer");
-			if (logger == null)
-				throw new ArgumentNullException("logger");
-
-			_tokenBreaker = tokenBreaker;
-			_sourceStringComparer = sourceStringComparer;
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
+			_sourceStringComparer = sourceStringComparer ?? throw new ArgumentNullException(nameof(sourceStringComparer));
 			_stopWordLookup = new HashSet<string>(Constants.GetStopWords("en"), _sourceStringComparer); // TODO: Explain (if it helps)
-			_logger = logger;
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
 		public IndexData<int> Generate(NonNullImmutableList<Post> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			var contentRetrievers = new List<ContentRetriever<Post, int>>();
 
@@ -83,7 +76,7 @@ namespace Tester
 		private ContentRetriever<Post, int>.BrokenTokenWeightDeterminer GetTokenWeightDeterminer(float multiplier)
 		{
 			if (multiplier <= 0)
-				throw new ArgumentOutOfRangeException("multiplier", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(multiplier), "must be greater than zero");
 			return token => multiplier * (_stopWordLookup.Contains(token) ? 0.01f : 1f);
 		}
 	}

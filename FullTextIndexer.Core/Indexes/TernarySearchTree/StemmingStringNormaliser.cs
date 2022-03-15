@@ -19,17 +19,15 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		private readonly Func<string, string> _normaliser; // Note: Don't try to serialise this, it's probably not possible (not via ISerializable nor JSON.Net)
 		private readonly IStringNormaliser _optionalPreNormaliser;
 		private readonly PreNormaliserWorkOptions _preNormaliserWork;
-		public StemmingStringNormaliser(NonNullImmutableList<IStemOpportunity> stemOpportunities, IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
+		protected StemmingStringNormaliser(NonNullImmutableList<IStemOpportunity> stemOpportunities, IStringNormaliser optionalPreNormaliser, PreNormaliserWorkOptions preNormaliserWork)
 		{
-			if (stemOpportunities == null)
-				throw new ArgumentNullException("stemOpportunities");
-			var allPreNormaliserOptions = (PreNormaliserWorkOptions)0;
+            var allPreNormaliserOptions = (PreNormaliserWorkOptions)0;
 			foreach (PreNormaliserWorkOptions option in Enum.GetValues(typeof(PreNormaliserWorkOptions)))
-				allPreNormaliserOptions = allPreNormaliserOptions | option;
+				allPreNormaliserOptions |= option;
 			if ((preNormaliserWork & allPreNormaliserOptions) != preNormaliserWork)
-				throw new ArgumentOutOfRangeException("preNormaliserWork");
+				throw new ArgumentOutOfRangeException(nameof(preNormaliserWork));
 
-			_stemOpportunities = stemOpportunities;
+			_stemOpportunities = stemOpportunities ?? throw new ArgumentNullException(nameof(stemOpportunities));
 			_normaliser = GenerateNormaliser();
 			_optionalPreNormaliser = optionalPreNormaliser;
 			_preNormaliserWork = preNormaliserWork;
@@ -65,7 +63,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public override string GetNormalisedString(string value)
 		{
 			if (value == null)
-				throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
 
 			// If an additional normaliser was specified in the constructor then process the string with that first (eg. a normaliser that removes punctuation
 			// from values may be beneficial depending upon the the content that may be passed in)
@@ -160,7 +158,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		protected static BinaryExpression CombineExpressionsWithAndAlso(NonNullImmutableList<BinaryExpression> expressions)
 		{
 			if (expressions == null)
-				throw new ArgumentNullException("expressions");
+				throw new ArgumentNullException(nameof(expressions));
 
 			if (!expressions.Any())
 				throw new Exception("No entries in expressions set");
@@ -186,9 +184,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		private static Expression GenerateAppendStringExpression(Expression value, string toAppend)
 		{
 			if (value == null)
-				throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
 			if (toAppend == null)
-				throw new ArgumentNullException("toAppend");
+				throw new ArgumentNullException(nameof(toAppend));
 
 			return Expression.Call(
 				typeof(string).GetMethod("Concat", new[] { typeof(string), typeof(string) }),
@@ -204,9 +202,9 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		protected static NonNullImmutableList<string> TidyStringList(NonNullImmutableList<string> values, Func<string, string> transformer)
 		{
 			if (values == null)
-				throw new ArgumentNullException("values");
+				throw new ArgumentNullException(nameof(values));
 			if (transformer == null)
-				throw new ArgumentNullException("transformer");
+				throw new ArgumentNullException(nameof(transformer));
 
 			var valuesTidied = new List<string>();
 			foreach (var value in values)

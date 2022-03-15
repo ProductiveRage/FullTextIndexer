@@ -16,17 +16,14 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public delegate TValue Combiner(TValue current, TValue toAdd);
 		private static readonly Combiner _takeNewValue = (current, toAdd) => toAdd;
 
-		private Node _root;
-        private IStringNormaliser _keyNormaliser;
+		private readonly Node _root;
+        private readonly IStringNormaliser _keyNormaliser;
 		public TernarySearchTreeDictionary(IEnumerable<KeyValuePair<string, TValue>> data, IStringNormaliser keyNormaliser)
 			: this(Add(root: null, keyNormaliser: keyNormaliser, data: data, combine: _takeNewValue), keyNormaliser) { }
 		private TernarySearchTreeDictionary(Node rootIfAny, IStringNormaliser keyNormaliser)
 		{
-			if (keyNormaliser == null)
-				throw new ArgumentNullException("keyNormaliser");
-
-			_root = rootIfAny;
-			_keyNormaliser = keyNormaliser;
+            _root = rootIfAny;
+			_keyNormaliser = keyNormaliser ?? throw new ArgumentNullException(nameof(keyNormaliser));
 		}
 
 		/// <summary>
@@ -35,7 +32,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public IEnumerable<string> GetAllNormalisedKeys()
         {
             if (_root == null)
-                return new string[0]; // If root is null then there is no data
+                return Array.Empty<string>(); // If root is null then there is no data
             return _root.GetAllNodes().Where(n => n.Key != null).Select(n => n.Key);
         }
 
@@ -45,7 +42,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         public IEnumerable<TValue> GetAllValues()
         {
             if (_root == null)
-                return new TValue[0]; // If root is null then there is no data
+                return Array.Empty<TValue>(); // If root is null then there is no data
             return _root.GetAllNodes().Where(n => n.Key != null).Select(n => n.Value);
         }
 
@@ -78,8 +75,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         {
             get
             {
-                TValue value;
-                if (!TryGetValue(key, out value))
+                if (!TryGetValue(key, out var value))
                     throw new KeyNotFoundException();
                 return value;
             }
@@ -92,12 +88,12 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         public bool TryGetValue(string key, out TValue value)
         {
             if (key == null)
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
 
             if (_root == null)
             {
                 // If root is null then there is no data
-                value = default(TValue);
+                value = default;
                 return false;
             }
 
@@ -130,7 +126,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                         break;
                 }
             }
-            value = default(TValue);
+            value = default;
             return false;
         }
 
@@ -151,7 +147,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public TernarySearchTreeDictionary<TValue> Add(IEnumerable<KeyValuePair<string, TValue>> data, Combiner combine)
 		{
 			if (data == null)
-                throw new ArgumentNullException("data");
+                throw new ArgumentNullException(nameof(data));
 			if (combine == null)
 				throw new ArgumentNullException(nameof(combine));
 
@@ -165,7 +161,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		private static Node Add(Node root, IStringNormaliser keyNormaliser, IEnumerable<KeyValuePair<string, TValue>> data, Combiner combine)
         {
             if (keyNormaliser == null)
-                throw new ArgumentNullException("keyNormaliser");
+                throw new ArgumentNullException(nameof(keyNormaliser));
             if (data == null)
                 throw new ArgumentNullException("keys");
 			if (combine == null)
@@ -231,7 +227,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
         public TernarySearchTreeDictionary<TValue> Remove(IEnumerable<string> keys)
         {
             if (keys == null)
-                throw new ArgumentNullException("keys");
+                throw new ArgumentNullException(nameof(keys));
 
             if (_root == null)
                 return this; // If root is null then there is no data
@@ -271,7 +267,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
                 if ((matchedKeyLength == normalisedKey.Length) && (node.Key != null))
                 {
                     node.Key = null;
-                    node.Value = default(TValue);
+                    node.Value = default;
                     removedAnyKeys = true;
                 }
             }
@@ -310,7 +306,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		private bool Prune(Node node)
         {
             if (node == null)
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
 
             var actionTaken = false;
             if (node.LeftChild != null)

@@ -23,7 +23,7 @@ namespace FullTextIndexer.Core.Indexes.TernarySearchTree
 		public override string GetNormalisedString(string value)
         {
                 if (value == null)
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
 
             var normalisedValue = value.Normalize(NormalizationForm.FormKD);
             var content = new char[normalisedValue.Length];

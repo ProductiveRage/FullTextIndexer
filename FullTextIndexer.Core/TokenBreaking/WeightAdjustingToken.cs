@@ -11,13 +11,10 @@ namespace FullTextIndexer.Core.TokenBreaking
             if (string.IsNullOrEmpty(token))
                 throw new ArgumentException("Null/blank token specified");
 			if ((weightMultiplier <= 0) || (weightMultiplier > 1))
-                throw new ArgumentOutOfRangeException("weightMultiplier");
-			if (sourceLocation == null)
-				throw new ArgumentNullException("sourceLocation");
-
+                throw new ArgumentOutOfRangeException(nameof(weightMultiplier));
             Token = token;
             WeightMultiplier = weightMultiplier;
-			SourceLocation = sourceLocation;
+			SourceLocation = sourceLocation ?? throw new ArgumentNullException(nameof(sourceLocation));
 		}
 
         /// <summary>

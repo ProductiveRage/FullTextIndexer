@@ -17,13 +17,13 @@ namespace FullTextIndexer.Core.Indexes
             MatchCombiner matchCombiner)
         {
             if (results == null)
-                throw new ArgumentNullException("results");
+                throw new ArgumentNullException(nameof(results));
             if (resultSetsToAdd == null)
-                throw new ArgumentNullException("resultSetsToAdd");
+                throw new ArgumentNullException(nameof(resultSetsToAdd));
             if (keyComparer == null)
-                throw new ArgumentNullException("keyComparer");
+                throw new ArgumentNullException(nameof(keyComparer));
             if (matchCombiner == null)
-                throw new ArgumentNullException("matchCombiner");
+                throw new ArgumentNullException(nameof(matchCombiner));
 
             var allMatchesByKey = new Dictionary<TKey, List<WeightedEntry<TKey>>>(
                 keyComparer
@@ -63,11 +63,11 @@ namespace FullTextIndexer.Core.Indexes
             MatchCombiner matchCombiner)
         {
             if (resultsToAdd == null)
-                throw new ArgumentNullException("resultsToAdd");
+                throw new ArgumentNullException(nameof(resultsToAdd));
             if (keyComparer == null)
-                throw new ArgumentNullException("keyComparer");
+                throw new ArgumentNullException(nameof(keyComparer));
             if (matchCombiner == null)
-                throw new ArgumentNullException("matchCombiner");
+                throw new ArgumentNullException(nameof(matchCombiner));
 
             return CombineResults(
                 results,

@@ -40,11 +40,11 @@ namespace FullTextIndexer.Querier
 		public Querier(IIndexData<TKey> standardMatchIndexData, IIndexData<TKey> preciseMatchIndexData, QueryTranslator<TKey>.MatchCombiner matchCombiner)
 		{
 			if (standardMatchIndexData == null)
-				throw new ArgumentNullException("standardMatchIndexData");
+				throw new ArgumentNullException(nameof(standardMatchIndexData));
 			if (preciseMatchIndexData == null)
-				throw new ArgumentNullException("preciseMatchIndexData");
+				throw new ArgumentNullException(nameof(preciseMatchIndexData));
 			if (matchCombiner == null)
-				throw new ArgumentNullException("matchCombiner");
+				throw new ArgumentNullException(nameof(matchCombiner));
 
 			_queryTranslator = new QueryTranslator<TKey>(
 				standardMatchIndexData,

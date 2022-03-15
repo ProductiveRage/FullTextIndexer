@@ -11,9 +11,9 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableDictionary(IDictionary<TKey, TValue> data, IEqualityComparer<TKey> keyComparer)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
+				throw new ArgumentNullException(nameof(keyComparer));
 
 			_data = new Dictionary<TKey, TValue>(data, keyComparer);
 			_keyComparer = keyComparer;
@@ -30,7 +30,7 @@ namespace FullTextIndexer.Common.Lists
 			get
 			{
 				if (key == null)
-					throw new ArgumentNullException("key");
+					throw new ArgumentNullException(nameof(key));
 
 				if (!_data.ContainsKey(key))
 					throw new ArgumentException("Invalid key: " + key.ToString());
@@ -44,7 +44,7 @@ namespace FullTextIndexer.Common.Lists
 		public bool ContainsKey(TKey key)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			return _data.ContainsKey(key);
 		}
@@ -71,7 +71,7 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableDictionary<TKey, TValue> AddOrUpdate(TKey key, TValue value)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			var dataNew = new Dictionary<TKey, TValue>(_data, _keyComparer);
 			if (dataNew.ContainsKey(key))
@@ -91,7 +91,7 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableDictionary<TKey, TValue> RemoveIfPresent(TKey key)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			var dataNew = new Dictionary<TKey, TValue>(_data, _keyComparer);
 			if (dataNew.ContainsKey(key))
@@ -112,7 +112,7 @@ namespace FullTextIndexer.Common.Lists
 		protected static U toDerivedClass<U>(ImmutableDictionary<TKey, TValue> dictionary) where U : ImmutableDictionary<TKey, TValue>, new()
 		{
 			if (dictionary == null)
-				throw new ArgumentNullException("dictionary");
+				throw new ArgumentNullException(nameof(dictionary));
 
 			// Use same trick as above methods to cheat - we're changing the state of the object after instantiation, but after returning from
 			// this method it can be considered immutable
@@ -128,16 +128,16 @@ namespace FullTextIndexer.Common.Lists
 			public bool Equals(T x, T y)
 			{
 				if (x == null)
-					throw new ArgumentNullException("x");
+					throw new ArgumentNullException(nameof(x));
 				if (y == null)
-					throw new ArgumentNullException("y");
+					throw new ArgumentNullException(nameof(y));
 				return x.Equals(y);
 			}
 
 			public int GetHashCode(T obj)
 			{
 				if (obj == null)
-					throw new ArgumentNullException("obj");
+					throw new ArgumentNullException(nameof(obj));
 				return obj.GetHashCode();
 			}
 		}

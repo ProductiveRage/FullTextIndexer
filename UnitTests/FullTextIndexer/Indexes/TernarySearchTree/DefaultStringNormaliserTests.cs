@@ -30,9 +30,9 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         private void Test(string valueToNormalise, string expected)
         {
             if (valueToNormalise == null)
-                throw new ArgumentNullException("valueToNormalise");
+                throw new ArgumentNullException(nameof(valueToNormalise));
             if (expected == null)
-                throw new ArgumentNullException("expected");
+                throw new ArgumentNullException(nameof(expected));
 
             Assert.Equal(
                 expected,

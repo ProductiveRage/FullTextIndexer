@@ -20,9 +20,9 @@ namespace FullTextIndexer.Core.Indexes
 		public static void Serialise(IndexData<TKey> source, Stream stream)
 		{
 			if (source == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
 			if (stream == null)
-				throw new ArgumentNullException("stream");
+				throw new ArgumentNullException(nameof(stream));
 
 			byte[] matchData;
 			ImmutableList<TKey> allKeys;
@@ -60,7 +60,7 @@ namespace FullTextIndexer.Core.Indexes
 		public static IndexData<TKey> Deserialise(Stream stream)
 		{
 			if (stream == null)
-				throw new ArgumentNullException("stream");
+				throw new ArgumentNullException(nameof(stream));
 
 			using (var reader = new BinaryReader(stream))
 			{
@@ -123,13 +123,13 @@ namespace FullTextIndexer.Core.Indexes
 			IEqualityComparer<TKey> keyComparer)
 		{
 			if (reader == null)
-				throw new ArgumentNullException("reader");
+				throw new ArgumentNullException(nameof(reader));
 			if (keys == null)
-				throw new ArgumentNullException("keys");
+				throw new ArgumentNullException(nameof(keys));
 			if (stringNormaliser == null)
-				throw new ArgumentNullException("stringNormaliser");
+				throw new ArgumentNullException(nameof(stringNormaliser));
 			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
+				throw new ArgumentNullException(nameof(keyComparer));
 
 			var numberOfTokens = reader.ReadInt32();
 			var matchDictionary = new Dictionary<string, NonNullImmutableList<WeightedEntry<TKey>>>(stringNormaliser);
@@ -190,9 +190,9 @@ namespace FullTextIndexer.Core.Indexes
 		private static ImmutableList<TKey> WriteMatchDataAndReturnReferencedKeys(IndexData<TKey> data, BinaryWriter writer)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 			if (writer == null)
-				throw new ArgumentNullException("writer");
+				throw new ArgumentNullException(nameof(writer));
 
 			var allKeys = new List<TKey>();
 			var allTokens = data.GetAllTokens();
@@ -240,9 +240,9 @@ namespace FullTextIndexer.Core.Indexes
 		private static void SerialiseItem(object data, BinaryWriter writer)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 			if (writer == null)
-				throw new ArgumentNullException("writer");
+				throw new ArgumentNullException(nameof(writer));
 
 			byte[] serialiseData;
 			using (var memoryStream = new MemoryStream())
@@ -257,7 +257,7 @@ namespace FullTextIndexer.Core.Indexes
 		private static T DeserialiseItem<T>(BinaryReader reader)
 		{
 			if (reader == null)
-				throw new ArgumentNullException("reader");
+				throw new ArgumentNullException(nameof(reader));
 
 			var dataLength = reader.ReadInt32();
 			using (var memoryStream = new MemoryStream(reader.ReadBytes(dataLength)))

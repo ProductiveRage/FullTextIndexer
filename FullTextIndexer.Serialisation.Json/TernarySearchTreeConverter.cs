@@ -9,7 +9,7 @@ namespace FullTextIndexer.Serialisation.Json
 {
 	public sealed class TernarySearchTreeConverter : JsonConverter
 	{
-		private static TernarySearchTreeConverter _instance = new TernarySearchTreeConverter();
+		private static readonly TernarySearchTreeConverter _instance = new TernarySearchTreeConverter();
 		public static TernarySearchTreeConverter Instance => _instance;
 
 		private delegate object Reader(JsonReader reader, JsonSerializer serialiser, Type elementType);

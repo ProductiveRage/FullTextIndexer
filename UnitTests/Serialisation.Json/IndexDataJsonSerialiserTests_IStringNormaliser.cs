@@ -142,7 +142,7 @@ namespace UnitTests.Serialisation.Json
 
 		private sealed class PrivatePropertyCaseEnforcingStringNormaliser : IStringNormaliser
 		{
-			private CasingOptions _casing;
+			private readonly CasingOptions _casing;
 			public PrivatePropertyCaseEnforcingStringNormaliser(CasingOptions casing)
 			{
 				_casing = casing;
@@ -181,7 +181,7 @@ namespace UnitTests.Serialisation.Json
 
 		private sealed class CustomStringNormaliserWithSillyConstructorArgumentReadConverter : JsonConverter
 		{
-			private static CustomStringNormaliserWithSillyConstructorArgumentReadConverter _instance = new CustomStringNormaliserWithSillyConstructorArgumentReadConverter();
+			private static readonly CustomStringNormaliserWithSillyConstructorArgumentReadConverter _instance = new CustomStringNormaliserWithSillyConstructorArgumentReadConverter();
 			public static CustomStringNormaliserWithSillyConstructorArgumentReadConverter Instance => _instance;
 			private CustomStringNormaliserWithSillyConstructorArgumentReadConverter() { }
 

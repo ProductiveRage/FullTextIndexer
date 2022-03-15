@@ -24,7 +24,7 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableList(IEnumerable<T> values, IValueValidator<T> optionalValueValidator)
 		{
 			if (values == null)
-				throw new ArgumentNullException("values");
+				throw new ArgumentNullException(nameof(values));
 
 			Node node = null;
 			foreach (var value in values)
@@ -49,7 +49,7 @@ namespace FullTextIndexer.Common.Lists
 			get
 			{
 				if ((index < 0) || (index >= Count))
-					throw new ArgumentOutOfRangeException("index");
+					throw new ArgumentOutOfRangeException(nameof(index));
 
 				// Getting the value of the last item is a very quick operation so we can add a shortcut for it
 				if (index == Count - 1)
@@ -101,7 +101,7 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableList<T> AddRange(IEnumerable<T> values)
 		{
 			if (values == null)
-				throw new ArgumentNullException("values");
+				throw new ArgumentNullException(nameof(values));
 			if (!values.Any())
 				return this;
 
@@ -119,7 +119,7 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableList<T> Insert(IEnumerable<T> values, int insertAtIndex)
 		{
 			if (values == null)
-				throw new ArgumentNullException("values");
+				throw new ArgumentNullException(nameof(values));
 
 			return Insert(values, default, insertAtIndex);
 		}
@@ -132,7 +132,7 @@ namespace FullTextIndexer.Common.Lists
 		private ImmutableList<T> Insert(IEnumerable<T> multipleValuesToAdd, T singleValueToAdd, int insertAtIndex)
 		{
 			if ((insertAtIndex < 0) || (insertAtIndex > Count))
-				throw new ArgumentOutOfRangeException("insertAtIndex");
+				throw new ArgumentOutOfRangeException(nameof(insertAtIndex));
 			if ((multipleValuesToAdd != null) && !multipleValuesToAdd.Any())
 				return this;
 
@@ -261,9 +261,9 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableList<T> RemoveRange(int removeAtIndex, int count)
 		{
 			if (removeAtIndex < 0)
-				throw new ArgumentOutOfRangeException("removeAtIndex", "must be greater than or equal zero");
+				throw new ArgumentOutOfRangeException(nameof(removeAtIndex), "must be greater than or equal zero");
 			if (count <= 0)
-				throw new ArgumentOutOfRangeException("count", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(count), "must be greater than zero");
 			if ((removeAtIndex + count) > Count)
 				throw new ArgumentException("removeAtIndex + count must not exceed Count");
 
@@ -294,9 +294,9 @@ namespace FullTextIndexer.Common.Lists
 		public ImmutableList<T> RemoveLast(int numberToRemove)
 		{
 			if (numberToRemove <= 0)
-				throw new ArgumentOutOfRangeException("numberToRemove", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(numberToRemove), "must be greater than zero");
 			if (numberToRemove > Count)
-				throw new ArgumentOutOfRangeException("numberToRemove", "must not be greater than Count");
+				throw new ArgumentOutOfRangeException(nameof(numberToRemove), "must not be greater than Count");
 
 			var node = _tail;
 			for (var index = 0; index < numberToRemove; index++)
@@ -367,9 +367,9 @@ namespace FullTextIndexer.Common.Lists
 		protected static U To<U>(ImmutableList<T> list, Func<Node, U> generator)
 		{
 			if (list == null)
-				throw new ArgumentNullException("list");
+				throw new ArgumentNullException(nameof(list));
 			if (generator == null)
-				throw new ArgumentNullException("generator");
+				throw new ArgumentNullException(nameof(generator));
 
 			return generator(list._tail);
 		}
@@ -402,7 +402,7 @@ namespace FullTextIndexer.Common.Lists
 		private class SortComparisonWrapper : IComparer<T>
 		{
 			private readonly Comparison<T> _comparison;
-			public SortComparisonWrapper(Comparison<T> comparison) => _comparison = comparison ?? throw new ArgumentNullException("comparison");
+			public SortComparisonWrapper(Comparison<T> comparison) => _comparison = comparison ?? throw new ArgumentNullException(nameof(comparison));
 
 			public int Compare(T x, T y) => _comparison(x, y);
 		}

@@ -24,7 +24,7 @@ namespace FullTextIndexer.Core.IndexGenerators
 		public int GetHashCode(T obj)
 		{
 			if (obj == null)
-				throw new ArgumentNullException("obj");
+				throw new ArgumentNullException(nameof(obj));
 
 			return obj.GetHashCode();
 		}

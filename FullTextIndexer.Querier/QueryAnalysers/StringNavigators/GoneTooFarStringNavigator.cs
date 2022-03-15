@@ -25,7 +25,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.StringNavigators
 		public string TryToGetCharacterString(int requiredNumberOfCharacters)
 		{
 			if (requiredNumberOfCharacters <= 0)
-				throw new ArgumentOutOfRangeException("requiredNumberOfCharacters", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(requiredNumberOfCharacters), "must be greater than zero");
 
 			return "";
 		}

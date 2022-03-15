@@ -56,7 +56,7 @@ namespace FullTextIndexer.Core.IndexGenerators
 		public IndexData<TKey> Generate(NonNullImmutableList<TSource> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			// Build up data about token occurences in the data
 			// - We'll be using the token values in the indexContent dictionary after they have been normalised by the sourceStringComparer, this means that we

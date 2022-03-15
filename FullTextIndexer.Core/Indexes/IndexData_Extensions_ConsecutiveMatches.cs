@@ -32,15 +32,15 @@ namespace FullTextIndexer.Core.Indexes
 			IndexGenerator.WeightedEntryCombiner weightCombinerForFinalMatches)
 		{
             if (index == null)
-                throw new ArgumentNullException("index");
+                throw new ArgumentNullException(nameof(index));
             if (source == null)
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             if (tokenBreaker == null)
-                throw new ArgumentNullException("tokenBreaker");
+                throw new ArgumentNullException(nameof(tokenBreaker));
             if (weightCombinerForConsecutiveRuns == null)
-				throw new ArgumentNullException("weightCombinerForConsecutiveRuns");
+				throw new ArgumentNullException(nameof(weightCombinerForConsecutiveRuns));
 			if (weightCombinerForFinalMatches == null)
-				throw new ArgumentNullException("weightCombinerForFinalMatches");
+				throw new ArgumentNullException(nameof(weightCombinerForFinalMatches));
 
 			if (!index.SourceLocationsAvailable)
 				throw new ArgumentException($"The {nameof(index)} must include source location data in order to use identify Consecutive token matches");
@@ -204,7 +204,7 @@ namespace FullTextIndexer.Core.Indexes
 		private static NonNullImmutableList<WeightedEntry<TKey>> BreakWeightedEntryIntoIndividualSourceLocations<TKey>(WeightedEntry<TKey> match)
 		{
 			if (match == null)
-				throw new ArgumentNullException("match");
+				throw new ArgumentNullException(nameof(match));
 
 			// Note: match.SourceLocationsIfRecorded should never be null because we checked that the index reported that SourceLocationsAvailable was true (so not
 			// checking for null source locations here)

@@ -9,9 +9,9 @@ namespace FullTextIndexer.Core.Indexes
 		public WeightedEntry(TKey key, float weight, NonNullImmutableList<SourceFieldLocation> sourceLocationsIfRecorded)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 			if (weight <= 0)
-				throw new ArgumentOutOfRangeException("weight", "must be > 0");
+				throw new ArgumentOutOfRangeException(nameof(weight), "must be > 0");
 			if ((sourceLocationsIfRecorded != null) && !sourceLocationsIfRecorded.Any())
 				throw new ArgumentException("sourceLocationsIfRecorded must not be empty if it is non-null");
 

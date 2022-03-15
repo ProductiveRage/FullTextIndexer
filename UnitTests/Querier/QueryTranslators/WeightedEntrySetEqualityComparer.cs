@@ -10,18 +10,15 @@ namespace UnitTests.Querier.QueryTranslators
 		private readonly IEqualityComparer<TKey> _keyComparer;
 		public WeightedEntrySetEqualityComparer(IEqualityComparer<TKey> keyComparer)
 		{
-			if (keyComparer == null)
-				throw new ArgumentNullException("keyComparer");
-
-			_keyComparer = keyComparer;
+            _keyComparer = keyComparer ?? throw new ArgumentNullException(nameof(keyComparer));
 		}
 
 		public bool Equals(NonNullImmutableList<WeightedEntry<TKey>> x, NonNullImmutableList<WeightedEntry<TKey>> y)
 		{
 			if (x == null)
-				throw new ArgumentNullException("x");
+				throw new ArgumentNullException(nameof(x));
 			if (y == null)
-				throw new ArgumentNullException("y");
+				throw new ArgumentNullException(nameof(y));
 
 			if (x.Count != y.Count)
 				return false;
@@ -37,7 +34,7 @@ namespace UnitTests.Querier.QueryTranslators
 		public int GetHashCode(NonNullImmutableList<WeightedEntry<TKey>> obj)
 		{
 			if (obj == null)
-				throw new ArgumentNullException("obj");
+				throw new ArgumentNullException(nameof(obj));
 
 			return 0;
 		}

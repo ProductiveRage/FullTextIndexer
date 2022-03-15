@@ -25,7 +25,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 		public NonNullImmutableList<WeightAdjustingToken> Break(string value)
 		{
 			if (value == null)
-				throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
 
 			IEnumerable<WeightAdjustingToken> tokensToBreak;
 			if (_optionalWrappedTokenBreaker == null)

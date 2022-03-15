@@ -23,16 +23,11 @@ namespace FullTextIndexer.Core.TokenBreaking
 			int maxNumberOfTokens,
 			WeightMultiplierDeterminer weightMultiplierDeterminer)
 		{
-			if (tokenBreaker == null)
-				throw new ArgumentNullException("tokenBreaker");
 			if (maxNumberOfTokens < 1)
-				throw new ArgumentOutOfRangeException("maxNumberOfTokens", "must be >= 1");
-			if (weightMultiplierDeterminer == null)
-				throw new ArgumentNullException("weightMultiplierDeterminer");
-
-			_tokenBreaker = tokenBreaker;
+				throw new ArgumentOutOfRangeException(nameof(maxNumberOfTokens), "must be >= 1");
+			_tokenBreaker = tokenBreaker ?? throw new ArgumentNullException(nameof(tokenBreaker));
 			_maxNumberOfTokens = maxNumberOfTokens;
-			_weightMultiplierDeterminer = weightMultiplierDeterminer;
+			_weightMultiplierDeterminer = weightMultiplierDeterminer ?? throw new ArgumentNullException(nameof(weightMultiplierDeterminer));
 		}
 
 		/// <summary>
@@ -48,7 +43,7 @@ namespace FullTextIndexer.Core.TokenBreaking
 		public NonNullImmutableList<WeightAdjustingToken> Break(string value)
 		{
 			if (value == null)
-				throw new ArgumentNullException("value");
+				throw new ArgumentNullException(nameof(value));
 
 			var initialTokens = _tokenBreaker.Break(value);
 			var extendedTokens = NonNullImmutableList<WeightAdjustingToken>.Empty;

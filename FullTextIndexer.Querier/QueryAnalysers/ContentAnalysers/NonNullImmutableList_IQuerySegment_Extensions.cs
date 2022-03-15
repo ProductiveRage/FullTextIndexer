@@ -10,7 +10,7 @@ namespace FullTextIndexer.Querier.QueryAnalysers.ContentAnalysers
 		public static IQuerySegment ToSingleQuerySegment(this NonNullImmutableList<IQuerySegment> querySegments)
 		{
 			if (querySegments == null)
-				throw new ArgumentNullException("querySegments");
+				throw new ArgumentNullException(nameof(querySegments));
 
 			var significantQuerySegments = querySegments.Where(s => !(s is NoMatchContentQuerySegment));
 			if (!significantQuerySegments.Any())

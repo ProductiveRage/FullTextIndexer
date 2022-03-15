@@ -138,9 +138,9 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
 		private void TestSpecificTransformation(string valueToNormalise, string expected)
         {
             if (valueToNormalise == null)
-                throw new ArgumentNullException("valueToNormalise");
+                throw new ArgumentNullException(nameof(valueToNormalise));
             if (expected == null)
-                throw new ArgumentNullException("expected");
+                throw new ArgumentNullException(nameof(expected));
 
             Assert.Equal(
                 expected,
@@ -151,9 +151,9 @@ namespace UnitTests.FullTextIndexer.Indexes.TernarySearchTree
         private void TestMatch(string value1, string value2)
         {
             if (value1 == null)
-                throw new ArgumentNullException("value1");
+                throw new ArgumentNullException(nameof(value1));
             if (value2 == null)
-                throw new ArgumentNullException("value2");
+                throw new ArgumentNullException(nameof(value2));
 
 			Assert.True(
                 GetNormaliser().Equals(value1, value2)

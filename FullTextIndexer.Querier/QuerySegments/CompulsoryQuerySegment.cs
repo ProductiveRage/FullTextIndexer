@@ -10,10 +10,7 @@ namespace FullTextIndexer.Querier.QuerySegments
 	{
 		public CompulsoryQuerySegment(IQuerySegment segment)
 		{
-			if (segment == null)
-				throw new ArgumentNullException("segment");
-
-			Segment = segment;
+            Segment = segment ?? throw new ArgumentNullException(nameof(segment));
 		}
 
 		/// <summary>

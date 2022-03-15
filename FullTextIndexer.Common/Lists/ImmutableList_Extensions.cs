@@ -13,7 +13,7 @@ namespace FullTextIndexer.Common.Lists
 		public static bool Any<T>(this ImmutableList<T> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			return (data.Count > 0);
 		}
@@ -26,7 +26,7 @@ namespace FullTextIndexer.Common.Lists
 		public static int Count<T>(this ImmutableList<T> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			return data.Count;
 		}
@@ -38,7 +38,7 @@ namespace FullTextIndexer.Common.Lists
 		public static T Last<T>(this ImmutableList<T> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
 			return data[data.Count - 1];
 		}
@@ -50,9 +50,9 @@ namespace FullTextIndexer.Common.Lists
 		public static T LastOrDefault<T>(this ImmutableList<T> data)
 		{
 			if (data == null)
-				throw new ArgumentNullException("data");
+				throw new ArgumentNullException(nameof(data));
 
-			return (data.Count > 0) ? data.Last() : default(T);
+			return (data.Count > 0) ? data.Last() : default;
 		}
 	}
 }
